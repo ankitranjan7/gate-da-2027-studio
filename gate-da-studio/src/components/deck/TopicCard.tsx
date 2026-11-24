@@ -69,7 +69,7 @@ export const TopicCard: React.FC<TopicCardProps> = ({
   }
 
   return (
-    <article className="rounded-2xl border s-surface p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-7">
+    <article className="min-w-0 w-full overflow-x-clip rounded-2xl border s-surface p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-7">
       {/* Header */}
       <header className="space-y-3 pb-5 border-b s-border">
         <div className="flex flex-wrap items-start justify-between gap-3">

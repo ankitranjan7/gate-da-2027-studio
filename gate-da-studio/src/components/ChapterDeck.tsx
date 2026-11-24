@@ -384,12 +384,18 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
   const progressPct = ((activeIdx + 1) / totalCards) * 100
   const prevPill = activeIdx > 0 ? pills[activeIdx - 1] : null
   const nextPill = activeIdx < totalCards - 1 ? pills[activeIdx + 1] : null
+  const cardBasis =
+    viewportTier === 'phone'
+      ? '92vw'
+      : viewportTier === 'tablet'
+        ? 'min(680px, 82vw)'
+        : 'min(860px, 72vw)'
 
   return (
     <div className="w-full flex flex-col">
       {/* Slim Sticky Chapter Control Bar (directly under 48px app header) */}
       <div className="sticky top-12 z-30 border-b s-header backdrop-blur-md">
-        <div className="max-w-[1440px] mx-auto px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="relative max-w-[1440px] mx-auto px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2">
           {/* Left: Back to Subjects + Chapter Quick-Jump + Scope Radar */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <button
@@ -402,7 +408,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
             </button>
 
             {/* Quick-Jump Popover */}
-            <div className="relative" ref={jumpPopoverRef}>
+            <div className="sm:relative" ref={jumpPopoverRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -416,7 +422,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
                   jumpOpen ? 's-pill-accent' : 's-btn-ghost s-text-primary'
                 }`}
               >
-                <span className="truncate max-w-[190px] sm:max-w-none">
+                <span className="truncate max-w-[155px] sm:max-w-none">
                   {track.order}. {track.shortTitle} · Ch.{trackChapterNumber}
                 </span>
                 <ChevronDown
@@ -427,7 +433,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
               </button>
 
               {jumpOpen && (
-                <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:left-0 sm:top-full sm:mt-2 sm:w-[440px] max-h-[75dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-3 z-50 space-y-3">
+                <div className="absolute inset-x-3 top-full mt-1.5 sm:inset-x-auto sm:left-0 sm:w-[440px] max-h-[72dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-3 z-50 space-y-3">
                   <div className="flex items-center justify-between border-b s-border pb-2">
                     <span className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
                       Jump to Any Subject & Chapter
@@ -501,7 +507,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
             </div>
 
             {/* Scope Radar Popover */}
-            <div className="relative" ref={scopePopoverRef}>
+            <div className="sm:relative" ref={scopePopoverRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -520,7 +526,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
               </button>
 
               {scopeOpen && (
-                <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:left-0 sm:top-full sm:mt-2 sm:w-[min(560px,88vw)] max-h-[75dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-4 z-50 space-y-4">
+                <div className="absolute inset-x-3 top-full mt-1.5 sm:inset-x-auto sm:left-0 sm:w-[min(560px,88vw)] max-h-[72dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-4 z-50 space-y-4">
                   <div className="flex items-center justify-between gap-2 border-b s-border pb-2.5">
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
@@ -809,14 +815,12 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
                 onMouseLeave={!isActive ? () => setHoveredIdx((h) => (h === idx ? null : h)) : undefined}
                 role={!isActive ? 'button' : undefined}
                 aria-label={!isActive ? `Focus card ${pills[idx]?.label ?? idx + 1}` : undefined}
-                className="relative rounded-2xl shrink-0"
+                className="relative rounded-2xl shrink-0 min-w-0"
                 style={{
-                  flex:
-                    viewportTier === 'phone'
-                      ? '0 0 92vw'
-                      : viewportTier === 'tablet'
-                        ? '0 0 min(680px, 82vw)'
-                        : '0 0 min(860px, 72vw)',
+                  flex: `0 0 ${cardBasis}`,
+                  width: cardBasis,
+                  maxWidth: cardBasis,
+                  minWidth: 0,
                   height: isActive ? 'auto' : undefined,
                   maxHeight: isActive ? 'none' : `${inactiveMaxHeight}px`,
                   overflow: isActive ? 'visible' : 'hidden',
@@ -833,7 +837,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
               >
                 <div
                   aria-hidden={!isActive}
-                  className={isActive ? undefined : 'pointer-events-none select-none'}
+                  className={isActive ? 'min-w-0 w-full' : 'min-w-0 w-full pointer-events-none select-none'}
                 >
                   {cardContent}
                 </div>

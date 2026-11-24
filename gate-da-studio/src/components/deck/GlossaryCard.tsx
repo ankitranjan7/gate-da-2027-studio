@@ -21,7 +21,7 @@ export const GlossaryCard: React.FC<GlossaryCardProps> = ({
   const hasGlossary = glossary.length > 0
 
   return (
-    <article className="rounded-2xl border s-surface p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+    <article className="min-w-0 w-full overflow-x-clip rounded-2xl border s-surface p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
       {/* Header Badges */}
       <div className="space-y-3 pb-5 border-b s-border">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">

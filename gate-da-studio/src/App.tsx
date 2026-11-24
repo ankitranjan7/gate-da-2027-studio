@@ -557,9 +557,9 @@ export const App: React.FC = () => {
           </nav>
 
           {/* Compact Utilities: Theme · Calc · Style Log */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Study Accent Switcher */}
-            <div className="relative" ref={themeMenuRef}>
+            <div className="sm:relative" ref={themeMenuRef}>
               <button
                 type="button"
                 onClick={() => setThemeMenuOpen((o) => !o)}
@@ -575,7 +575,7 @@ export const App: React.FC = () => {
               </button>
 
               {themeMenuOpen && (
-                <div className="fixed right-3 top-14 sm:absolute sm:right-0 sm:top-full sm:mt-2 w-[min(320px,calc(100vw-1.5rem))] rounded-xl border s-surface shadow-2xl p-2 z-50 space-y-1">
+                <div className="absolute right-3 top-full mt-1.5 sm:right-0 sm:mt-2 w-[min(320px,calc(100vw-1.5rem))] rounded-xl border s-surface shadow-2xl p-2 z-50 space-y-1">
                   <div className="px-2.5 py-1.5 border-b s-border flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
                       Dark Study Accents
