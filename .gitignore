@@ -1,0 +1,13 @@
+# Dependencies & build output
+node_modules/
+gate-da-studio/node_modules/
+gate-da-studio/dist/
+
+# Personal local progress, feedback & scratch files (NEVER push personal state)
+user-progress.json
+pilot-feedback.json
+.superpowers/
+
+# OS / Editor
+.DS_Store
+*.log
