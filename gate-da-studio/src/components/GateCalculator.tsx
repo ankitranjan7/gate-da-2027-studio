@@ -60,7 +60,7 @@ export const GateCalculator: React.FC<{ isOpen: boolean; onClose: () => void }> 
   const toRad = (x: number) => (degMode ? (x * Math.PI) / 180 : x)
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 w-80 rounded-2xl border s-surface s-border-strong shadow-2xl overflow-hidden">
+    <div className="fixed bottom-3 left-3 right-3 sm:left-auto sm:bottom-5 sm:right-5 z-50 sm:w-80 max-w-[360px] mx-auto sm:mx-0 rounded-2xl border s-surface s-border-strong shadow-2xl overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2.5 s-elevated border-b s-border">
         <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--accent-text)' }}>
           <Calculator className="w-4 h-4" />
@@ -155,7 +155,8 @@ export const GateCalculator: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
       <style>{`
         .calc-btn {
-          padding: 0.45rem 0.25rem;
+          padding: 0.55rem 0.25rem;
+          min-height: 40px;
           border-radius: 0.45rem;
           cursor: pointer;
           transition: filter 0.12s;

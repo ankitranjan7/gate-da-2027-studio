@@ -53,7 +53,7 @@ export const SubjectMap: React.FC<SubjectMapProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Continue Where You Left Off Strip */}
-      <section className="rounded-2xl border s-surface s-rail-accent p-5 md:p-6 flex flex-wrap items-center justify-between gap-4">
+      <section className="rounded-2xl border s-surface s-rail-accent p-4 sm:p-5 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5 min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span
@@ -68,7 +68,7 @@ export const SubjectMap: React.FC<SubjectMapProps> = ({
             </span>
           </div>
 
-          <h1 className="text-lg md:text-xl font-bold s-text-primary tracking-tight truncate">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold s-text-primary tracking-tight line-clamp-2">
             {resumeChapter?.title || resumeRef.shortTitle}
           </h1>
 
@@ -87,7 +87,7 @@ export const SubjectMap: React.FC<SubjectMapProps> = ({
         <button
           type="button"
           onClick={() => onOpenChapter(resumeRef.chapterId)}
-          className="px-5 py-2.5 rounded-xl s-btn-primary text-xs md:text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition shrink-0"
+          className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl s-btn-primary text-xs md:text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition shrink-0"
         >
           <Play className="w-3.5 h-3.5" />
           <span>{hasVisited ? 'Resume Chapter →' : 'Start Learning →'}</span>

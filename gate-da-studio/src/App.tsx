@@ -515,17 +515,19 @@ export const App: React.FC = () => {
           <nav className="flex items-center gap-0.5 text-xs p-0.5 rounded-xl border s-surface">
             {(
               [
-                ['studio', BookOpen, 'Subjects', false],
-                ['plan', Compass, '8-Week Plan', false],
-                ['arsenal', Zap, 'Direct Arsenal', true],
-                ['vault', Bookmark, 'Vault', true],
+                ['studio', BookOpen, 'Subjects', 'Study', false],
+                ['plan', Compass, '8-Week Plan', 'Plan', false],
+                ['arsenal', Zap, 'Direct Arsenal', 'Arsenal', true],
+                ['vault', Bookmark, 'Vault', 'Vault', true],
               ] as const
-            ).map(([viewKey, Icon, label, hideSm]) => {
+            ).map(([viewKey, Icon, label, mobileLabel, hideSm]) => {
               const active = mainView === viewKey
               return (
                 <button
                   key={viewKey}
                   type="button"
+                  title={label}
+                  aria-label={label}
                   onClick={() => {
                     if (viewKey === 'studio') {
                       goHomeToSubjects()
@@ -534,14 +536,21 @@ export const App: React.FC = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }
                   }}
-                  className={`px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-1.5 cursor-pointer transition ${
+                  className={`px-2 sm:px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-1.5 cursor-pointer transition ${
                     active
                       ? 's-btn-primary font-semibold'
                       : 's-text-secondary hover:bg-[var(--bg-hover)]'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className={hideSm ? 'hidden md:inline' : ''}>{label}</span>
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  {hideSm ? (
+                    <span className="hidden md:inline">{label}</span>
+                  ) : (
+                    <>
+                      <span className="sm:hidden">{mobileLabel}</span>
+                      <span className="hidden sm:inline">{label}</span>
+                    </>
+                  )}
                 </button>
               )
             })}
@@ -566,7 +575,7 @@ export const App: React.FC = () => {
               </button>
 
               {themeMenuOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-xl border s-surface shadow-2xl p-2 z-50 space-y-1">
+                <div className="fixed right-3 top-14 sm:absolute sm:right-0 sm:top-full sm:mt-2 w-[min(320px,calc(100vw-1.5rem))] rounded-xl border s-surface shadow-2xl p-2 z-50 space-y-1">
                   <div className="px-2.5 py-1.5 border-b s-border flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
                       Dark Study Accents

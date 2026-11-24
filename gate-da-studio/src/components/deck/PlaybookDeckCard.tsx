@@ -40,7 +40,7 @@ export const PlaybookDeckCard: React.FC<PlaybookDeckCardProps> = ({
   }
 
   return (
-    <article className="rounded-2xl border s-surface p-6 md:p-8 space-y-6">
+    <article className="rounded-2xl border s-surface p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
       {/* Header */}
       <header className="space-y-3 pb-5 border-b s-border">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">

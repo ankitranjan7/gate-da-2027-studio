@@ -85,9 +85,13 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
   )
   const [animateTrack, setAnimateTrack] = useState(false)
   const [translateX, setTranslateX] = useState(0)
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  )
+  const [dragOffsetX, setDragOffsetX] = useState(0)
+  const [viewportTier, setViewportTier] = useState<'phone' | 'tablet' | 'desktop'>(() => {
+    if (typeof window === 'undefined') return 'desktop'
+    if (window.innerWidth < 640) return 'phone'
+    if (window.innerWidth < 1024) return 'tablet'
+    return 'desktop'
+  })
   const [inactiveMaxHeight, setInactiveMaxHeight] = useState<number>(520)
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
@@ -100,8 +104,14 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
   const scopePopoverRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Array<HTMLDivElement | null>>([])
+  const pillRefs = useRef<Array<HTMLButtonElement | null>>([])
   const lastWheelNavRef = useRef<number>(0)
-  const touchStartRef = useRef<{ x: number; y: number; ignored: boolean } | null>(null)
+  const touchStartRef = useRef<{
+    x: number
+    y: number
+    ignored: boolean
+    axis: 'undecided' | 'horizontal' | 'vertical'
+  } | null>(null)
 
   const activeIdxRef = useRef(activeIdx)
   activeIdxRef.current = activeIdx
@@ -159,17 +169,26 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
     const cardEl = cardRefs.current[activeIdxRef.current]
     if (!vpEl || !cardEl) return
     const vpWidth = vpEl.clientWidth
-    setIsMobile(vpWidth < 768)
+    setViewportTier(vpWidth < 640 ? 'phone' : vpWidth < 1024 ? 'tablet' : 'desktop')
     const cardCenter = cardEl.offsetLeft + cardEl.offsetWidth / 2
     setTranslateX(Math.round(vpWidth / 2 - cardCenter))
   }, [])
 
   useLayoutEffect(() => {
     recenterDeck()
-    // Re-check after a frame in case mobile/desktop flex-basis just toggled
+    // Re-check after a frame in case phone/tablet/desktop flex-basis just toggled
     const rafId = requestAnimationFrame(recenterDeck)
     return () => cancelAnimationFrame(rafId)
-  }, [activeIdx, chapter.id, totalCards, isMobile, recenterDeck])
+  }, [activeIdx, chapter.id, totalCards, viewportTier, recenterDeck])
+
+  // Auto-scroll active card pill into view on phones & tablets
+  useEffect(() => {
+    pillRefs.current[activeIdx]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    })
+  }, [activeIdx, chapter.id])
 
   // Re-center on viewport resize
   useEffect(() => {
@@ -275,27 +294,49 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
     return () => vpEl.removeEventListener('wheel', handleWheel)
   }, [])
 
-  // Horizontal touch swipe support for mobile/tablet with same scrollable-element guard
+  // Live finger-follow horizontal touch swipe for iPhone & iPad with vertical-scroll & sandbox guard
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length !== 1) return
     const target = e.target as HTMLElement | null
     const ignored = Boolean(
-      target?.closest('.katex-display, .overflow-x-auto, input[type="range"]')
+      target?.closest('.katex-display, .overflow-x-auto, input[type="range"], input, textarea, select')
     )
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
       ignored,
+      axis: 'undecided',
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current
+    if (!start || start.ignored || e.touches.length !== 1) return
+    const dx = e.touches[0].clientX - start.x
+    const dy = e.touches[0].clientY - start.y
+
+    if (start.axis === 'undecided') {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+      start.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'horizontal' : 'vertical'
+    }
+
+    if (start.axis === 'horizontal') {
+      // Gentle rubber-band resistance at deck boundaries
+      const atEdge =
+        (activeIdxRef.current === 0 && dx > 0) ||
+        (activeIdxRef.current === totalCards - 1 && dx < 0)
+      setDragOffsetX(Math.round(atEdge ? dx * 0.25 : dx * 0.65))
     }
   }
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
     const start = touchStartRef.current
     touchStartRef.current = null
+    setDragOffsetX(0)
     if (!start || start.ignored || e.changedTouches.length !== 1) return
     const dx = e.changedTouches[0].clientX - start.x
     const dy = e.changedTouches[0].clientY - start.y
-    if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.2) {
       if (dx < 0) goToCard(activeIdx + 1)
       else goToCard(activeIdx - 1)
     }
@@ -386,7 +427,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
               </button>
 
               {jumpOpen && (
-                <div className="absolute left-0 mt-2 w-[min(440px,92vw)] rounded-xl border s-surface shadow-2xl p-3 z-50 space-y-3">
+                <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:left-0 sm:top-full sm:mt-2 sm:w-[440px] max-h-[75dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-3 z-50 space-y-3">
                   <div className="flex items-center justify-between border-b s-border pb-2">
                     <span className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
                       Jump to Any Subject & Chapter
@@ -479,7 +520,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
               </button>
 
               {scopeOpen && (
-                <div className="absolute left-0 mt-2 w-[min(560px,92vw)] max-h-[75vh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-4 z-50 space-y-4">
+                <div className="fixed inset-x-3 top-24 sm:absolute sm:inset-x-auto sm:left-0 sm:top-full sm:mt-2 sm:w-[min(560px,88vw)] max-h-[75dvh] overflow-y-auto rounded-xl border s-surface shadow-2xl p-4 z-50 space-y-4">
                   <div className="flex items-center justify-between gap-2 border-b s-border pb-2.5">
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-wider s-text-muted">
@@ -572,12 +613,15 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
           </div>
 
           {/* Center: Horizontal Card Pill Strip */}
-          <div className="flex items-center gap-1 overflow-x-auto max-w-full py-0.5 order-3 lg:order-2">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full py-0.5 order-3 lg:order-2">
             {pills.map((pill) => {
               const isCurrent = pill.index === activeIdx
               return (
                 <button
                   key={pill.index}
+                  ref={(el) => {
+                    pillRefs.current[pill.index] = el
+                  }}
                   type="button"
                   onClick={() => goToCard(pill.index)}
                   className={`px-2.5 py-1 rounded-lg border text-xs font-mono whitespace-nowrap inline-flex items-center gap-1 cursor-pointer transition shrink-0 ${
@@ -632,8 +676,13 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
       <div
         ref={viewportRef}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-full overflow-x-clip py-6 md:py-8"
+        onTouchCancel={() => {
+          touchStartRef.current = null
+          setDragOffsetX(0)
+        }}
+        className="relative w-full overflow-x-clip py-4 sm:py-6 md:py-8 touch-pan-y"
       >
         {/* Subtle Left & Right Edge Fade Masks */}
         <div
@@ -653,9 +702,12 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
         <div
           className="relative flex items-start"
           style={{
-            gap: isMobile ? '12px' : '24px',
-            transform: `translate3d(${translateX}px, 0, 0)`,
-            transition: animateTrack ? 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
+            gap: viewportTier === 'phone' ? '10px' : viewportTier === 'tablet' ? '18px' : '24px',
+            transform: `translate3d(${translateX + dragOffsetX}px, 0, 0)`,
+            transition:
+              animateTrack && dragOffsetX === 0
+                ? 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1)'
+                : 'none',
             willChange: 'transform',
           }}
         >
@@ -759,7 +811,12 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
                 aria-label={!isActive ? `Focus card ${pills[idx]?.label ?? idx + 1}` : undefined}
                 className="relative rounded-2xl shrink-0"
                 style={{
-                  flex: isMobile ? '0 0 92vw' : '0 0 min(860px, 72vw)',
+                  flex:
+                    viewportTier === 'phone'
+                      ? '0 0 92vw'
+                      : viewportTier === 'tablet'
+                        ? '0 0 min(680px, 82vw)'
+                        : '0 0 min(860px, 72vw)',
                   height: isActive ? 'auto' : undefined,
                   maxHeight: isActive ? 'none' : `${inactiveMaxHeight}px`,
                   overflow: isActive ? 'visible' : 'hidden',
@@ -797,17 +854,21 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
         </div>
       </div>
 
-      {/* Bottom Slim Hint & Accessibility Prev/Next Fallback Strip */}
-      <div className="max-w-[860px] w-full mx-auto px-4 pb-10 pt-1 flex flex-wrap items-center justify-between gap-3">
+      {/* Bottom Slim Hint & Touch-Friendly Prev/Next Fallback Strip */}
+      <div className="max-w-[860px] w-full mx-auto px-3 sm:px-4 pt-1 pb-[max(2.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 sm:gap-3">
         <button
           type="button"
           disabled={!prevPill}
           onClick={() => goToCard(activeIdx - 1)}
-          className="px-3 py-1.5 rounded-lg border s-btn-ghost disabled:opacity-35 disabled:cursor-not-allowed text-xs font-medium inline-flex items-center gap-1 cursor-pointer transition"
+          className="px-3.5 py-2.5 sm:py-1.5 rounded-xl sm:rounded-lg border s-btn-ghost disabled:opacity-35 disabled:cursor-not-allowed text-xs font-medium inline-flex items-center gap-1 cursor-pointer transition"
         >
-          <ChevronLeft className="w-3.5 h-3.5" />
-          <span>{prevPill ? `Prev Card · ${prevPill.label}` : 'Prev Card'}</span>
+          <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+          <span>{prevPill ? prevPill.label : 'Prev'}</span>
         </button>
+
+        <p className="text-[11px] s-text-muted text-center sm:hidden">
+          Swipe left / right
+        </p>
 
         <p className="text-[11px] s-text-muted text-center hidden sm:block">
           Click peeking left/right card · Swipe horizontally · Press{' '}
@@ -824,10 +885,10 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
           type="button"
           disabled={!nextPill}
           onClick={() => goToCard(activeIdx + 1)}
-          className="px-3 py-1.5 rounded-lg border s-btn-ghost disabled:opacity-35 disabled:cursor-not-allowed text-xs font-medium inline-flex items-center gap-1 cursor-pointer transition"
+          className="px-3.5 py-2.5 sm:py-1.5 rounded-xl sm:rounded-lg border s-btn-ghost disabled:opacity-35 disabled:cursor-not-allowed text-xs font-medium inline-flex items-center gap-1 cursor-pointer transition"
         >
-          <span>{nextPill ? `Next Card · ${nextPill.label}` : 'Next Card'}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <span>{nextPill ? nextPill.label : 'Next'}</span>
+          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
         </button>
       </div>
     </div>

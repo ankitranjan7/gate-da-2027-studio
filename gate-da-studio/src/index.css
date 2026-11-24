@@ -3,10 +3,19 @@
 @import "./styles/themes.css";
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
+  }
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-canvas);
     color: var(--text-primary);
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, a, input, select, textarea {
+    touch-action: manipulation;
   }
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -17,11 +26,27 @@
   font-size: 1.03em;
 }
 
+@media (max-width: 639px) {
+  .katex {
+    font-size: 0.94em;
+  }
+}
+
 .katex-display {
   margin: 0.75rem 0 !important;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   padding: 0.25rem 0;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom subtle scrollbars */
