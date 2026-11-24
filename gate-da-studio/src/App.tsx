@@ -19,7 +19,19 @@ import { PlanDashboard } from './components/PlanDashboard'
 import { GlobalArsenalView, MistakeVaultView } from './components/GlobalArsenalAndVault'
 import { GateCalculator } from './components/GateCalculator'
 import { FeedbackModal } from './components/FeedbackDrawer'
+import { SyncModal, type SyncStatus } from './components/SyncModal'
 import { STUDY_THEMES, type StudyThemeId } from './themes/studyThemes'
+import {
+  loadSyncConfig,
+  saveSyncConfig,
+  clearSyncConfig,
+  connectWithGithubToken,
+  pullProgressFromGist,
+  pushProgressToGist,
+  mergeSyncedProgress,
+  type CloudSyncConfig,
+  type SyncedPayload,
+} from './utils/cloudSync'
 import {
   Compass,
   BookOpen,
@@ -30,6 +42,7 @@ import {
   GraduationCap,
   Palette,
   Check,
+  Cloud,
 } from 'lucide-react'
 
 const EMPTY_PROGRESS: UserProgressState = {
@@ -63,11 +76,32 @@ export const App: React.FC = () => {
   const [feedbackItems, setFeedbackItems] = useState<PilotFeedbackItem[]>([])
   const [calcOpen, setCalcOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [syncOpen, setSyncOpen] = useState(false)
   const [themeMenuOpen, setThemeMenuOpen] = useState(false)
+
+  // Cross-device private GitHub Gist sync state
+  const [syncConfig, setSyncConfig] = useState<CloudSyncConfig | null>(() => loadSyncConfig())
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(() =>
+    loadSyncConfig() ? 'synced' : 'local'
+  )
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+  const [syncRevision, setSyncRevision] = useState(0)
+  const [syncToast, setSyncToast] = useState<string | null>(null)
 
   const themeMenuRef = useRef<HTMLDivElement>(null)
   const moduleCacheRef = useRef(moduleCache)
   moduleCacheRef.current = moduleCache
+  const progressRef = useRef(progress)
+  progressRef.current = progress
+  const feedbackRef = useRef(feedbackItems)
+  feedbackRef.current = feedbackItems
+  const syncConfigRef = useRef(syncConfig)
+  syncConfigRef.current = syncConfig
+  const pushTimerRef = useRef<number | null>(null)
+  const pendingPushPayloadRef = useRef<SyncedPayload | null>(null)
+  const lastPullAttemptRef = useRef<number>(0)
+  const toastTimerRef = useRef<number | null>(null)
 
   const [studyTheme, setStudyTheme] = useState<StudyThemeId>(() => {
     const saved = localStorage.getItem(THEME_STORAGE_KEY) as StudyThemeId | null
@@ -120,96 +154,12 @@ export const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [themeMenuOpen])
 
-  // Load persisted progress & feedback (from localStorage always; synced with disk via Vite middleware in dev)
-  useEffect(() => {
-    const hydrateFromLocal = () => {
-      try {
-        const local = localStorage.getItem('gate_da_2027_progress')
-        if (local) {
-          const hydrated: UserProgressState = { ...EMPTY_PROGRESS, ...JSON.parse(local) }
-          setProgress(hydrated)
-          if (hydrated.lastVisitedChapterId) {
-            setActiveTrackId(getTrackForChapter(hydrated.lastVisitedChapterId).id)
-            setActiveChapterId(hydrated.lastVisitedChapterId)
-          }
-        }
-      } catch {
-        // Ignore malformed localStorage
-      }
-      try {
-        const localFb = localStorage.getItem('gate_da_2027_feedback')
-        if (localFb) {
-          const parsed = JSON.parse(localFb)
-          if (Array.isArray(parsed)) setFeedbackItems(parsed)
-        }
-      } catch {
-        // Ignore malformed localStorage
-      }
-    }
-
-    if (!import.meta.env.DEV) {
-      hydrateFromLocal()
-      return
-    }
-
-    fetch('/api/progress')
-      .then((r) => {
-        if (!r.ok) throw new Error('No local API')
-        return r.json()
-      })
-      .then((data) => {
-        if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-          const hydrated: UserProgressState = { ...EMPTY_PROGRESS, ...data }
-          setProgress(hydrated)
-          if (hydrated.lastVisitedChapterId) {
-            setActiveTrackId(getTrackForChapter(hydrated.lastVisitedChapterId).id)
-            setActiveChapterId(hydrated.lastVisitedChapterId)
-          }
-        } else {
-          hydrateFromLocal()
-        }
-      })
-      .catch(hydrateFromLocal)
-
-    fetch('/api/feedback')
-      .then((r) => {
-        if (!r.ok) throw new Error('No local API')
-        return r.json()
-      })
-      .then((data) => {
-        if (Array.isArray(data?.items)) setFeedbackItems(data.items)
-      })
-      .catch(() => {})
-  }, [])
-
-  const updateProgress = useCallback(
-    (updater: (prev: UserProgressState) => UserProgressState) => {
-      setProgress((prev) => {
-        const next = updater(prev)
-        localStorage.setItem('gate_da_2027_progress', JSON.stringify(next))
-        if (import.meta.env.DEV) {
-          fetch('/api/progress', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(next),
-          }).catch(() => {})
-        }
-        return next
-      })
-    },
-    []
-  )
-
-  const persistFeedback = useCallback((nextItems: PilotFeedbackItem[]) => {
-    setFeedbackItems(nextItems)
-    localStorage.setItem('gate_da_2027_feedback', JSON.stringify(nextItems))
-    if (import.meta.env.DEV) {
-      fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: nextItems }),
-      }).catch(() => {})
-    }
+  const showSyncToast = useCallback((msg: string) => {
+    setSyncToast(msg)
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = window.setTimeout(() => {
+      setSyncToast(null)
+    }, 3600)
   }, [])
 
   const ensureModulesLoaded = useCallback(async (moduleIds: string[]) => {
@@ -235,6 +185,377 @@ export const App: React.FC = () => {
       return next
     })
   }, [])
+
+  const resumeToChapterSilently = useCallback(
+    async (chapterId: string) => {
+      const ref = getChapterRefById(chapterId)
+      setActiveTrackId(ref.trackId)
+      setActiveChapterId(ref.chapterId)
+      setMainView('studio')
+      setInChapterView(true)
+
+      const alreadyLoaded = moduleCacheRef.current[ref.moduleId]?.some(
+        (c) => c.id === ref.chapterId
+      )
+      if (alreadyLoaded) return
+
+      const track = getTrackById(ref.trackId)
+      setLoadingLabel(`Resuming ${track.shortTitle} · Ch.${ref.trackChapterNumber}…`)
+      setLoadingChapter(true)
+      try {
+        await ensureModulesLoaded([ref.moduleId])
+      } finally {
+        setLoadingChapter(false)
+        setLoadingLabel(null)
+      }
+    },
+    [ensureModulesLoaded]
+  )
+
+  const scheduleCloudPush = useCallback(
+    (nextProgress: UserProgressState, nextFeedback?: PilotFeedbackItem[]) => {
+      const cfg = syncConfigRef.current
+      if (!cfg) return
+      const payload: SyncedPayload = {
+        version: 1,
+        updatedAt: nextProgress.updatedAt || new Date().toISOString(),
+        progress: nextProgress,
+        feedbackItems: nextFeedback ?? feedbackRef.current,
+      }
+      pendingPushPayloadRef.current = payload
+      if (pushTimerRef.current) window.clearTimeout(pushTimerRef.current)
+      pushTimerRef.current = window.setTimeout(async () => {
+        const activeCfg = syncConfigRef.current
+        const toSend = pendingPushPayloadRef.current
+        if (!activeCfg || !toSend) return
+        pendingPushPayloadRef.current = null
+        pushTimerRef.current = null
+        setSyncStatus('syncing')
+        try {
+          await pushProgressToGist(activeCfg.token, activeCfg.gistId, toSend)
+          setSyncStatus('synced')
+          setSyncError(null)
+          setLastSyncedAt(new Date().toISOString())
+        } catch (err: unknown) {
+          setSyncStatus('error')
+          setSyncError(err instanceof Error ? err.message : 'Cloud sync failed.')
+        }
+      }, 1200)
+    },
+    []
+  )
+
+  const applyHydratedState = useCallback(
+    (hydrated: UserProgressState, fromCloud: boolean) => {
+      progressRef.current = hydrated
+      setProgress(hydrated)
+      localStorage.setItem('gate_da_2027_progress', JSON.stringify(hydrated))
+
+      if (hydrated.lastVisitedChapterId) {
+        const ref = getChapterRefById(hydrated.lastVisitedChapterId)
+        void resumeToChapterSilently(ref.chapterId)
+        if (fromCloud) {
+          setSyncRevision((r) => r + 1)
+          const track = getTrackById(ref.trackId)
+          const cardNum = (hydrated.chapterCardCursor?.[ref.chapterId] ?? 0) + 1
+          showSyncToast(`Synced · Resumed ${track.shortTitle} Ch.${ref.trackChapterNumber} (Card ${cardNum})`)
+        }
+      }
+    },
+    [resumeToChapterSilently, showSyncToast]
+  )
+
+  const pullFromCloud = useCallback(
+    async (force = false) => {
+      const cfg = syncConfigRef.current
+      if (!cfg) return
+      const now = Date.now()
+      if (!force && now - lastPullAttemptRef.current < 8000) return
+      lastPullAttemptRef.current = now
+
+      setSyncStatus('syncing')
+      try {
+        const remote = await pullProgressFromGist(cfg.token, cfg.gistId)
+        if (remote?.progress) {
+          const { merged, adoptedRemote } = mergeSyncedProgress(progressRef.current, remote.progress)
+          if (adoptedRemote) {
+            applyHydratedState(merged, true)
+            if (Array.isArray(remote.feedbackItems)) {
+              setFeedbackItems(remote.feedbackItems)
+              localStorage.setItem('gate_da_2027_feedback', JSON.stringify(remote.feedbackItems))
+            }
+          } else if (progressRef.current.updatedAt) {
+            // Local is newer than cloud — push local up so other devices receive it
+            await pushProgressToGist(cfg.token, cfg.gistId, {
+              version: 1,
+              updatedAt: merged.updatedAt || new Date().toISOString(),
+              progress: merged,
+              feedbackItems: feedbackRef.current,
+            })
+          }
+        }
+        setSyncStatus('synced')
+        setSyncError(null)
+        setLastSyncedAt(new Date().toISOString())
+      } catch (err: unknown) {
+        setSyncStatus('error')
+        setSyncError(err instanceof Error ? err.message : 'Cloud sync pull failed.')
+      }
+    },
+    [applyHydratedState]
+  )
+
+  // Load persisted progress & feedback (from localStorage always; synced with disk in dev + GitHub Gist if connected)
+  useEffect(() => {
+    const hydrateFromLocal = () => {
+      try {
+        const local = localStorage.getItem('gate_da_2027_progress')
+        if (local) {
+          const hydrated: UserProgressState = { ...EMPTY_PROGRESS, ...JSON.parse(local) }
+          applyHydratedState(hydrated, false)
+        }
+      } catch {
+        // Ignore malformed localStorage
+      }
+      try {
+        const localFb = localStorage.getItem('gate_da_2027_feedback')
+        if (localFb) {
+          const parsed = JSON.parse(localFb)
+          if (Array.isArray(parsed)) setFeedbackItems(parsed)
+        }
+      } catch {
+        // Ignore malformed localStorage
+      }
+    }
+
+    if (!import.meta.env.DEV) {
+      hydrateFromLocal()
+      if (syncConfigRef.current) {
+        void pullFromCloud(true)
+      }
+      return
+    }
+
+    fetch('/api/progress')
+      .then((r) => {
+        if (!r.ok) throw new Error('No local API')
+        return r.json()
+      })
+      .then((data) => {
+        if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+          const hydrated: UserProgressState = { ...EMPTY_PROGRESS, ...data }
+          applyHydratedState(hydrated, false)
+        } else {
+          hydrateFromLocal()
+        }
+      })
+      .catch(hydrateFromLocal)
+      .finally(() => {
+        if (syncConfigRef.current) {
+          void pullFromCloud(true)
+        }
+      })
+
+    fetch('/api/feedback')
+      .then((r) => {
+        if (!r.ok) throw new Error('No local API')
+        return r.json()
+      })
+      .then((data) => {
+        if (Array.isArray(data?.items)) setFeedbackItems(data.items)
+      })
+      .catch(() => {})
+  }, [applyHydratedState, pullFromCloud])
+
+  // Auto-pull when returning to tab on iPhone / iPad / Mac, and flush pending push when leaving
+  useEffect(() => {
+    const flushPendingPush = () => {
+      const cfg = syncConfigRef.current
+      const pending = pendingPushPayloadRef.current
+      if (!cfg || !pending) return
+      pendingPushPayloadRef.current = null
+      if (pushTimerRef.current) {
+        window.clearTimeout(pushTimerRef.current)
+        pushTimerRef.current = null
+      }
+      fetch(`https://api.github.com/gists/${encodeURIComponent(cfg.gistId)}`, {
+        method: 'PATCH',
+        keepalive: true,
+        headers: {
+          Authorization: `Bearer ${cfg.token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          files: {
+            'gate-da-2027-studio-progress.json': {
+              content: JSON.stringify(pending, null, 2),
+            },
+          },
+        }),
+      }).catch(() => {})
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        flushPendingPush()
+      } else if (document.visibilityState === 'visible' && syncConfigRef.current) {
+        void pullFromCloud(false)
+      }
+    }
+    const handleFocus = () => {
+      if (syncConfigRef.current) {
+        void pullFromCloud(false)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('pagehide', flushPendingPush)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('pagehide', flushPendingPush)
+    }
+  }, [pullFromCloud])
+
+  const updateProgress = useCallback(
+    (updater: (prev: UserProgressState) => UserProgressState) => {
+      setProgress((prev) => {
+        const next: UserProgressState = {
+          ...updater(prev),
+          updatedAt: new Date().toISOString(),
+        }
+        progressRef.current = next
+        localStorage.setItem('gate_da_2027_progress', JSON.stringify(next))
+        if (import.meta.env.DEV) {
+          fetch('/api/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(next),
+          }).catch(() => {})
+        }
+        scheduleCloudPush(next)
+        return next
+      })
+    },
+    [scheduleCloudPush]
+  )
+
+  const persistFeedback = useCallback(
+    (nextItems: PilotFeedbackItem[]) => {
+      setFeedbackItems(nextItems)
+      feedbackRef.current = nextItems
+      localStorage.setItem('gate_da_2027_feedback', JSON.stringify(nextItems))
+      if (import.meta.env.DEV) {
+        fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: nextItems }),
+        }).catch(() => {})
+      }
+      scheduleCloudPush(progressRef.current, nextItems)
+    },
+    [scheduleCloudPush]
+  )
+
+  const handleConnectSyncToken = useCallback(
+    async (token: string) => {
+      setSyncStatus('syncing')
+      const currentProgress: UserProgressState = {
+        ...progressRef.current,
+        updatedAt: progressRef.current.updatedAt || new Date().toISOString(),
+      }
+      const { config, remotePayload } = await connectWithGithubToken(token, {
+        version: 1,
+        updatedAt: currentProgress.updatedAt!,
+        progress: currentProgress,
+        feedbackItems: feedbackRef.current,
+      })
+      saveSyncConfig(config)
+      syncConfigRef.current = config
+      setSyncConfig(config)
+
+      if (remotePayload?.progress) {
+        const { merged, adoptedRemote } = mergeSyncedProgress(progressRef.current, remotePayload.progress)
+        if (adoptedRemote) {
+          applyHydratedState(merged, true)
+          if (Array.isArray(remotePayload.feedbackItems)) {
+            setFeedbackItems(remotePayload.feedbackItems)
+            localStorage.setItem('gate_da_2027_feedback', JSON.stringify(remotePayload.feedbackItems))
+          }
+        } else {
+          await pushProgressToGist(config.token, config.gistId, {
+            version: 1,
+            updatedAt: merged.updatedAt || new Date().toISOString(),
+            progress: merged,
+            feedbackItems: feedbackRef.current,
+          })
+          showSyncToast('Cloud Sync connected · Progress backed up!')
+        }
+      } else {
+        showSyncToast('Cloud Sync connected · Private Gist created!')
+      }
+
+      setSyncStatus('synced')
+      setSyncError(null)
+      setLastSyncedAt(new Date().toISOString())
+    },
+    [applyHydratedState, showSyncToast]
+  )
+
+  const handleDisconnectSync = useCallback(() => {
+    clearSyncConfig()
+    syncConfigRef.current = null
+    setSyncConfig(null)
+    setSyncStatus('local')
+    setSyncError(null)
+    setLastSyncedAt(null)
+  }, [])
+
+  const handleExportProgressJson = useCallback(() => {
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            progress: progressRef.current,
+            feedbackItems: feedbackRef.current,
+          },
+          null,
+          2
+        ),
+      ],
+      { type: 'application/json' }
+    )
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `gate-da-2027-progress-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [])
+
+  const handleImportProgressJson = useCallback(
+    (fileText: string) => {
+      const parsed = JSON.parse(fileText)
+      const incoming = parsed?.progress && typeof parsed.progress === 'object' ? parsed.progress : parsed
+      if (!incoming || typeof incoming !== 'object') {
+        throw new Error('Could not find valid progress data in this JSON file.')
+      }
+      const hydrated: UserProgressState = {
+        ...EMPTY_PROGRESS,
+        ...incoming,
+        updatedAt: new Date().toISOString(),
+      }
+      applyHydratedState(hydrated, true)
+      if (Array.isArray(parsed?.feedbackItems)) {
+        persistFeedback(parsed.feedbackItems)
+      }
+      scheduleCloudPush(hydrated)
+    },
+    [applyHydratedState, persistFeedback, scheduleCloudPush]
+  )
 
   const selectTrack = useCallback(
     async (trackId: SubjectTrackId) => {
@@ -322,6 +643,7 @@ export const App: React.FC = () => {
     (chapterId: string, cardIndex: number) => {
       updateProgress((prev) => ({
         ...prev,
+        lastVisitedChapterId: chapterId,
         chapterCardCursor: {
           ...(prev.chapterCardCursor || {}),
           [chapterId]: cardIndex,
@@ -635,6 +957,30 @@ export const App: React.FC = () => {
 
             <button
               type="button"
+              onClick={() => setSyncOpen(true)}
+              title={
+                syncConfig
+                  ? syncStatus === 'error'
+                    ? 'Cloud Sync error — click to inspect'
+                    : 'Cloud Sync active across Mac, iPad & iPhone'
+                  : 'Set up Cross-Device Cloud Sync'
+              }
+              className={`px-2 py-1.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 cursor-pointer transition ${
+                syncStatus === 'error'
+                  ? 's-pill-bad'
+                  : syncConfig
+                    ? 's-pill-ok'
+                    : 's-btn-ghost'
+              }`}
+            >
+              <Cloud className={`w-3.5 h-3.5 shrink-0 ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
+              <span className="hidden lg:inline">
+                {syncConfig ? (syncStatus === 'syncing' ? 'Syncing' : 'Synced') : 'Sync'}
+              </span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setCalcOpen((o) => !o)}
               title="Toggle GATE Virtual Scientific Calculator"
               className={`px-2 py-1.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 cursor-pointer transition ${
@@ -655,7 +1001,7 @@ export const App: React.FC = () => {
                 setFeedbackOpen(true)
               }}
               title={`Style Log (${feedbackItems.length})`}
-              className="px-2 py-1.5 rounded-lg border s-btn-ghost text-xs font-medium flex items-center gap-1 cursor-pointer transition"
+              className="hidden sm:flex px-2 py-1.5 rounded-lg border s-btn-ghost text-xs font-medium items-center gap-1 cursor-pointer transition"
             >
               <MessageSquarePlus className="w-3.5 h-3.5" style={{ color: 'var(--formula)' }} />
               {feedbackItems.length > 0 && (
@@ -700,6 +1046,7 @@ export const App: React.FC = () => {
               trackChapterNumber={activeChapterRef.trackChapterNumber}
               chapterCache={chaptersById}
               progress={progress}
+              syncRevision={syncRevision}
               onBackToSubjects={goHomeToSubjects}
               onSelectChapter={openChapter}
               onCardCursorChange={updateCardCursor}
@@ -743,8 +1090,29 @@ export const App: React.FC = () => {
         )}
       </main>
 
+      {/* Subtle Cloud-Sync Resume Toast */}
+      {syncToast && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-3.5 py-2 rounded-full border s-pill-ok shadow-xl text-xs font-medium flex items-center gap-2 max-w-[92vw]">
+          <Cloud className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{syncToast}</span>
+        </div>
+      )}
+
       {/* Floating Utilities */}
       <GateCalculator isOpen={calcOpen} onClose={() => setCalcOpen(false)} />
+      <SyncModal
+        isOpen={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        syncConfig={syncConfig}
+        syncStatus={syncStatus}
+        syncError={syncError}
+        lastSyncedAt={lastSyncedAt}
+        onConnectToken={handleConnectSyncToken}
+        onSyncNow={() => pullFromCloud(true)}
+        onDisconnect={handleDisconnectSync}
+        onExportJson={handleExportProgressJson}
+        onImportJson={handleImportProgressJson}
+      />
       <FeedbackModal
         isOpen={feedbackOpen}
         onClose={() => setFeedbackOpen(false)}

@@ -265,6 +265,8 @@ export interface UserProgressState {
   completedPlanModules: Record<string, boolean>
   chapterCardCursor?: Record<string, number>
   lastVisitedChapterId?: string
+  lastViewMode?: 'deck' | 'subjects'
+  updatedAt?: string
 }
 
 export interface PilotFeedbackItem {

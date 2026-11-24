@@ -33,6 +33,7 @@ export interface ChapterDeckProps {
   trackChapterNumber: number
   chapterCache: Record<string, ChapterData>
   progress: UserProgressState
+  syncRevision?: number
   onBackToSubjects: () => void
   onSelectChapter: (chapterId: string) => void
   onCardCursorChange: (chapterId: string, cardIndex: number) => void
@@ -61,6 +62,7 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
   trackChapterNumber,
   chapterCache,
   progress,
+  syncRevision = 0,
   onBackToSubjects,
   onSelectChapter,
   onCardCursorChange,
@@ -146,6 +148,18 @@ export const ChapterDeck: React.FC<ChapterDeckProps> = ({
   useEffect(() => {
     setActiveIdx((prev) => clampIndex(prev))
   }, [clampIndex])
+
+  // Slide smoothly to remote cursor when a cross-device sync updates this chapter
+  useEffect(() => {
+    if (syncRevision <= 0) return
+    const saved = progressCursorRef.current?.[chapter.id] ?? 0
+    const nextIdx = clampIndex(saved)
+    if (nextIdx !== activeIdxRef.current) {
+      setAnimateTrack(true)
+      setActiveIdx(nextIdx)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [syncRevision, chapter.id, clampIndex])
 
   const goToCard = useCallback(
     (nextRaw: number) => {
