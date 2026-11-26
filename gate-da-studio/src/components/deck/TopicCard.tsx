@@ -10,6 +10,8 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  Compass,
+  Cpu,
 } from 'lucide-react'
 
 export interface TopicCardProps {
@@ -125,6 +127,53 @@ export const TopicCard: React.FC<TopicCardProps> = ({
           </p>
         </div>
       </header>
+
+      {/* Section 0a: Why Are We Studying This? */}
+      {concept.whyStudy && (
+        <section className="space-y-2.5">
+          <div
+            className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+            style={{ color: 'var(--ok-text)' }}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>Why Are We Studying This?</span>
+          </div>
+          <div className="rounded-xl border s-inset p-4 text-sm md:text-[15px] s-text-primary leading-relaxed">
+            <MathText text={concept.whyStudy} />
+          </div>
+        </section>
+      )}
+
+      {/* Section 0b: Ground-Truth Rules of the System / Environment */}
+      {concept.groundRules && concept.groundRules.length > 0 && (
+        <section className="space-y-2.5">
+          <div
+            className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+            style={{ color: 'var(--formula-text)' }}
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>How the System Actually Works (The Ground Rules First)</span>
+          </div>
+          <div
+            className="rounded-xl border s-inset p-4 space-y-2.5"
+            style={{ borderColor: 'var(--formula-border)' }}
+          >
+            {concept.groundRules.map((rule, rIdx) => (
+              <div
+                key={rIdx}
+                className="flex items-start gap-2.5 text-sm s-text-secondary leading-relaxed"
+              >
+                <span className="mt-0.5 w-5 h-5 rounded-md border s-pill-formula font-mono text-[11px] font-bold flex items-center justify-center shrink-0">
+                  {rIdx + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <MathText text={rule} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Section 1: Intuition First (Toy Example) */}
       <section className="space-y-3">

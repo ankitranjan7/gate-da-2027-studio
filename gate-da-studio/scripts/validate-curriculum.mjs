@@ -100,7 +100,10 @@ function checkMathString(str, loc, isRawBlock = false) {
     return
   }
 
-  const strippedDisplay = str.replace(/\$\$([\s\S]+?)\$\$/g, (_, inner) => {
+  // Strip fenced code blocks before scanning for LaTeX math delimiters
+  const withoutCode = str.replace(/```[a-zA-Z0-9_-]*\n[\s\S]*?```/g, ' ')
+
+  const strippedDisplay = withoutCode.replace(/\$\$([\s\S]+?)\$\$/g, (_, inner) => {
     totalMath++
     try {
       katex.renderToString(inner, { displayMode: true, throwOnError: true, strict: false })
