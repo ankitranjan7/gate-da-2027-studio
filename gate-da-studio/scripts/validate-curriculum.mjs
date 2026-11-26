@@ -190,6 +190,18 @@ for (const file of files) {
         if (c.sandboxId && !VALID_SANDBOX_IDS.has(c.sandboxId)) {
           errors.push(`${ch.id}.${c.id}: Invalid sandboxId "${c.sandboxId}"`)
         }
+        if (typeof c.whyStudy !== 'string' || !c.whyStudy.trim()) {
+          errors.push(`${ch.id}.${c.id}: Missing non-empty whyStudy`)
+        }
+        if (!Array.isArray(c.groundRules) || c.groundRules.length < 2) {
+          errors.push(`${ch.id}.${c.id}: groundRules must have at least 2 entries`)
+        } else {
+          c.groundRules.forEach((r, rIdx) => {
+            if (typeof r !== 'string' || !r.trim()) {
+              errors.push(`${ch.id}.${c.id}.groundRules[${rIdx}]: empty rule`)
+            }
+          })
+        }
       }
 
       for (const q of ch.questions || []) {

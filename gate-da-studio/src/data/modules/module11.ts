@@ -124,6 +124,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Why "If $P$ then $Q$" is a one-way promise that only breaks when $P=T$ and $Q=F$',
         priority: 'core-pillar',
         buildsOn: 'Boolean truth values ($T/F$) and $\\neg, \\land, \\lor$',
+        whyStudy:
+          'Everyday English conditionals (“only if”, “unless”, “requires”) are slippery and full of hidden assumptions, yet AI reasoning agents, rule engines, and software verifiers need a 100% unambiguous rule for “if $P$ then $Q$” ($P \\to Q$). Mastering material implication lets you translate messy English policies into exact logical formulas without ever flipping the arrow direction.',
+        groundRules: [
+          '**Every atomic proposition is strictly binary (`TRUE` or `FALSE`):** Classical propositional logic has no “maybe” or “unknown”—with $n$ atoms, there are exactly $2^n$ complete truth worlds (rows in a truth table).',
+          '**Material implication $P \\to Q$ is a broken-promise detector:** The logic engine marks $P \\to Q$ as `FALSE` in **only one** world—when the premise $P = T$ holds while the conclusion $Q = F$ fails. Whenever $P = F$, the promise was never triggered, so $P \\to Q$ is vacuously `TRUE`.',
+          '**Logical equivalence ($\\equiv$) means identical truth-table columns:** Two formulas $A \\equiv B$ are interchangeable if and only if they output the exact same $T/F$ value in all $2^n$ worlds—which is why $P \\to Q$, $\\neg P \\lor Q$ (“not $P$, or $Q$”), and the contrapositive $\\neg Q \\to \\neg P$ are 100% identical.',
+          '**Arrow direction is strictly one-way:** Swapping the sides ($Q \\to P$, the converse) or negating both sides in place ($\\neg P \\to \\neg Q$, the inverse) moves the lone failure row from $(T, F)$ to $(F, T)$, creating a genuinely different claim.',
+        ],
         toyExample: {
           title: 'The 2-Atom Rain & Wet-Grass Contract',
           scenario:
@@ -191,6 +199,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Why entailment means "no counter-world exists" rather than "$\\alpha$ is always true"',
         priority: 'core-pillar',
         buildsOn: 'Truth tables and $P \\to Q \\equiv \\neg P \\lor Q$',
+        whyStudy:
+          'An AI agent stores facts and rules inside a Knowledge Base ($KB$) and constantly asks one fundamental question: *“Given everything I already know in $KB$, is conclusion $\\alpha$ guaranteed to be true, or is there still some legal world where $\\alpha$ fails?”* Semantic entailment ($KB \\models \\alpha$, read “$KB$ entails $\\alpha$”) defines that exact guarantee and turns logical deduction into a clean impossibility check.',
+        groundRules: [
+          '**A model is one surviving truth-table row:** The symbol $\\mathcal{M}(\\Phi)$ stands for the set of all truth assignments that make formula $\\Phi$ evaluate to `TRUE`. Conjoining more facts with $\\land$ (“AND”) filters down the surviving worlds.',
+          '**The turnstile $\\models$ means subset containment of models:** Writing $KB \\models \\alpha$ (“$KB$ entails $\\alpha$”) literally means $\\mathcal{M}(KB) \\subseteq \\mathcal{M}(\\alpha)$—every single world where $KB$ is `TRUE` is also a world where $\\alpha$ is `TRUE`.',
+          '**Three views of the exact same guarantee:** Saying “no counter-world makes $KB$ true and $\\alpha$ false simultaneously” means $KB \\land \\neg\\alpha$ is **unsatisfiable** ($0$ models), and equivalently $KB \\to \\alpha$ is a **tautology** (`TRUE` in all $2^n$ worlds, written $\\models KB \\to \\alpha$).',
+          '**Entailment is asymmetric and local to $KB$:** $KB \\models \\alpha$ never forces $\\alpha$ to be a tautology by itself (it may be `FALSE` outside $\\mathcal{M}(KB)$), nor does it imply the reverse $\\alpha \\models KB$.',
+        ],
         toyExample: {
           title: 'A 2-Atom Alibi Check',
           scenario:
@@ -257,6 +273,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Turning deduction into a single mechanical cancellation rule',
         priority: 'high-yield',
         buildsOn: 'Entailment via unsatisfiability ($KB \\land \\neg\\alpha$)',
+        whyStudy:
+          'Scanning all $2^n$ rows of a truth table collapses as soon as a real problem has $50$ variables ($2^{50} > 10^{15}$ worlds!). Computer scientists invented **Conjunctive Normal Form (CNF)** and **Resolution** so automated theorem provers and SAT solvers can prove $KB \\models \\alpha$ by pure symbol cancellation—and discovered **Horn clauses** so practical rule engines (like Prolog and Datalog) run in blazing linear time.',
+        groundRules: [
+          '**CNF standardizes every formula into an AND of OR-clauses:** By removing $\\leftrightarrow$ and $\\to$, pushing $\\neg$ inward with De Morgan’s laws, and distributing $\\lor$ over $\\land$, any formula becomes a list of OR-clauses where every $\\neg$ sits directly on a single atom (a literal).',
+          '**Binary Resolution cancels strictly ONE complementary pair per step:** From $(A \\lor L)$ and $(B \\lor \\neg L)$, since $L$ cannot be both `TRUE` and `FALSE` in the same world, either $A$ or $B$ must hold—yielding $(A \\lor B)$. Canceling two pairs at once is illegal and produces false contradictions.',
+          '**Refutation adds the negated goal $\\neg\\alpha$ and hunts for the empty clause $\\square$:** Converting $KB \\land \\neg\\alpha$ to CNF and deriving $\\square$ (by resolving two opposing unit clauses $(R)$ and $(\\neg R)$) proves $KB \\land \\neg\\alpha$ has $0$ models, establishing $KB \\models \\alpha$.',
+          '**Horn clauses allow at most ONE positive literal per clause:** Because $(\\neg P_1 \\lor \\dots \\lor \\neg P_k \\lor H)$ rewrites cleanly to the IF-THEN rule $(P_1 \\land \\dots \\land P_k \\to H)$, Horn entailment finishes in linear time $O(|KB|)$ via forward/backward chaining, whereas general 3-SAT is NP-complete.',
+        ],
         toyExample: {
           title: 'Deriving the Empty Clause $\\square$ in 3 Steps',
           scenario:
@@ -754,6 +778,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Why putting $\\land$ inside $\\forall$ forces the entire universe to be a ball',
         priority: 'core-pillar',
         buildsOn: 'Implication $A \\to B$ vacuous truth when $A = F$',
+        whyStudy:
+          'Propositional logic breaks down the moment a domain has thousands of objects—you would need separate atoms `Ball1_Round`, `Ball2_Round`, …, `Ball10000_Round` just to state “all balls are round.” First-Order Logic (FOL) introduces **variables** ($x$), **predicates** ($P(x)$ testing properties), and **quantifiers** ($\\forall$ meaning “for all” and $\\exists$ meaning “there exists”) so one compact sentence expresses rules over millions—or infinitely many—objects at once.',
+        groundRules: [
+          '**Variables range over the ENTIRE non-empty domain $D$:** Writing $\\forall x$ (“for every object $x$ in the universe $D$”) forces the logic engine to plug in EVERY object in $D$—including non-members like cubes, tables, or numbers—not just the subset you have in mind.',
+          '**Universal quantifiers ($\\forall$) MUST pair with implication ($\\to$) as a gatekeeper:** In $\\forall x\\,(A(x) \\to B(x))$, any non-$A$ object sets $A(x) = F$, making $F \\to B(x) = T$ pass vacuously without breaking the rule. Writing $\\land$ instead would falsely demand that every object in the universe satisfies $A(x)$!',
+          '**Existential quantifiers ($\\exists$) MUST pair with conjunction ($\\land$) as a strict witness filter:** In $\\exists x\\,(A(x) \\land B(x))$, a witness object must genuinely satisfy BOTH $A(x)$ and $B(x)$. Writing $\\to$ instead lets any non-$A$ object cheat by producing $F \\to B(x) = T$!',
+          '**“Except” statements enforce TWO explicit rules:** Translating “All $A$ are $B$ except $C$” requires BOTH $(A \\land \\neg C) \\to B$ (normal members have $B$) AND $(A \\land C) \\to \\neg B$ (exception members lack $B$); omitting the second half leaves $C$-members free to have $B$ too.',
+        ],
         toyExample: {
           title: 'A 2-Object Toy World: 1 Round Ball and 1 Cube',
           scenario:
@@ -820,6 +852,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Killing invalid FOL formulas on $D = \\{a, b\\}$ and pushing $\\neg$ across $\\forall/\\exists$',
         priority: 'core-pillar',
         buildsOn: 'Golden $\\forall/\\to$ vs $\\exists/\\land$ pairing',
+        whyStudy:
+          'Real AI knowledge bases, mathematical proofs, and SQL queries constantly nest multiple quantifiers—such as *“every student took at least one course”* ($\\forall s\\exists c$) versus *“one single course was taken by every student”* ($\\exists c\\forall s$). Swapping quantifier order or distributing $\\forall$ across $\\lor$ silently breaks program specifications and queries, so you need mechanical negation-pushing rules and fast 2-object countermodels to catch invalid formulas immediately.',
+        groundRules: [
+          '**Treat $\\forall$ as a giant $\\land$ and $\\exists$ as a giant $\\lor$ over $D$:** On $D = \\{a, b\\}$, $\\forall x\\,P(x)$ literally expands to $P(a) \\land P(b)$, while $\\exists x\\,P(x)$ expands to $P(a) \\lor P(b)$. That immediately explains why $\\forall$ distributes ONLY over $\\land$, and $\\exists$ distributes ONLY over $\\lor$.',
+          '**Negation flips quantifiers by generalized De Morgan’s law:** Pushing $\\neg$ past $\\forall x$ turns it into $\\exists x\\,\\neg$ (“not everyone passed” $\\equiv$ “someone failed”), and pushing $\\neg$ past $\\exists x$ turns it into $\\forall x\\,\\neg$ (“nobody passed” $\\equiv$ “everyone failed”).',
+          '**Classical FOL domains are always non-empty ($D \\neq \\emptyset$):** Because at least one object always exists in $D$, universal truth always guarantees at least one witness: $(\\forall x\\,P(x)) \\to (\\exists x\\,P(x))$ is unconditionally valid.',
+          '**Validity demands truth in EVERY world; disproof needs just ONE 2-element countermodel:** Whenever an FOL formula looks suspicious, testing $D = \\{a, b\\}$ with $P(a) = T, P(b) = F$ (and $Q(a) = F, Q(b) = T$) breaks invalid distributions and quantifier swaps in seconds.',
+        ],
         toyExample: {
           title: 'The 2-Element Domain $D = \\{a, b\\}$ Validity Killer',
           scenario:
@@ -888,6 +928,14 @@ export const MODULE_11_CHAPTERS: ChapterData[] = [
         subtitle: 'Matching predicate terms mechanically while avoiding infinite self-loops',
         priority: 'high-yield',
         buildsOn: 'CNF Resolution (Ch.1) and nested quantifiers',
+        whyStudy:
+          'In Propositional Logic, Resolution cancels $P$ and $\\neg P$ immediately because both atoms are fixed strings. In First-Order Logic, a general rule like $\\forall x\\,(\\text{King}(x) \\to \\text{Person}(x))$ contains a variable $x$, while a fact like $\\text{King}(\\text{John})$ contains a constant—they do not match literally! **Skolemization** eliminates $\\exists$ quantifiers so formulas enter CNF cleanly, and **Unification** finds the exact minimal variable substitution (the MGU) that makes two predicate atoms identical so FOL Resolution can fire.',
+        groundRules: [
+          '**Skolemization names each $\\exists y$ witness based on enclosing $\\forall$ variables:** If $\\forall x_1, \\dots, \\forall x_k$ sit outside $\\exists y$, replace $y$ with a fresh **Skolem function** $f(x_1, \\dots, x_k)$ (letting the witness depend on each $x_i$); if no $\\forall$ sits outside, replace $y$ with a fixed **Skolem constant** $c$.',
+          '**Only variables can be replaced—constants and function names are rigid:** A variable $x$ can unify with any valid term, but two distinct constants ($a \\neq b$) or distinct outer function symbols ($f(\\cdot) \\neq g(\\cdot)$) clash immediately and can never unify.',
+          '**Substitutions apply simultaneously and must stay composed (idempotent):** Whenever a later slot discovers $z / a$, immediately propagate $z \\mapsto a$ back into all earlier bindings (turning $x / h(z)$ into $x / h(a)$) so a single simultaneous pass makes $E_1\\theta = E_2\\theta$.',
+          '**The Occurs Check forbids infinite self-nesting loops:** Before accepting any binding $v \\mapsto t$, the unifier checks whether variable $v$ already occurs inside $t$ (such as $y \\mapsto f(y)$); if so, unification fails immediately because no finite term can satisfy $y = f(f(f(\\dots)))$.',
+        ],
         toyExample: {
           title: 'Slot-by-Slot Matching of Two Predicate Templates',
           scenario:

@@ -110,6 +110,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'How Calculus optimization and Linear Algebra geometry unite into one ML toolkit',
         priority: 'core-pillar',
         buildsOn: 'Modules 1, 6–7, and 14–15 (Derivatives, Hessians, Projections, Eigenvalues, Ridge, PCA, SVM)',
+        whyStudy:
+          'Top-100 GATE DA rank-decider questions rarely stay neatly inside one chapter—they fuse Linear Algebra projections, Calculus Hessians, and Machine Learning objectives into a single 2-mark prompt. Seeing that Ridge, SVM, PCA, and Fisher LDA are all powered by the same three spectral and convexity laws lets you recognize the answer in 15 seconds instead of deriving from scratch.',
+        groundRules: [
+          'A twice-differentiable objective $J(w)$ whose Hessian matrix is strictly positive definite everywhere ($\\nabla^2 J(w) \\succ 0$) is strictly convex—meaning any stationary point $\\nabla J(w^*) = 0$ is guaranteed to be the ONE AND ONLY global minimum.',
+          'Adding an $L_2$ Ridge penalty $+\\lambda \\|w\\|_2^2$ ($\\lambda > 0$) to any convex quadratic loss shifts every Hessian eigenvalue upward by $+2\\lambda$ ($2\\mu_i \\mapsto 2(\\mu_i + \\lambda) \\ge 2\\lambda > 0$), curing singular or collinear $X^T X$ matrices immediately.',
+          'For ANY real symmetric matrix $A$, the Rayleigh Quotient Theorem locks in $\\max_{\\|x\\|_2 = 1} x^T A x = \\lambda_{\\max}(A)$ and $\\min_{\\|x\\|_2 = 1} x^T A x = \\lambda_{\\min}(A)$—powering PCA max variance ($A = \\Sigma$), centering-matrix optimization ($A = I - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$), and Fisher LDA ($S_W^{-1}S_B u^* = \\lambda u^*$).',
+          'Never mix up orthogonal PROJECTION matrices ($M^T = M, M^2 = M$, singular with eigenvalues strictly in $\\{0, 1\\}$) with orthogonal ROTATION/REFLECTION matrices ($Q^T Q = I$, invertible with $|\\lambda_i| = 1$).',
+        ],
         sandboxId: 'ga-synthesis-lab',
         toyExample: {
           title: 'Two Collinear Samples Rescued by One $\\lambda I$ Diagonal Shift',
@@ -172,6 +180,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'Translating infinite sums, conditional expectations, and posteriors across three sections',
         priority: 'high-yield',
         buildsOn: 'Modules 1–5 and 14–15 (Limits, Odd integrals, CLT, Correlation, Bayes Theorem, Naive Bayes)',
+        whyStudy:
+          'Some of the nastiest-looking Calculus limits and two-variable integral problems in GATE DA (like $\\lim_{n\\to\\infty}\\sum_{k=0}^n \\frac{e^{-n}n^k}{k!}$ in 2026 Q.45 or conditional correlation in 2026 Q.63) are nearly impossible by brute-force algebra—yet collapse in 20 seconds the moment you recognize the Probability law hiding underneath.',
+        groundRules: [
+          'Whenever an $n \\to \\infty$ Calculus limit sums a Binomial or Poisson PMF right up to its mean $n\\mu$, invoke the Central Limit Theorem: standardizing $Z_n = \\frac{S_n - n\\mu}{\\sigma\\sqrt{n}} \\xrightarrow{d} \\mathcal{N}(0, 1)$ turns $P(S_n \\le n\\mu)$ straight into $\\Phi(0) = 0.5$ (and $P(S_n \\le n\\mu + c\\sqrt{n})$ into $\\Phi(c/\\sigma)$).',
+          'By the Law of Iterated Expectation (Tower Rule), $E[XY] = E\\big[X \\cdot E[Y \\mid X]\\big]$ lets you collapse a conditional distribution for $Y$ into a single function of $X$ before doing any outer integration.',
+          'Integrating an odd function over a symmetric interval $[-a, a]$ always cancels to $0$: if $X$ is symmetric around $0$ and $E[Y \\mid X = x]$ is an even function (like $x^2$), then $E[XY] = 0$ and $\\text{corr}(X, Y) = 0$—proving that zero correlation NEVER implies independence!',
+          'In Bayes/Naive Bayes classification, optimal decisions always maximize the joint posterior weight $P(C_k)P(x \\mid C_k)$ (combining prior AND likelihood), and a binary sign flip $S = 2X - 1 \\in \\{-1, +1\\}$ always satisfies $S^2 = 1$ identically.',
+        ],
         sandboxId: 'ga-synthesis-lab',
         toyExample: {
           title: 'A Calculus Limit That Is Secretly a Poisson Bell Curve',
@@ -234,6 +250,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'One directed acyclic structure powering Dynamic Programming, Informed Search, and Probabilistic Reasoning',
         priority: 'sleeping-giant',
         buildsOn: 'Modules 8–11 and 14–15 (Graphs, DFS, Topological Sort, Heaps, A*, Bayesian Networks)',
+        whyStudy:
+          'PDSA graph algorithms, AI informed search, and Bayesian Networks often feel like three separate textbooks—yet they all ride on the exact same Directed Acyclic Graph (DAG) and priority-queue machinery. Unifying how topological ordering, Min-Heaps, and d-separation interact equips you to crush cross-section hybrid NATs and MSQs without mental context-switching.',
+        groundRules: [
+          'Every Directed Acyclic Graph (DAG) admits a topological ordering where every directed edge $u \\to v$ points strictly forward. Walking backward in reverse topological order solves shortest paths, longest paths, and expected random-walk rewards via Dynamic Programming in a single $O(V + E)$ sweep.',
+          'In $A^*$ search, popping the frontier node with smallest $f(n) = g(n) + h(n)$ from a binary Min-Heap runs in $O((V + E)\\log V)$ frontier operations, and admissibility ($0 \\le h(n) \\le h^*(n)$) is preserved by $\\max(h_1, h_2)$, $\\min(h_1, h_2)$, and $|h_1 - h_2|$—whereas $h_1 + h_2$ can overestimate $h^*(n)$!',
+          'In a Bayesian Network, topological order directly dictates the joint factorization $P(X_1, \\dots, X_n) = \\prod_{i=1}^n P(X_i \\mid \\text{Pa}(X_i))$ with zero cyclic dependencies.',
+          'Along any undirected trail in a Bayes Net, observing the middle node BLOCKS chains ($A \\to B \\to C$) and forks ($A \\leftarrow B \\to C$), whereas observing a collider $B$ ($A \\to B \\leftarrow C$)—OR any downstream descendant of $B$—UNBLOCKS the trail between $A$ and $C$.',
+        ],
         toyExample: {
           title: 'Three Lenses on One 4-Node DAG ($U \\to W \\leftarrow V,\\; W \\to Z$)',
           scenario:
@@ -695,6 +719,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'Using Probability & Decision Theory to maximize your 180-minute score without reckless variance',
         priority: 'core-pillar',
         buildsOn: 'Modules 2–5 (Expected Value, Variance, Binomial Risk) & 2024–2026 Paper Audits',
+        whyStudy:
+          'Even two candidates with identical technical knowledge routinely finish 6 to 10 marks apart on exam day simply because one guesses blindly on MCQs or leaves zero-penalty MSQs blank out of fear. GATE’s exact scoring rules define a clean probability problem—solving it beforehand removes all emotional hesitation at minute 170.',
+        groundRules: [
+          'Every $m$-mark MCQ ($m \\in \\{1, 2\\}$) awards $+m$ for a correct choice and deducts $-m/3$ for a wrong choice. A blind 1-in-4 guess ($k = 0$ eliminated) has $EV = \\frac{1}{4}(m) + \\frac{3}{4}(-m/3) = 0$ (pure variance with zero expected gain).',
+          'The moment you genuinely disprove $k \\ge 1$ wrong MCQ options, uniform guessing among the remaining $4 - k$ options yields strictly positive expected value: $EV_{\\text{MCQ}}(m, k) = \\frac{km}{3(4-k)}$ ($+m/9$ for $k = 1$, and $+m/3$ for a true 50–50 with $k = 2$).',
+          'Both MSQ and NAT blocks carry ZERO negative marking ($\\text{Penalty} = 0$) and accounted for 48–51 marks out of 100 across GATE DA 2024–2026. Leaving any MSQ or NAT blank locks in $0$ when any reasoned entry has $EV \\ge 0$ with zero downside!',
+          'MSQs are graded strictly all-or-nothing (no partial credit), AND an official MSQ can legally have ONLY ONE correct option (as in GATE DA 2025 Q.27 and 2026 Q.23 & Q.51)—so evaluate every single checkbox independently without forcing a second tick.',
+        ],
         sandboxId: 'ga-synthesis-lab',
         toyExample: {
           title: 'Two Uncertain Questions at Minute 172: One 2M MCQ vs. One 2M MSQ',
@@ -756,6 +788,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'Exploiting GATE DA\'s contiguous MCQ -> MSQ -> NAT layout to prevent time bottlenecks',
         priority: 'high-yield',
         buildsOn: 'Modules 8–9 (Greedy Knapsack / Time Complexity) & 2024–2026 Paper Structure Audits',
+        whyStudy:
+          'Walking sequentially from Q.1 to Q.65 is the single most common exam-day disaster: getting stubbornly stuck for 9 minutes on one messy code trace in Q.42 steals time from four 20-second 2-mark NATs waiting at Q.60–Q.65. Treating the 180-minute CBT as a structured 3-pass Knapsack sweep ensures you harvest every easy mark first.',
+        groundRules: [
+          'GATE DA’s 65 questions are laid out predictably: `Q1–Q10` General Aptitude (15M), `Q11–Q35` 1-mark Core DA (25M), and `Q36–Q65` 2-mark Core DA (60M)—with each core block ordered `MCQ -> MSQ -> NAT`, so high-speed 2-mark NATs sit near the end.',
+          'Your true optimization metric is Expected Marks per Minute ($\\frac{E[\\text{Marks}_i]}{t_i}$): run Pass 1 (~45 min, cap 1.5m/Q for GA + 1M wins), Pass 2 (~85 min, cap 3.5m/Q for 2M core & NATs so you reach Q.65 before minute 120), and Pass 3 (~50 min for tricky MSQs, checks, and zero-penalty fills).',
+          'In the GATE CBT interface, "Answered & Marked for Review" (purple with a green dot) IS automatically evaluated for grading, whereas plain "Marked for Review" (purple without a saved answer) is NOT graded—always inspect the palette summary at minute 178.',
+          'On the GATE Virtual Scientific Calculator, retain at least 5 decimal digits across all intermediate calculations and round ONLY at the final NAT entry box so rounding drift never pushes you outside the official tolerance window.',
+        ],
         toyExample: {
           title: 'Two Pacing Curves on the Same 65-Question Paper',
           scenario:
@@ -807,6 +847,14 @@ export const MODULE_17_CHAPTERS: ChapterData[] = [
         subtitle: 'Locking in the evergreen 75-mark core plus subtopics due for IIT Madras 2027 rotation',
         priority: 'core-pillar',
         buildsOn: 'All 7 Core DA Sections + GA (Modules 1–16)',
+        whyStudy:
+          'In the final 5 weeks of mock tests before IIT Madras 2027, candidates usually make one of two mistakes: either chasing obscure out-of-syllabus topics or assuming that whatever scored 0 marks in 2024–2026 will never appear. A disciplined 80/20 checklist locks down the evergreen 75-mark core while neutralizing Sleeping Giants and prompt-literalism traps.',
+        groundRules: [
+          'Allocate 80% of final revision to the evergreen ~75-mark core across all 7 sections (Bayes/CLT/Distributions, Projections/Eigenvalues, Extrema/Convexity, Python/Recursion/Sorting/Graphs, Keys/RA/SQL/B+ Trees, Ridge/SVM/PCA/MLPs/Clustering, Logic/Search/Bayes Nets) and 20% to high-alert Sleeping Giants.',
+          'Sleeping Giants are official syllabus topics with 0 marks across 2024–2026 that are prime candidates to rotate in under IIT Madras 2027: Hypothesis Testing & Confidence Intervals ($z, t, \\chi^2$), LU Decomposition ($A = LU$), Star/Snowflake Warehouse schemas, and Dijkstra/Bellman-Ford.',
+          'Before touching the calculator on any "textbook-looking" question, execute a 3-second Literalism Diff Audit checking four favorite GATE modifiers: absolute vs. squared loss ($|\\cdot|$ vs. $(\\cdot)^2$), non-leaf vs. leaf B+ Tree pointers, closed `[a, b]` endpoints, and "without biases."',
+          'Keep look-alike formulas explicitly separated on one 2-page Master Invariants Sheet (e.g., B+ Tree non-leaf $pP_n + (p-1)K \\le B$ without $P_r$; `GROUP BY CUBE` tuples $\\prod(|D_i|+1)$ vs. concept-hierarchy cuboids $\\prod(L_i+1)$) and review it every 3 days during mock season.',
+        ],
         toyExample: {
           title: 'How IITs Rotate Sleeping Giants Across 2024 -> 2025 -> 2026',
           scenario:

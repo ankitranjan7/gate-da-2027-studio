@@ -120,15 +120,23 @@ const chapter1: ChapterData = {
       subtitle: 'Solving $y \\approx Xw$ by setting the gradient to zero — and projecting $y$ onto $\\text{Col}(X)$',
       priority: 'core-pillar',
       buildsOn: 'Calculus gradients ($\\nabla_w \\|y - Xw\\|_2^2 = 0$) & Linear Algebra column spaces / Gram matrices',
+      whyStudy:
+        'Real-world measurements—like predicting house prices from square footage or sensor output from voltage—never sit on a perfectly straight line because of measurement noise. You need a systematic, unambiguous way to draw the single "best-fitting" straight line or flat hyperplane through a noisy cloud of points. Ordinary Least Squares (OLS) solves this by turning curve-fitting into an exact geometry problem with a one-shot matrix answer.',
+      groundRules: [
+        'Every possible linear prediction $\\hat{y} = Xw$ (a weighted mix of the feature columns of $X$) lives inside a flat subspace called the column space $\\text{Col}(X)$. Usually the true target vector $y$ floats outside this flat subspace, so no weight vector $w$ can achieve zero error.',
+        'Minimizing squared Euclidean distance $\\|y - Xw\\|_2^2$ drops a straight perpendicular shadow $\\hat{y} = Xw^*$ from $y$ onto $\\text{Col}(X)$. That forces the leftover residual error vector $r = y - \\hat{y}$ to stand at $90^\\circ$ to every feature column: $X^\\top r = 0$, which immediately gives the Normal Equations $(X^\\top X)w^* = X^\\top y$.',
+        'A unique OLS weight vector $w^*$ exists if and only if the $d \\times d$ Gram matrix $X^\\top X$ is invertible—which happens strictly when all $d$ feature columns of $X$ are linearly independent (full column rank $d$, requiring at least $n \\ge d$ samples).',
+        'Residuals sum to zero ($\\sum r_i = 0$) ONLY when $X$ includes a constant intercept column $\\mathbf{1}$ (forcing $\\mathbf{1}^\\top r = 0$). Drop the intercept ($y = wx$), and residuals no longer need to sum to zero.',
+      ],
       toyExample: {
         title: 'Fitting a Line Through the Origin on 3 Noisy Points',
         scenario:
           'You have 3 points $(-1, 1),\\; (2, -5),\\; (3, 5)$ and must pick a single slope $w$ for the zero-intercept model $f_w(x) = wx$ that minimizes the Sum of Squared Errors $\\text{SSE}(w) = \\sum_{i=1}^3 (y_i - w x_i)^2$ (literally GATE DA 2025 Q.34!).',
         walkthroughSteps: [
-          '1. **Write the exact squared error:** $\\text{SSE}(w) = (1 - (-w))^2 + (-5 - 2w)^2 + (5 - 3w)^2 = (w+1)^2 + (2w+5)^2 + (3w-5)^2$.',
-          '2. **Differentiate w.r.t. $w$ and set to $0$:** $\\frac{d}{dw}\\text{SSE}(w) = 2(w+1)(1) + 2(2w+5)(2) + 2(3w-5)(3) = 0$.',
-          '3. **Collect $w$ terms vs constants:** $(1^2 + 2^2 + 3^2)w + (1 - (-10) - 15)$ — wait, expand carefully: $2w+2 + 8w+20 + 18w-30 = 28w - 8 = 0 \\implies w^* = \\frac{8}{28} = \\frac{2}{7} \\approx 0.286$.',
-          '4. **Spot the universal numerator/denominator pattern:** $\\sum x_i y_i = (-1)(1) + (2)(-5) + (3)(5) = -1 - 10 + 15 = 4$, and $\\sum x_i^2 = 1 + 4 + 9 = 14$, giving $w^* = \\frac{\\sum x_i y_i}{\\sum x_i^2} = \\frac{4}{14} = \\frac{2}{7}$!',
+          '1. **Write the exact squared error:** Plug each $(x_i, y_i)$ into $(y_i - wx_i)^2$ to get $\\text{SSE}(w) = (1 - (-w))^2 + (-5 - 2w)^2 + (5 - 3w)^2 = (w+1)^2 + (2w+5)^2 + (3w-5)^2$.',
+          '2. **Differentiate with respect to $w$ and set to $0$:** Applying the chain rule to each square gives $\\frac{d}{dw}\\text{SSE}(w) = 2(w+1)(1) + 2(2w+5)(2) + 2(3w-5)(3) = 0$.',
+          '3. **Expand and group $w$ terms versus constants:** Distribute carefully to get $(2w + 2) + (8w + 20) + (18w - 30) = 28w - 8 = 0$, which solves immediately to $w^* = \\frac{8}{28} = \\frac{2}{7} \\approx 0.286$.',
+          '4. **Spot the universal dot-product shortcut:** Compute $\\sum x_i y_i = (-1)(1) + (2)(-5) + (3)(5) = -1 - 10 + 15 = 4$ and $\\sum x_i^2 = (-1)^2 + 2^2 + 3^2 = 1 + 4 + 9 = 14$. Their ratio $w^* = \\frac{\\sum x_i y_i}{\\sum x_i^2} = \\frac{4}{14} = \\frac{2}{7}$ gives the exact same answer in two lines!',
         ],
         ahaMoment:
           'Notice how you never actually needed to expand three quadratics! Setting the derivative of $\\|y - xw\\|_2^2$ to zero simply forces the leftover residual vector $r = y - xw$ to stand **orthogonal** to $x$: $x^\\top(y - xw) = 0$, which hands you $w^* = \\frac{x^\\top y}{x^\\top x}$ in two quick dot products.',
@@ -188,6 +196,14 @@ const chapter1: ChapterData = {
       subtitle: 'Why $+\\lambda \\|w\\|_2^2$ guarantees invertibility, shrinks slopes smoothly, and trades small bias for lower variance',
       priority: 'high-yield',
       buildsOn: 'Normal Equations $(X^\\top X)w = X^\\top y$ & symmetric matrix eigenvalues ($\\lambda_i(A + \\lambda I) = \\lambda_i(A) + \\lambda$)',
+      whyStudy:
+        'Whenever you have more features than training samples ($d > n$) or two features that nearly duplicate each other, standard OLS crashes or explodes into wildly unstable weights (like $+1000$ on one feature and $-996$ on its twin). Ridge Regression rescues OLS by attaching a gentle squared-size tax on the weights, keeping predictions calm on new test data and making the matrix inverse work every single time.',
+      groundRules: [
+        'The Gram matrix $X^\\top X$ is always positive semi-definite, meaning its eigenvalues are $\\sigma_i^2 \\ge 0$ (never negative, but possibly $0$). Adding $+\\lambda I$ with $\\lambda > 0$ lifts every single eigenvalue to $\\sigma_i^2 + \\lambda \\ge \\lambda > 0$, making $X^\\top X + \\lambda I$ strictly positive definite and unconditionally invertible.',
+        'Geometrically, an $L_2$ constraint $\\|w\\|_2^2 \\le t$ traps your weight vector inside a smooth circle (or sphere in higher dimensions). Because a smooth circle has no sharp corners along the coordinate axes, expanding loss ovals almost never touch an axis—so Ridge shrinks weights smoothly toward zero without forcing exact zeros.',
+        'Because the slope of the $L_2$ penalty $\\lambda w_j^2$ is $2\\lambda w_j$, its pull weakens as $w_j$ approaches $0$ and vanishes right at $0$. That explains both why large unstable weights get shrunk hard and why small weights stay slightly non-zero.',
+        'Ridge deliberately accepts a small systematic shrinkage bias (pulling weights away from the unbiased OLS estimate) in exchange for a steep drop in estimator variance—and because the penalty depends on weight magnitude, you must standardize feature units before applying Ridge (and leave the intercept $w_0$ unpenalized).',
+      ],
       toyExample: {
         title: 'Two Identical Features Break OLS, Rescued by $\\lambda = 1$',
         scenario:
@@ -257,6 +273,14 @@ const chapter1: ChapterData = {
       subtitle: 'Why the $L_1$ diamond produces automatic feature selection and how single-step SGD updates weights',
       priority: 'high-yield',
       buildsOn: 'Ridge $L_2$ penalty & gradient descent step $w \\leftarrow w - \\eta \\nabla \\ell(w)$',
+      whyStudy:
+        'Suppose you are predicting disease risk from $500$ gene measurements, and only $5$ of them actually matter. Ridge shrinks the $495$ junk genes to tiny decimals like $0.003$, leaving you with a cluttered $500$-feature model; Lasso ($L_1$) wipes irrelevant weights all the way to exact $0$ for automatic feature selection, while Stochastic Gradient Descent (SGD) lets you train any differentiable loss one data point at a time when datasets are too massive for matrix inversion.',
+      groundRules: [
+        'Unlike $w^2$ (whose slope flattens to $0$ at the origin), the absolute value $|w_j|$ keeps a sharp, constant slope of $+\\lambda$ on the right and $-\\lambda$ on the left all the way down to $w_j = 0$. Whenever the data loss pulls weaker than $\\lambda$ at $w_j = 0$, the exact minimum gets trapped right at the V-shaped kink $w_j^* = 0$.',
+        'Geometrically, the $L_1$ constraint $\\|w\\|_1 = |w_1| + |w_2| \\le t$ is a rotated diamond whose sharp corners poke directly out along the coordinate axes ($w_1 = 0$ or $w_2 = 0$). Expanding elliptical MSE contours hit those pointy corners far more often than flat edges, naturally producing sparse weight vectors.',
+        'Because $|w_j|$ has a sharp corner (non-differentiable at $0$), Lasso has no general closed-form matrix inverse like Ridge—only orthonormal features yield the direct soft-thresholding shortcut, while general problems use coordinate descent or proximal steps.',
+        'In Stochastic Gradient Descent (SGD), instead of averaging gradients over all $n$ samples, you compute the slope $\\nabla_w \\ell_i(w^{(t)})$ on one sample $(x_i, y_i)$ and step strictly opposite to that slope by learning rate $\\eta$: $w^{(t+1)} = w^{(t)} - \\eta \\nabla_w \\ell_i(w^{(t)})$.',
+      ],
       toyExample: {
         title: 'Why $L_1$ Snaps a Slope to Exact Zero While $L_2$ Never Can',
         scenario:
@@ -722,6 +746,14 @@ const chapter2: ChapterData = {
       subtitle: 'Turning a linear score $z = w^\\top x + b$ into a valid probability $P(Y=1\\mid x)$',
       priority: 'core-pillar',
       buildsOn: 'Linear score $w^\\top x + b$ & Sigmoid differentiation (Module 1 Calculus)',
+      whyStudy:
+        'Linear Regression predicts unbounded real numbers like $+19$ or $-11$, which breaks immediately when your target is a yes/no class probability (like spam vs. legitimate email, or disease vs. healthy) that must live strictly inside $[0, 1]$. Logistic Regression solves this by wrapping the linear score in the smooth S-shaped sigmoid function, giving calibrated probabilities while keeping a clean flat decision boundary.',
+      groundRules: [
+        'Logistic Regression is a discriminative classifier: it models the conditional class probability $P(Y = 1 \\mid x) = \\sigma(w^\\top x + b)$ directly without ever trying to model how the input features $P(x)$ themselves are distributed.',
+        'Because the sigmoid $\\sigma(z) = \\frac{1}{1 + e^{-z}}$ strictly increases and crosses $0.5$ right at $z = 0$, the log-odds $\\ln\\frac{\\hat{p}}{1 - \\hat{p}} = w^\\top x + b$ are linear in $x$, and the $50\\%$ decision boundary is still a flat hyperplane $w^\\top x + b = 0$.',
+        'We train Logistic Regression with Binary Cross-Entropy (negative log-likelihood) instead of MSE because MSE + sigmoid creates a wavy non-convex surface with bad local minima, whereas Binary Cross-Entropy is globally convex in $(w, b)$ (though it has no closed-form matrix inverse and requires iterative GD/SGD).',
+        'The sigmoid obeys the self-contained derivative identity $\\sigma\'(z) = \\sigma(z)(1 - \\sigma(z))$ (peaking at $0.25$ when $z = 0$). Plugging this into Binary Cross-Entropy cancels the nasty fractions cleanly, leaving the exact gradient $\\nabla_w J = \\sum_i (\\hat{p}_i - y_i)x_i$.',
+      ],
       toyExample: {
         title: 'From Unbounded Score to Spam Probability',
         scenario:
@@ -790,6 +822,14 @@ const chapter2: ChapterData = {
       subtitle: 'Generative conditional independence vs. maximizing between-class to within-class variance ratio',
       priority: 'core-pillar',
       buildsOn: 'Bayes’ Theorem (Prob & Stats) & Rayleigh Quotient / Generalized Eigenvalues (Linear Algebra)',
+      whyStudy:
+        'When you try to learn a full joint probability table over $K$ binary words in a spam filter, the number of entries explodes exponentially as $2^{K+1} - 1$—making direct estimation impossible even for $K = 30$ words! Naive Bayes tames this explosion into a linear $2K + 1$ parameter list via conditional independence, while Fisher’s LDA solves the continuous-feature version by projecting high-dimensional classes onto the exact line that separates their averages while squeezing internal spread.',
+      groundRules: [
+        'Both Naive Bayes and LDA are generative classifiers: they learn how each class generates features $P(x \\mid C_k)$ plus class priors $P(C_k)$, then flip them via Bayes’ rule to pick the class maximizing the joint score $P(C_k)P(x \\mid C_k)$.',
+        'Naive Bayes assumes features are conditionally independent GIVEN the class label ($X_i \\perp X_j \\mid Y$), NOT marginally independent. For $C$ classes and $K$ discrete features where feature $j$ takes $V_j$ values, the exact independent parameter count is $(C - 1) + C \\sum_{j=1}^K (V_j - 1)$ (which simplifies to $2K + 1$ for 2 classes and $K$ binary features).',
+        'At any fixed test point $x$, the Bayes-optimal (MAP) classifier predicts the class with the largest posterior $P(C_k \\mid x)$, so the exact probability of misclassifying $x$ equals the sum of all losing posteriors (in 2 classes, simply $\\frac{\\min(J_1, J_2)}{J_1 + J_2}$ where $J_k = P(C_k)P(x \\mid C_k)$).',
+        'Fisher’s LDA maximizes the Rayleigh ratio $J(u) = \\frac{u^\\top S_B u}{u^\\top S_W u}$ (between-class separation divided by within-class messiness), yielding the generalized eigenvector condition $S_W^{-1} S_B u^* = \\lambda u^*$. Because $S_B$ has rank at most $C - 1$, LDA extracts at most $\\min(d, C - 1)$ axes—just $1$ line for $2$ classes.',
+      ],
       toyExample: {
         title: 'Counting Parameters with $K$ Binary Features & Making a Bayes Decision',
         scenario:
@@ -858,6 +898,14 @@ const chapter2: ChapterData = {
       subtitle: 'Measuring node disorder in bits and picking the split that shrinks uncertainty the most',
       priority: 'high-yield',
       buildsOn: 'Logarithms ($\\log_2$) & empirical class probabilities $p_c$',
+      whyStudy:
+        'Many real-world rules—like medical triage checklists or loan approval logic—are non-linear combinations of if-then questions rather than a single flat hyperplane. Decision Trees automatically discover the sharpest sequence of yes/no questions from data by mathematically scoring which feature makes the resulting subgroups cleanest (most pure).',
+      groundRules: [
+        'An impurity score (Shannon Entropy $H(S) = -\\sum p_c \\log_2 p_c$ or Gini $G(S) = 1 - \\sum p_c^2$) acts like a disorder gauge: it hits $0$ strictly on a completely pure single-class node and reaches its peak when all classes are tied in equal proportions ($H = 1$ bit and $G = 0.5$ for a 50–50 binary node).',
+        'ID3 builds a tree top-down greedily: at each node $S$, it evaluates every candidate attribute $A$ by subtracting the size-weighted average child entropy from the parent entropy to get Information Gain $\\text{IG}(S, A)$, and splits on whichever attribute yields the largest drop.',
+        'Because Shannon entropy is a concave function of class proportions, Jensen’s inequality guarantees that splitting a dataset can NEVER increase expected entropy—so $\\text{IG}(S, A) \\ge 0$ always, hitting $0$ only when every child keeps the exact same class mix as the parent.',
+        'Raw Information Gain unfairly favors high-cardinality attributes (like a unique `RowID` that creates $1$-row pure leaves with $H = 0$ and zero generalization), and growing an unpruned tree down to pure leaves achieves zero training error at the cost of severe high-variance overfitting.',
+      ],
       toyExample: {
         title: 'Sorting 4 Fruit Boxes by Color vs. Weight',
         scenario:
@@ -1319,6 +1367,14 @@ const chapter3: ChapterData = {
       subtitle: 'Finding the widest empty street between two linearly separable classes without quadratic programming',
       priority: 'core-pillar',
       buildsOn: 'Point-to-hyperplane Euclidean distance $\\frac{|w^\\top x + b|}{\\|w\\|_2}$ & Ch. 1 $L_2$ norms',
+      whyStudy:
+        'When two classes can be separated by a straight line, the basic Perceptron stops at the very first separating line it stumbles upon—even if that line barely scrapes past a training point and fails on slightly noisy test data. Support Vector Machines (SVM) solve this fragility by searching for the single safest separator: the centerline of the widest possible empty "no-man’s-land" street between the two classes.',
+      groundRules: [
+        'Because multiplying a hyperplane equation $w^\\top x + b = 0$ by any positive constant leaves the exact same line, Hard-Margin SVM removes scale ambiguity by fixing the canonical scaling: the closest training points on either side must sit at $y_i(w^\\top x_i + b) = 1$, and all other points at $\\ge 1$.',
+        'Under canonical scaling, the perpendicular distance from the center line $w^\\top x + b = 0$ to either margin curb ($\\pm 1$) is $\\frac{1}{\\|w\\|_2}$, making the full street width $\\frac{2}{\\|w\\|_2}$. Thus maximizing the margin is mathematically identical to minimizing the convex quadratic $\\frac{1}{2}\\|w\\|_2^2$.',
+        'The optimal boundary depends ONLY on the support vectors—the handful of points sitting right on the margin curbs ($y_i(w^\\top x_i + b) = 1$, where dual multiplier $\\alpha_i > 0$). Deleting or nudging any non-support vector strictly outside the street ($\\alpha_i = 0$) leaves $(w^*, b^*)$ 100% unchanged!',
+        'In the Perceptron algorithm, updating on a misclassified point $(x_n, y_n)$ via $w \\leftarrow w + y_n x_n$ and $b \\leftarrow b + y_n$ adds $\\|x_n\\|_2^2 + 1 \\ge 1$ to the signed score $y_n(w^\\top x_n + b)$, guaranteeing strictly better alignment on that sample—and converging in finitely many steps whenever the data is linearly separable.',
+      ],
       toyExample: {
         title: 'The 4-Point Corner Grid (GATE DA 2025 Q.53)',
         scenario:
@@ -1388,6 +1444,14 @@ const chapter3: ChapterData = {
       subtitle: 'Allowing margin violations $\\xi_i$, reading support-vector zones, and computing $K(x,z) = \\phi(x)^\\top\\phi(z)$',
       priority: 'high-yield',
       buildsOn: 'Hard-Margin SVM, Ch. 1 $L_2$ regularization & Linear Algebra PSD Gram matrices',
+      whyStudy:
+        'Real-world datasets are almost never cleanly separable by a straight line—one mislabeled outlier breaks Hard-Margin SVM completely, and curved patterns (like concentric rings or XOR) cannot be cut by any flat line in input space. Soft-Margin SVM adds forgiving slack variables $\\xi_i$ to tolerate noisy outliers, while the Kernel Trick computes dot products in rich higher-dimensional (even infinite-dimensional!) spaces without ever explicitly building the giant transformed vectors.',
+      groundRules: [
+        'Each training point’s slack $\\xi_i = \\max(0, 1 - y_i(w^\\top x_i + b))$ measures how far it trespasses past its margin curb. Watch the exact boundary: $\\xi_i = 0$ is safe or on the curb, $0 < \\xi_i \\le 1$ violates the margin yet is STILL correctly classified ($y_i f(x_i) \\ge 0$), and true misclassification happens ONLY when $\\xi_i > 1$.',
+        'KKT complementary slackness pins every training point into three exact zones via its dual multiplier $\\alpha_i \\in [0, C]$: safe exterior points have $\\alpha_i = 0$ (ignored), points right on the margin curb have $0 < \\alpha_i < C$ with $\\xi_i = 0$, and every margin violator ($\\xi_i > 0$) is pinned at $\\alpha_i = C$.',
+        'The cost parameter $C$ multiplies the slack penalty $C \\sum \\xi_i$ (acting inversely to Ridge’s $\\lambda$): larger $C$ fines violations heavily, yielding a tighter, narrower street (lower bias, higher variance), while smaller $C$ forgives violations to enjoy a wider, smoother margin.',
+        'In the SVM dual, input points appear exclusively inside inner products $x_i^\\top x_j$. Replacing $x_i^\\top x_j$ with a kernel $K(x_i, x_j)$ implicitly runs linear SVM in feature space $\\phi(x)$—and by Mercer’s Theorem, $K$ is valid if and only if every finite Gram matrix $K_{ij} = K(x_i, x_j)$ is symmetric and positive semi-definite ($v^\\top K v \\ge 0$).',
+      ],
       toyExample: {
         title: 'Four Points Around the Margin Street',
         scenario:
@@ -1456,6 +1520,14 @@ const chapter3: ChapterData = {
       subtitle: 'Distance-based non-parametric voting, $k$ vs. complexity, and why $1$-NN creates convex Voronoi cells',
       priority: 'high-yield',
       buildsOn: 'Euclidean ($L_2$) / Manhattan ($L_1$) norms & majority voting',
+      whyStudy:
+        'What if your data has wild, patchy class islands that refuse to follow any straight line or Gaussian bell curve? Instead of forcing a rigid parametric equation onto the data, $k$-Nearest Neighbours ($k$-NN) simply asks a query point’s closest real-life neighbors to vote—giving an intuitive, non-parametric baseline whose geometry also unlocks $k$-Means Voronoi cells in Module 15.',
+      groundRules: [
+        '$k$-NN is a lazy, non-parametric learner: training does almost zero work ($O(1)$ to store the $n$ points), pushing all the computation ($O(nd)$ distance comparisons) to test-time querying.',
+        'Because the square-root function $\\sqrt{u}$ is strictly increasing for $u \\ge 0$, sorting Euclidean distances gives the exact same neighbor ranking as sorting exact integer squared distances $d_2^2 = \\sum (x_j - z_j)^2$—with zero calculator rounding error.',
+        'In $k$-NN, model complexity runs INVERSELY to $k$: $k = 1$ gives $0\\%$ training error (each point is its own closest neighbor) with jagged, high-variance boundaries, whereas larger $k$ averages wider neighborhoods, increasing bias and lowering variance until $k = n$ predicts the global majority class everywhere.',
+        'Every $1$-NN cell around training point $x_j$ is a Voronoi cell formed by intersecting linear perpendicular-bisector half-spaces $\\|x - x_j\\|_2^2 \\le \\|x - x_m\\|_2^2$, making each individual cell strictly convex—and because distances sum across coordinates, raw $k$-NN is highly sensitive to unstandardized feature scales.',
+      ],
       toyExample: {
         title: 'Picking the Minimum Odd $k$ on a 5-Point Grid (GATE DA 2024 Q.63 Pattern)',
         scenario:
@@ -1947,6 +2019,14 @@ const chapter4: ChapterData = {
       subtitle: 'Decomposing expected test error and counting validation folds without test-set leakage',
       priority: 'core-pillar',
       buildsOn: 'Probability variance identities & Ch. 1–3 regularization ($\\lambda, C, k$)',
+      whyStudy:
+        'A model that scores $100\\%$ on training data can still fail miserably on unseen customers if it merely memorized random noise. Before deploying any model—or picking hyperparameters like Ridge $\\lambda$, SVM $C$, or $k$ in $k$-NN—you need a clean mathematical lens to separate underfitting from overfitting and a leak-free protocol (Cross-Validation) to estimate true generalization error.',
+      groundRules: [
+        'For true target $y = f(x) + \\varepsilon$ with zero-mean noise $\\text{Var}(\\varepsilon) = \\sigma^2$, expected squared test error splits cleanly into three non-negative pieces: $\\text{Bias}^2$ (how far the average prediction misses $f(x)$), $\\text{Variance}$ (how wildly predictions wobble across different training sets), and irreducible noise $\\sigma^2$ that NO model can ever eliminate.',
+        'Every complexity knob slides along the same U-curve: increasing flexibility (higher polynomial degree, smaller Ridge $\\lambda$, larger SVM $C$, smaller $k$ in $k$-NN, deeper trees) pushes $\\text{Bias}^2$ down while pushing $\\text{Variance}$ up.',
+        'Any held-out final test set ($N_{\\text{test}}$) is locked in a vault and NEVER enters Cross-Validation. Both $k$-Fold CV ($k$ training runs) and Leave-One-Out CV ($k = N_{\\text{train}} = N_{\\text{total}} - N_{\\text{test}}$ runs) operate strictly on the remaining development pool.',
+        'To prevent data leakage, every data-dependent preprocessing step (standardization mean/variance, imputation, PCA) must be fitted strictly inside each training fold and only applied to the held-out validation fold—never fitted across the full dataset before splitting.',
+      ],
       toyExample: {
         title: '1,000 Samples, 100 Locked in the Test Vault (GATE DA 2026 Q.12)',
         scenario:
@@ -2015,6 +2095,14 @@ const chapter4: ChapterData = {
       subtitle: 'Row vs. column ratios on imbalanced data and ranking probabilities via ROC concordance',
       priority: 'core-pillar',
       buildsOn: 'Conditional probabilities $P(\\hat{Y}=1 \\mid Y=1)$ vs $P(Y=1 \\mid \\hat{Y}=1)$',
+      whyStudy:
+        'Suppose only $1\\%$ of credit-card transactions are fraudulent. A useless classifier that predicts "Legitimate" on every single transaction earns $99\\%$ accuracy while catching zero fraud! Confusion-matrix ratios (Precision, Recall, $F_1$) and threshold-free ranking scores (ROC-AUC) expose weak classifiers on imbalanced data and tell you exactly which kind of mistake a model is making.',
+      groundRules: [
+        'In a standard confusion matrix (Actual labels = rows, Predicted labels = columns), Recall $= \\frac{TP}{TP + FN}$ is strictly a ROW ratio (fraction of actual positives caught, also called TPR or Sensitivity), while Precision $= \\frac{TP}{TP + FP}$ is strictly a COLUMN ratio (fraction of positive alarms that are genuine).',
+        'The $F_1$-score $= \\frac{2PR}{P + R} = \\frac{2TP}{2TP + FP + FN}$ is the harmonic mean of Precision and Recall. Unlike an arithmetic average, a harmonic mean gets pulled down close to the smaller of the two numbers, forcing a classifier to perform well on BOTH simultaneously.',
+        'An ROC curve plots $\\text{TPR} = \\frac{TP}{P}$ against $\\text{FPR} = \\frac{FP}{N}$ across all decision thresholds. Because $\\text{TPR}$ normalizes strictly inside the positive class and $\\text{FPR}$ normalizes strictly inside the negative class, ROC-AUC is completely invariant to class-imbalance rescaling—whereas Precision changes dramatically when negatives grow.',
+        'Probabilistically, ROC-AUC equals the exact concordance probability that a randomly drawn positive example receives a higher predicted score than a randomly drawn negative example (counting score ties as $0.5$), letting you compute exact AUC on small lists without ever drawing a curve.',
+      ],
       toyExample: {
         title: '30 Stories: Fiction vs. Non-Fiction (GATE DA 2026 Q.47 Pattern)',
         scenario:
@@ -2084,6 +2172,14 @@ const chapter4: ChapterData = {
       subtitle: 'Weight counting, collapsing active ReLUs, and tracing Chain Rule gradients backward past dead neurons',
       priority: 'core-pillar',
       buildsOn: 'Calculus Chain Rule, Sigmoid $\\sigma\'=\\sigma(1-\\sigma)$, & ReLU $\\max(0,z)$ (Module 1 Calculus)',
+      whyStudy:
+        'A single linear neuron can never solve non-linearly separable tasks like XOR or raw image recognition. Multi-Layer Perceptrons (MLPs) stack layers of linear weights and non-linear activations to learn rich representations—and Backpropagation makes training millions of weights fast by applying the Calculus Chain Rule once backward from the output instead of recomputing derivatives separately for every single edge.',
+      groundRules: [
+        'Each fully connected transition from layer $\\ell - 1$ (width $n_{\\ell-1}$) to layer $\\ell$ (width $n_\\ell$) holds $n_{\\ell-1} n_\\ell$ edge weights, plus $n_\\ell$ bias terms ONLY if biases are enabled—always verify whether the question says "with biases" or "no bias terms" before summing!',
+        'Non-linear activations are the sole source of expressive power: if every ReLU unit stays strictly active ($z > 0$, where $\\text{ReLU}(z) = z$) on all inputs, stacking $L$ zero-bias layers collapses algebraically into a single linear matrix multiplication $W_L \\cdots W_1 x$.',
+        'Backpropagation is literally the multivariable Chain Rule executed backward from output loss $\\mathcal{L}$ to input weights, caching forward values so shared paths are never recomputed. Each layer multiplies the incoming backward gradient by the local activation derivative $g\'(z^{(\\ell)})$.',
+        'Activation derivatives control gradient flow: Sigmoid has $\\sigma\'(z) = \\sigma(z)(1 - \\sigma(z)) \\le 0.25$, causing gradients to shrink exponentially ($\\le 0.25^L$, vanishing gradients) across deep layers; $\\text{ReLU}(z) = \\max(0, z)$ is continuous everywhere yet non-differentiable at $z = 0$, passing gradients straight through ($\\times 1$) when $z > 0$ and shutting them completely off ($\\times 0$, dying ReLU) when $z < 0$.',
+      ],
       toyExample: {
         title: 'Two-Unit ReLU Network: One Neuron Alive, One Neuron Dead (GATE DA 2025 Q.42 Pattern)',
         scenario:

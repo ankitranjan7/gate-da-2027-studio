@@ -113,36 +113,44 @@ export const chapter5: ChapterData = {
       priority: 'core-pillar',
       buildsOn: 'Ch.4 Derivatives $f\'(0), f\'\'(0)$',
       sandboxId: 'taylor-maclaurin-lab',
+      whyStudy:
+        'A CPU chip can ONLY add, subtract, multiply, and divide — it has zero native "cosine" or "exponential" circuit! Yet your calculator evaluates $e^{0.1}$ or $\\cos(0.3)$ to 16 digits instantly, AND Machine Learning optimizers approximate messy neural loss landscapes using straight tangent lines (Gradient Descent) and best-fitting bowls (Newton’s Method & Ch.6’s Second Derivative Test). **Taylor Series** is the universal bridge that translates ANY smooth curve near a point $x = a$ into an easy, grade-school polynomial!',
+      groundRules: [
+        '**Polynomials Are Easy Because Each Power $(x - a)^k$ Isolates One Derivative at $x = a$:** When you differentiate $(x - a)^k$ repeatedly, plugging in $x = a$ kills every higher power (since $(a - a) = 0$) and differentiating kills every lower power (constant differentiates to $0$). Only the exact $k$-th term survives!',
+        '**Why $k!$ (k-Factorial) Appears Automatically:** Differentiating $(x - a)^k$ exactly $k$ times brings down $k$, then $k - 1$, then $k - 2$, all the way down to $1$ — multiplying out $k! = k(k - 1)\\cdots 1$ (with $0! = 1$ by convention). Dividing by $k!$ cancels that factor cleanly so the $k$-th derivative of $\\frac{f^{(k)}(a)}{k!}(x - a)^k$ lands right on $f^{(k)}(a)$!',
+        '**Center $a$ Controls Where the Clone Fits Tightest:** Expanding in powers of $(x - a)$ makes $(x - a)$ tiny whenever $x$ is near $a$, so higher powers $(x - a)^2, (x - a)^3, \\dots$ shrink rapidly! A **Maclaurin Series** is simply the special case centered at the origin $a = 0$ (powers of $x$).',
+        '**Each Extra Degree Adds One Layer of Geometric Shape:** Degree $0$ matches **height** ($f(a)$); Degree $1$ adds **slope** (the straight tangent line); Degree $2$ adds **curvature** (the best-fitting cup/cap parabola $\\frac{1}{2}f\'\'(a)(x - a)^2$ that powers Ch.6’s Second Derivative Test!).',
+      ],
       toyExample: {
         title: 'Forging a Fake Polynomial $P(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$ That Impersonates $e^x$ at $x = 0$',
         scenario:
-          'We know every single derivative of $f(x) = e^x$ evaluated at $x = 0$ equals $e^0 = \\mathbf{1}$. Let’s build a polynomial clone $P(x)$ from scratch by forcing it to match $e^x$ at $x = 0$ in height, slope, curvature, and 3rd derivative one piece at a time:',
+          'We know every single derivative of $f(x) = e^x$ is still $e^x$, so evaluated at $x = 0$, every derivative equals $e^0 = \\mathbf{1}$. Let’s build a polynomial clone $P(x)$ from scratch by forcing it to match $e^x$ at $x = 0$ in height, slope, curvature, and 3rd derivative one piece at a time:',
         walkthroughSteps: [
-          '1. **Match Height at $x=0$:** $P(0) = c_0 = 1 \\implies c_0 = 1$.',
-          '2. **Match Slope at $x=0$:** $P\'(x) = c_1 + 2c_2 x + 3c_3 x^2 \\implies P\'(0) = c_1 = 1$.',
-          '3. **Match 2nd Derivative at $x=0$:** $P\'\'(x) = 2c_2 + 6c_3 x \\implies P\'\'(0) = 2c_2 = 1 \\implies c_2 = \\frac{1}{2}$! (Watch where that $2$ came from: differentiating $x^2$ twice dropped $2 \\times 1 = 2!$ in front!)',
-          '4. **Match 3rd Derivative at $x=0$:** $P\'\'\'(x) = 6c_3 \\implies 6c_3 = 1 \\implies c_3 = \\frac{1}{6} = \\frac{1}{3!}$!',
+          '1. **Match Height at $x = 0$ ($k = 0$):** Plug $x = 0$ into $P(x)$: $P(0) = c_0$. Setting $P(0) = 1$ gives **$c_0 = 1$**.',
+          '2. **Match Slope at $x = 0$ ($k = 1$):** Differentiate once: $P\'(x) = c_1 + 2c_2 x + 3c_3 x^2$. Plug $x = 0$: $P\'(0) = c_1$. Setting $P\'(0) = 1$ gives **$c_1 = 1$**.',
+          '3. **Match Curvature / 2nd Derivative at $x = 0$ ($k = 2$):** Differentiate again: $P\'\'(x) = 2c_2 + 6c_3 x$. Plug $x = 0$: $P\'\'(0) = 2c_2$. Setting $2c_2 = 1$ forces **$c_2 = \\frac{1}{2} = \\frac{1}{2!}$**! (Watch where that $2$ came from: differentiating $x^2$ twice dropped $2 \\times 1 = 2!$ in front!)',
+          '4. **Match 3rd Derivative at $x = 0$ ($k = 3$):** Differentiate a third time: $P\'\'\'(x) = 6c_3$. Setting $6c_3 = 1$ forces **$c_3 = \\frac{1}{6} = \\frac{1}{3!}$**!',
         ],
         ahaMoment:
           'Now you never have to wonder where $k!$ comes from! Differentiating $x^k$ exactly $k$ times multiplies out **$k!$** ($k(k-1)\\dots 1$), while all lower powers die and all higher powers vanish at $x = 0$. Dividing by $k!$ cancels that factor cleanly — and THAT is the entire secret behind $\\frac{f^{(k)}(a)}{k!}$!',
       },
       theoremAndFormula: {
         statement:
-          'For a smooth function $f$ around $x = a$ (**Taylor Series**; when $a = 0$, called **Maclaurin Series**):',
+          'For a smooth function $f$ around $x = a$ (**Taylor Series**; when $a = 0$, called **Maclaurin Series**), where $\\sum_{k=0}^{\\infty}$ means "add the terms for $k = 0, 1, 2, \\dots$ forever" and $f^{(k)}(a)$ means "the $k$-th derivative of $f$ evaluated at $a$" (with $f^{(0)}(a) = f(a)$):',
         formulaLatex:
           'f(x) = \\sum_{k=0}^{\\infty} \\frac{f^{(k)}(a)}{k!}(x - a)^k = f(a) + f\'(a)(x-a) + \\frac{f\'\'(a)}{2!}(x-a)^2 + \\frac{f\'\'\'(a)}{3!}(x-a)^3 + \\dots',
         plainEnglishDecoding:
-          'Think of Taylor truncation as choosing your lens zoom:\n• **Degree-1 truncation** $f(a) + f\'(a)(x-a)$ gives the straight **Tangent Line** (the engine behind Gradient Descent).\n• **Degree-2 truncation** $f(a) + f\'(a)(x-a) + \\frac{1}{2}f\'\'(a)(x-a)^2$ gives the **Best-Fitting Parabola** (the engine behind the Second Derivative Test and Newton’s Method!).',
+          'Think of cutting off a Taylor series as choosing your lens zoom around $x = a$:\n• **Degree-1 truncation** $f(a) + f\'(a)(x - a)$ gives the straight **Tangent Line** (the engine behind Gradient Descent).\n• **Degree-2 truncation** $f(a) + f\'(a)(x - a) + \\frac{1}{2}f\'\'(a)(x - a)^2$ gives the **Best-Fitting Parabola** (the engine behind the Second Derivative Test and Newton’s Method!).',
         workedMiniExamples: [
           {
             prompt: 'Write the exact Taylor polynomial of $f(x) = x^2 + 3x + 1$ centered at $a = 1$.',
             solution:
-              '$f(1) = 5,\\; f\'(x) = 2x+3 \\implies f\'(1) = 5,\\; f\'\'(x) = 2 \\implies f\'\'(1) = 2$ (higher derivatives $= 0$). Thus $f(x) = 5 + 5(x-1) + \\frac{2}{2!}(x-1)^2 = 5 + 5(x-1) + (x-1)^2$ (exact!).',
+              '**Step 1 (Compute derivatives at $a = 1$):**\n• $f(1) = 1^2 + 3(1) + 1 = 5$\n• $f\'(x) = 2x + 3 \\implies f\'(1) = 5$\n• $f\'\'(x) = 2 \\implies f\'\'(1) = 2$ (all 3rd and higher derivatives equal $0$!).\n**Step 2 (Plug into Taylor’s formula around $a = 1$):** $f(x) = 5 + 5(x - 1) + \\frac{2}{2!}(x - 1)^2 = \\mathbf{5 + 5(x - 1) + (x - 1)^2}$ (exact!).',
           },
           {
             prompt: 'Approximate $e^{0.1}$ to 3 decimal places mentally using Degree-2 Maclaurin.',
             solution:
-              '$e^{0.1} \\approx 1 + 0.1 + \\frac{(0.1)^2}{2} = 1 + 0.1 + 0.005 = 1.105$ (calculator: $1.10517\\dots$!).',
+              '**Step 1 (Write Degree-2 Maclaurin of $e^x$):** $e^x \\approx 1 + x + \\frac{x^2}{2!}$.\n**Step 2 (Plug in $x = 0.1$):** $1 + 0.1 + \\frac{(0.1)^2}{2} = 1 + 0.1 + \\frac{0.01}{2} = 1 + 0.1 + 0.005 = \\mathbf{1.105}$ (calculator truth: $1.10517\\dots$!).',
           },
         ],
       },
@@ -160,36 +168,44 @@ export const chapter5: ChapterData = {
       subtitle: 'Replacing ugly logs, cosines, and exponentials near $x = 0$ with clean grade-school polynomials',
       priority: 'core-pillar',
       buildsOn: 'Step 5.1 Maclaurin formula at $a = 0$',
+      whyStudy:
+        'Using L’Hôpital’s Rule twice or three times on a composite $0/0$ limit like **GATE DA 2024 Q.60** ($\\lim_{x\\to 0} \\frac{\\ln((x^2+1)\\cos x)}{x^2}$) explodes into ugly nested product and quotient rules where one tiny minus-sign slip costs you 2 full marks. Memorizing just **5 Maclaurin expansions** lets you swap out $\\ln$, $\\cos$, $\\sin$, $e^x$, and $\\sqrt{1+x}$ for plain polynomials in seconds — AND simultaneously proves that the Poisson PMF sums to $1$ in Week 2!',
+      groundRules: [
+        '**Match Your Expansion Degree to the Denominator (Why $o(x^d)$ Dust Vanishes):** As $x \\to 0$, higher powers shrink dramatically faster than lower powers ($x^4 / x^2 = x^2 \\to 0$). The notation $O(x^4)$ means "leftover terms of degree $4$ or higher" and $o(x^d)$ means "terms shrinking strictly faster than $x^d$ so $o(x^d)/x^d \\to 0$." Therefore, if your denominator is $x^2$, you NEVER need terms beyond $x^2$!',
+        '**The Leading-Cancellation Rule (Go One Power Deeper!):** If expanding to degree $1$ makes the numerator cancel cleanly to $0$ (like $x - \\sin x \\approx x - x = 0$ over $x^3$), you stopped too early! Keep expanding until the **first surviving nonzero power** appears ($\\sin x = x - \\frac{x^3}{6} + \\dots$).',
+        '**Substitution Works Automatically Whenever the Inner Input $u \\to 0$:** You don’t need a separate series for $e^{x^2}$, $\\cos(2x)$, or $\\ln(1 + x^2)$! Because $u = x^2 \\to 0$ as $x \\to 0$, just substitute $u = x^2$ straight into the Big 5 formula (and check $|u| < 1$ for $\\ln(1+u)$ and $(1+u)^p$!).',
+        '**Factorial vs. Plain-Integer Memory Rule:** $e^u, \\sin u,$ and $\\cos u$ all divide by **$k!$** ($2!, 3!, 4!\\dots$), whereas $\\ln(1 + u)$ divides by **plain integers $1, 2, 3, 4\\dots$ (NO factorials!)** because it comes from integrating the geometric series $\\frac{1}{1+u} = 1 - u + u^2 - u^3 + \\dots$ term by term!',
+      ],
       toyExample: {
         title: 'Solving GATE DA 2024 Q.60 Without Touching L’Hôpital’s Rule',
         scenario:
           'Take a look at GATE DA 2024 Q.60 (2-mark NAT): $\\lim_{x \\to 0} \\frac{\\ln((x^2 + 1)\\cos x)}{x^2}$. Applying L’Hôpital twice here creates a tangle of product and quotient rules. Instead, watch how calmly Polynomial X-Ray Vision slices right through it:',
         walkthroughSteps: [
-          '1. **Split the log first (Ch.1!):** $\\ln((1 + x^2)\\cos x) = \\ln(1 + x^2) + \\ln(\\cos x)$.',
-          '2. **Keep only up to $x^2$** (since denominator is $x^2$!): $\\ln(1 + x^2) \\approx x^2$.',
-          '3. Inside $\\ln(\\cos x)$, replace $\\cos x \\approx 1 - \\frac{x^2}{2}$, so $\\ln\\!\\left(1 - \\frac{x^2}{2}\\right) \\approx -\\frac{x^2}{2}$!',
-          '4. Add them: $\\frac{x^2 - \\frac{1}{2}x^2}{x^2} = \\frac{\\frac{1}{2}x^2}{x^2} = \\mathbf{0.5}$ — **done in 15 seconds flat!**',
+          '1. **Split the log of a product first (Ch.1 rule!):** $\\ln\\big((1 + x^2)\\cos x\\big) = \\ln(1 + x^2) + \\ln(\\cos x)$.',
+          '2. **Check the denominator degree ($x^2$) and expand piece #1 up to $x^2$:** Substitute $u = x^2$ into $\\ln(1 + u) = u - \\frac{u^2}{2} + \\dots$ to get $\\ln(1 + x^2) = x^2 + O(x^4)$.',
+          '3. **Expand piece #2 up to $x^2$:** Replace $\\cos x = 1 - \\frac{x^2}{2} + O(x^4)$, then treat $u = -\\frac{x^2}{2} + O(x^4)$ inside $\\ln(1 + u) \\approx u$, giving $\\ln(\\cos x) = -\\frac{x^2}{2} + O(x^4)$!',
+          '4. **Add and divide by $x^2$:** $\\frac{x^2 - \\frac{1}{2}x^2 + O(x^4)}{x^2} = \\frac{\\frac{1}{2}x^2 + O(x^4)}{x^2} = \\frac{1}{2} + O(x^2) \\xrightarrow{x \\to 0} \\mathbf{0.5}$ — **done in 15 seconds flat!**',
         ],
         ahaMoment:
           'Notice how little work you actually have to do: when $x \\to 0$ and the denominator has degree $d$ (like $x^2$ or $x^4$), **every power higher than $x^d$ shrinks to invisible dust ($o(x^d)/x^d \\to 0$)** — so you only ever expand up to degree $d$!',
       },
       theoremAndFormula: {
         statement:
-          'Memorize these **Big 5 Maclaurin Expansions** cold — they generate almost every series in Data Science:',
+          'Memorize these **Big 5 Maclaurin Expansions** cold (where $\\forall u$ means "for every real number $u$", and $|u| < 1$ means "strictly inside the open interval $(-1, 1)$"):',
         formulaLatex:
           '\\begin{aligned} e^u &= 1 + u + \\frac{u^2}{2!} + \\frac{u^3}{3!} + \\dots \\;(\\forall u) \\\\[4pt] \\ln(1+u) &= u - \\frac{u^2}{2} + \\frac{u^3}{3} - \\frac{u^4}{4} + \\dots \\;(|u|<1) \\\\[4pt] \\cos u &= 1 - \\frac{u^2}{2!} + \\frac{u^4}{4!} - \\dots \\qquad \\sin u = u - \\frac{u^3}{3!} + \\frac{u^5}{5!} - \\dots \\\\[4pt] (1+u)^p &= 1 + pu + \\frac{p(p-1)}{2!}u^2 + \\dots \\;(|u|<1) \\end{aligned}',
         plainEnglishDecoding:
-          'Here is a memory hook so you never mix up denominators: $\\ln(1+u)$ divides by plain **$1, 2, 3, 4$ (NO factorials!)** because it comes from integrating $\\frac{1}{1+u} = 1 - u + u^2 - u^3 + \\dots$ term by term, whereas $e^u, \\sin u,$ and $\\cos u$ all divide by **$k!$**.',
+          'Notice how every single pattern has a clean sanity check: $\\cos u$ is **even** so it keeps only even powers ($u^0, u^2, u^4\\dots$) with alternating signs; $\\sin u$ is **odd** so it keeps only odd powers ($u^1, u^3, u^5\\dots$) with alternating signs; $e^u$ keeps all powers with all $+$ signs; and $\\ln(1+u)$ has **no factorials** ($1, 2, 3, 4$) with alternating signs starting at $+u$!',
         workedMiniExamples: [
           {
             prompt: 'Evaluate $\\lim_{x \\to 0} \\frac{e^x - 1 - x - x^2/2}{x^3}$.',
             solution:
-              'Expand $e^x = 1 + x + \\frac{x^2}{2} + \\frac{x^3}{6} + O(x^4)$. Subtracting $1 + x + x^2/2$ leaves $\\frac{x^3/6 + O(x^4)}{x^3} \\to \\frac{1}{6}$!',
+              '**Step 1 (Match the denominator $x^3$):** Expand $e^x$ up to $x^3$: $e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + O(x^4) = 1 + x + \\frac{x^2}{2} + \\frac{x^3}{6} + O(x^4)$.\n**Step 2 (Subtract $1 + x + x^2/2$):** The first three terms cancel cleanly, leaving $\\frac{x^3/6 + O(x^4)}{x^3} = \\frac{1}{6} + O(x)$.\n**Step 3 (Take $x \\to 0$):** The $O(x)$ dust vanishes, leaving **$\\frac{1}{6}$**!',
           },
           {
             prompt: 'Prove that the Poisson($\\lambda$) PMF $P(X = k) = \\frac{e^{-\\lambda}\\lambda^k}{k!}$ ($k = 0, 1, 2, \\dots$) sums to $1$.',
             solution:
-              '$\\sum_{k=0}^{\\infty} \\frac{e^{-\\lambda}\\lambda^k}{k!} = e^{-\\lambda} \\sum_{k=0}^{\\infty} \\frac{\\lambda^k}{k!} = e^{-\\lambda} \\cdot e^{\\lambda} = 1$ using the first row of our Big 5 table!',
+              '**Step 1 (Factor out the constant $e^{-\\lambda}$):** Since $e^{-\\lambda}$ does not depend on the summation index $k$, pull it in front: $\\sum_{k=0}^{\\infty} \\frac{e^{-\\lambda}\\lambda^k}{k!} = e^{-\\lambda} \\sum_{k=0}^{\\infty} \\frac{\\lambda^k}{k!}$.\n**Step 2 (Recognize row #1 of the Big 5):** $\\sum_{k=0}^{\\infty} \\frac{\\lambda^k}{k!} = e^{\\lambda}$.\n**Step 3 (Multiply):** $e^{-\\lambda} \\cdot e^{\\lambda} = e^0 = \\mathbf{1}$!',
           },
         ],
       },
@@ -216,35 +232,42 @@ export const chapter5: ChapterData = {
       subtitle: 'How to find $f^{(10)}(0)$ in 3 seconds without differentiating even once',
       priority: 'high-yield',
       buildsOn: 'Step 5.1 Uniqueness of Power Series + Ch.1 Even/Odd Symmetry',
+      whyStudy:
+        'When GATE asks for a high-order derivative at the origin — like the 10th derivative of $\\frac{e^x - e^{-x}}{2}$ at $x = 0$ (**GATE DA 2025 Q.14**) or the 6th derivative of $x^2 \\cos(2x)$ at $x = 0$ — differentiating by hand with the Product Rule is a slow, error-prone nightmare. Running Taylor’s formula **backwards** lets you read off ANY $n$-th derivative at $0$ in 5–10 seconds without taking a single derivative!',
+      groundRules: [
+        '**Uniqueness of Power Series (The Two-Way Street):** A smooth function has ONLY ONE power series $\\sum_{n=0}^{\\infty} a_n x^n$ around $x = 0$. Therefore, no matter HOW you got the series (by algebra, multiplying by $x^2$, or substituting $2x$ into $\\cos u$), its $x^n$ coefficient $a_n$ is guaranteed to equal $\\frac{f^{(n)}(0)}{n!}$!',
+        '**Reverse Extraction Formula ($f^{(n)}(0) = n! \\cdot a_n$):** Solving $a_n = \\frac{f^{(n)}(0)}{n!}$ for the derivative gives $f^{(n)}(0) = n! \\cdot [x^n]f(x)$ (where $[x^n]f(x)$ is shorthand for *"the coefficient standing in front of $x^n$"*). Never forget to multiply by **$n!$** at the end!',
+        '**Parity Kills Half of All Derivatives at $0$ Instantly:** An **Odd** function ($f(-x) = -f(x)$) can ONLY contain odd powers $x^1, x^3, x^5, \\dots$, so EVERY even derivative at $0$ ($f^{(2m)}(0)$, where $2m = 0, 2, 4, 6, \\dots$) equals **$0$**! Conversely, an **Even** function ($f(-x) = f(x)$) contains ONLY even powers, so EVERY odd derivative at $0$ ($f^{(2m+1)}(0)$, where $2m + 1 = 1, 3, 5, \\dots$) equals **$0$**!',
+      ],
       toyExample: {
         title: 'Finding the 10th Derivative of $\\sinh x = \\frac{e^x - e^{-x}}{2}$ at $x = 0$ (GATE DA 2025 Q.14)',
         scenario:
           'Imagine being asked for the 10th derivative of $\\frac{e^x - e^{-x}}{2}$ at $x = 0$ during a timed exam. You could differentiate ten times — OR you can pause for one second and spot its symmetry:',
         walkthroughSteps: [
-          '1. Check parity of $f(x) = \\frac{e^x - e^{-x}}{2}$: plug $-x \\implies \\frac{e^{-x} - e^x}{2} = -f(x)$. **$f$ is ODD!**',
-          '2. An odd function’s Maclaurin series contains **ONLY odd powers** ($x + \\frac{x^3}{3!} + \\frac{x^5}{5!} + \\dots$) — every even power $x^0, x^2, x^4, \\dots, x^{10}$ has coefficient **$0$**!',
-          '3. Since $\\frac{f^{(10)}(0)}{10!} = (\\text{coeff of } x^{10}) = 0$, we immediately get $f^{(10)}(0) = \\mathbf{0}$ in **3 seconds**!',
+          '1. **Test Even/Odd parity first:** Replace $x$ with $-x$: $f(-x) = \\frac{e^{-x} - e^x}{2} = -\\frac{e^x - e^{-x}}{2} = -f(x)$. So **$f$ is ODD!**',
+          '2. **Check the Maclaurin powers of an odd function:** An odd function’s Maclaurin series contains **ONLY odd powers** ($x + \\frac{x^3}{3!} + \\frac{x^5}{5!} + \\dots$) — every even power $x^0, x^2, x^4, \\dots, x^{10}$ has coefficient **$0$**!',
+          '3. **Read off $f^{(10)}(0)$:** Since $\\frac{f^{(10)}(0)}{10!} = [x^{10}]f(x) = 0$, multiplying by $10!$ still gives $f^{(10)}(0) = \\mathbf{0}$ in **3 seconds**!',
         ],
         ahaMoment:
           'Think of Taylor’s formula as a two-way street: because a function’s power series is unique, you NEVER need to differentiate a product like $x^4 \\cos(2x)$ ten times by hand — just write down its Maclaurin series, pluck the coefficient sitting on $x^n$, and multiply by **$n!$**!',
       },
       theoremAndFormula: {
         statement:
-          'If $f(x) = \\sum_{n=0}^{\\infty} a_n x^n$ near $x = 0$, then for every integer $n \\ge 0$:',
+          'If $f(x) = \\sum_{n=0}^{\\infty} a_n x^n$ near $x = 0$, then for every integer $n \\ge 0$ (with $m = 0, 1, 2, \\dots$, so $2m$ means any even order and $2m + 1$ means any odd order):',
         formulaLatex:
           'f^{(n)}(0) = n! \\cdot \\big[x^n\\big]f(x), \\qquad \\begin{cases} f \\text{ Odd} \\implies f^{(2m)}(0) = 0 \\\\ f \\text{ Even} \\implies f^{(2m+1)}(0) = 0 \\end{cases}',
         plainEnglishDecoding:
-          'In plain words, the bracket notation $[x^n]f(x)$ just asks: "what number sits in front of $x^n$ when I expand $f(x)$ around $0$?" Grab that coefficient, multiply it by $n!$, and you have $f^{(n)}(0)$!',
+          'In plain words, the bracket operator $[x^n]f(x)$ simply asks: *"What number sits in front of $x^n$ when I expand $f(x)$ around $0$?"* Always check Even/Odd parity first (half the time the answer is instant `0`!); if nonzero, pluck $[x^n]f(x)$ and multiply by $n!$ to recover $f^{(n)}(0)$!',
         workedMiniExamples: [
           {
             prompt: 'Compute $f^{(6)}(0)$ for $f(x) = x^2 e^{3x}$ without differentiating!',
             solution:
-              'We want $[x^6](x^2 e^{3x}) = [x^4](e^{3x}) = \\frac{3^4}{4!} = \\frac{81}{24}$. Now multiply by $6!$: $f^{(6)}(0) = 6! \\times \\frac{81}{4!} = (6 \\times 5) \\times 81 = 30 \\times 81 = 2430$! Ten seconds!',
+              '**Step 1 (Shift the target power because of $x^2$):** To form $x^6$ inside $x^2 \\cdot e^{3x}$, we need the $x^4$ term from $e^{3x}$: $[x^6](x^2 e^{3x}) = [x^4](e^{3x})$.\n**Step 2 (Read $[x^4](e^{3x})$ from row #1 of the Big 5):** Substituting $u = 3x$ into $\\frac{u^4}{4!}$ gives $\\frac{(3x)^4}{4!} = \\frac{81}{4!}x^4$, so the coefficient is $\\frac{81}{4!}$.\n**Step 3 (Multiply by $6!$):** $f^{(6)}(0) = 6! \\times \\frac{81}{4!} = \\frac{6 \\times 5 \\times 4!}{4!} \\times 81 = 30 \\times 81 = \\mathbf{2430}$ — ten seconds flat!',
           },
           {
             prompt: 'Compute $g^{(7)}(0)$ for $g(x) = \\cos(x^2)$.',
             solution:
-              '$g(x)$ is **Even** (only powers $x^0, x^4, x^8, \\dots$), so every odd derivative at $0$ — including $g^{(7)}(0)$ — is immediately **$0$**!',
+              '**Step 1 (Check parity):** $g(-x) = \\cos((-x)^2) = \\cos(x^2) = g(x)$, so $g$ is **Even** (in fact, its Maclaurin series only has powers $x^0, x^4, x^8, \\dots$).\n**Step 2 (Apply parity rule):** Because $n = 7$ is odd, every odd derivative at $0$ vanishes immediately: $g^{(7)}(0) = \\mathbf{0}$!',
           },
         ],
       },

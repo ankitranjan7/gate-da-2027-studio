@@ -118,6 +118,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Mapping outcomes to numbers, summing mass to 1, and reading staircase CDF jumps',
         priority: 'core-pillar',
         buildsOn: 'Sample spaces, probability axioms & sigma notation',
+        whyStudy:
+          'You cannot take the average of `"Head, Tail, Head"` or measure the spread of `"Pass, Fail"` directly — algebra only works on **numbers**! A **Random Variable (RV)** $X$ bridges messy real-world outcomes to numbers (such as the count of Heads, the number of server errors, or a model’s prediction loss). Once outcomes become numbers, three compact summaries — the **PMF** $p_X(x)$ (exact weight at each value), the **CDF** $F_X(x)$ (running total up to $x$), and **Mean & Variance** ($E[X], \\text{Var}(X)$) — tell you everything about the distribution’s shape, center, and risk.',
+        groundRules: [
+          '**A Random Variable Is a Function, Not an Algebra Unknown:** $X: \\Omega \\to \\mathbb{R}$ is a deterministic rule that tags every random outcome $\\omega \\in \\Omega$ with a real number $X(\\omega)$. Capital $X$ stands for the random rule; lowercase $x$ stands for one specific numerical value it might equal.',
+          '**Every Valid Discrete PMF Must Sum to $1$:** The Probability Mass Function $p_X(x) = P(X = x)$ must satisfy $p_X(x) \\ge 0$ everywhere and $\\sum_x p_X(x) = 1$. Any unknown constant $c$ in a PMF is found immediately by setting that sum equal to $1$.',
+          '**A Discrete CDF Is a Right-Continuous Staircase:** Because $F_X(x) = P(X \\le x)$ uses $\\le$ (inclusive!), the cumulative total already jumps UP *at* $x = a$ (not just after $a$). Thus the jump size at $a$ equals the exact point mass $P(X = a) = F_X(a) - F_X(a^-)$, where $F_X(a^-)$ is the height just to the left of $a$.',
+          '**Variance Is Never Negative ($E[X^2] \\ge (E[X])^2$):** Because $\\text{Var}(X) = E[(X - \\mu)^2]$ averages squared distances, it is ALWAYS $\\ge 0$ (and equals $0$ ONLY if $X$ is a fixed constant). Expanding the square yields the shortcut $\\text{Var}(X) = E[X^2] - (E[X])^2$.',
+        ],
         toyExample: {
           title: 'Counting Heads in 2 Fair Coin Tosses',
           scenario:
@@ -133,11 +141,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'A discrete random variable $X$ assigns a real number to each outcome with PMF $p_X(x) = P(X=x) \\ge 0$ summing to $1$. Its CDF $F_X(x) = P(X \\le x)$ is non-decreasing, right-continuous, approaches $0$ as $x\\to -\\infty$ and $1$ as $x\\to +\\infty$, and has jump discontinuities at every point of positive mass.',
+            'A discrete random variable $X$ maps each outcome to a real number with PMF $p_X(x) = P(X=x) \\ge 0$ summing to $1$. Its CDF $F_X(x) = P(X \\le x)$ is non-decreasing, right-continuous, climbs from $0$ (as $x \\to -\\infty$) to $1$ (as $x \\to +\\infty$), and has vertical jumps at every point of positive mass.',
           formulaLatex:
             '\\sum_{x} p_X(x) = 1, \\qquad P(X=a) = F_X(a) - F_X(a^-), \\qquad \\text{Var}(X) = E[X^2] - (E[X])^2',
           plainEnglishDecoding:
-            'Here is the easiest physical intuition: think of $E[X]$ as the **balance point** (center of mass) of your probability weights $p_X(x)$ along a ruler, and $\\text{Var}(X) = E[(X - \\mu)^2]$ as how wide those weights are spread around that balance point.',
+            'Unpack every symbol right away: $p_X(x)$ is the probability sitting *exactly* at $x$, $F_X(x)$ is the cumulative probability at or *to the left* of $x$, $E[X] = \\sum_x x\\,p_X(x)$ is the probability-weighted average (mean $\\mu$), and $\\text{Var}(X)$ is the average squared distance from $\\mu$. Here is the easiest physical intuition: think of $E[X]$ as the **balance point** (center of mass) of your probability weights $p_X(x)$ along a ruler, and $\\text{Var}(X) = E[(X - \\mu)^2]$ as how wide those weights are spread around that balance point.',
           workedMiniExamples: [
             {
               prompt: 'Given PMF $p_X(k) = c k$ for $k \\in \\{1, 2, 3, 4\\}$, find $c$ and $P(X \\ge 3)$.',
@@ -178,6 +186,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Adding $n$ independent coin flips and using linearity of expectation to dodge algebra',
         priority: 'core-pillar',
         buildsOn: 'Independent events & binomial coefficients $\\binom{n}{k}$',
+        whyStudy:
+          'A huge fraction of real Data Science problems ask a simple binary question repeated $n$ times: *"Did the user click the ad?"*, *"Is the email spam?"*, *"Did the model predict correctly?"*, or *"Did a drawn ball turn out black?"* (**GATE DA 2025 Q.61**). Instead of re-deriving probabilities from scratch every time, recognizing a **Bernoulli** (single yes/no trial) or **Binomial** (sum of $n$ independent yes/no trials) pattern hands you the exact PMF, mean $np$, and variance $np(1-p)$ instantly — and it is the direct statistical backbone of Logistic Regression and Binary Cross-Entropy.',
+        groundRules: [
+          '**Three Strict Conditions for $\\text{Binomial}(n, p)$:** (1) Fixed number of trials $n$, (2) every trial is independent of all others (draws **with replacement**), and (3) every trial has the exact same success probability $p$. Break independence (draws *without* replacement) and the distribution ceases to be Binomial!',
+          '**A Binomial Is Just $n$ Stacked Bernoulli Indicators:** Writing $X = I_1 + I_2 + \\dots + I_n$ where each $I_j \\in \\{0, 1\\}$ has $E[I_j] = p$ and $\\text{Var}(I_j) = p(1-p)$ derives $E[X] = np$ and $\\text{Var}(X) = np(1-p)$ in one line without touching a single factorial sum.',
+          '**Why $\\binom{n}{k}$ Sits in Front of $p^k(1-p)^{n-k}$:** Any *one* specific sequence with $k$ successes and $n-k$ failures has probability $p^k(1-p)^{n-k}$. There are $\\binom{n}{k}$ different ways to choose which $k$ positions hold the successes — and all those sequences are disjoint, so we multiply by $\\binom{n}{k}$.',
+          '**Affine Scaling Law ($\\text{Var}(aX+b) = a^2\\text{Var}(X)$):** Shifting every outcome by $+b$ moves the mean by $+b$ without changing the spread at all (so $+b$ vanishes from variance!), while multiplying $X$ by $a$ multiplies every distance $(X - \\mu)$ by $a$ — and therefore multiplies squared distances (variance) by $a^2$!',
+        ],
         toyExample: {
           title: 'Rolling a Fair Die 3 Times and Counting Sixes',
           scenario:
@@ -192,11 +208,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'If $X \\sim \\text{Bin}(n, p)$ counts successes in $n$ independent Bernoulli($p$) trials (or draws **with replacement**), its PMF, mean, variance, and affine scaling rules are:',
+            'If $X \\sim \\text{Bin}(n, p)$ (where $\\sim$ reads "follows the distribution") counts successes in $n$ independent $\\text{Bernoulli}(p)$ trials (or draws **with replacement**), its PMF, mean, variance, and linear shift-and-scale rules are:',
           formulaLatex:
             'P(X=k) = \\binom{n}{k}p^k(1-p)^{n-k}, \\quad E[X] = np, \\quad \\text{Var}(X) = np(1-p), \\quad \\text{Var}(aX + b) = a^2\\text{Var}(X)',
           plainEnglishDecoding:
-            'Notice what happens under a shift-and-scale $Y = aX + b$: sliding every value by $+b$ moves the center by $+b$ without changing the spread at all, while multiplying by $a$ stretches the standard deviation by $|a|$ and therefore multiplies the variance by $a^2$.',
+            'Read the symbols cleanly: $k \\in \\{0, 1, \\dots, n\\}$ is the exact number of successes, $\\binom{n}{k} = \\frac{n!}{k!(n-k)!}$ counts which $k$ trials succeeded, $p^k$ is the chance those $k$ succeeded, and $(1-p)^{n-k}$ is the chance the rest failed. Notice what happens under a shift-and-scale $Y = aX + b$: sliding every value by $+b$ moves the center by $+b$ without changing the spread at all, while multiplying by $a$ stretches the standard deviation by $|a|$ and therefore multiplies the variance by $a^2$.',
           workedMiniExamples: [
             {
               prompt: 'An urn has 5 white and 10 black balls. Draw 100 balls **with replacement**. What is the expected number of black balls?',
@@ -239,6 +255,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'When $n$ is huge and $p$ is tiny (Poisson), or when you wait until the first success (Geometric)',
         priority: 'high-yield',
         buildsOn: 'Binomial trials & infinite exponential/geometric series',
+        whyStudy:
+          'Not every discrete problem has a fixed small $n$! Sometimes you don’t know the maximum number of trials at all — you want to count **how many rare arrivals happen in an hour** (website clicks, server crashes, network packets, radioactive decays) OR **how many independent tries it takes until your very first success** (retrying a flaky API, flipping until the first Head). The **Poisson** and **Geometric** distributions model these two exact real-world scenarios cleanly using a single parameter ($\\lambda$ or $p$), and both are frequent GATE DA staples (**2024 Q.11**, **2025 Q.41**, **2026 Q.45**).',
+        groundRules: [
+          '**Poisson Is the "Large $n$, Tiny $p$" Limit of Binomial:** Whenever $n \\to \\infty$ and $p \\to 0$ with the average rate $\\lambda = np$ held steady, $\\binom{n}{k}p^k(1-p)^{n-k}$ converges cleanly to $\\frac{e^{-\\lambda}\\lambda^k}{k!}$ (and because $\\sum_{k=0}^\\infty \\frac{\\lambda^k}{k!} = e^\\lambda$, multiplying by $e^{-\\lambda}$ guarantees total probability $= 1$!).',
+          '**Poisson Signature — Mean Equals Variance ($\\lambda$):** Because $1 - p \\to 1$ in the rare-event limit, $\\text{Var} = np(1-p) \\to np = \\lambda$. Thus EVERY $\\text{Poisson}(\\lambda)$ satisfies $E[X] = \\text{Var}(X) = \\lambda$, giving the instant second-moment trick $E[X^2] = \\lambda + \\lambda^2$.',
+          '**Check Which Geometric Convention Is Used ($\\{1, 2, \\dots\\}$ vs. $\\{0, 1, \\dots\\}$):** Counting **total trials up to and including** the first success starts at $k = 1$ with $E[X] = 1/p$. Counting **failures before** the first success starts at $\\ell = 0$ with $E[Y] = (1-p)/p = 1/p - 1$. Always read the given support before writing the mean!',
+          '**Discrete Memorylessness — Past Failures Never Build Credit:** For independent coin flips, having already failed $s$ times in a row leaves the coin completely unchanged: $P(X > s + t \\mid X > s) = P(X > t) = (1-p)^t$. Geometric is the *unique* discrete distribution with this memoryless property.',
+        ],
         toyExample: {
           title: 'Two Ways to Think About Rare Bugs vs. First-Hit Retries',
           scenario:
@@ -253,11 +277,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'The **Poisson($\\lambda$)** distribution models count $K \\in \\{0, 1, 2, \\dots\\}$ with rate $\\lambda > 0$. The **Geometric($p$)** distribution models either total trials $X \\in \\{1, 2, \\dots\\}$ to first success or failures $Y = X - 1 \\in \\{0, 1, 2, \\dots\\}$ before first success.',
+            'The **Poisson($\\lambda$)** distribution models rare counts $K \\in \\{0, 1, 2, \\dots\\}$ at average rate $\\lambda > 0$ (where $e \\approx 2.718$ is Euler’s number). The **Geometric($p$)** distribution models either total trials $X \\in \\{1, 2, \\dots\\}$ to the first success or failures $Y = X - 1 \\in \\{0, 1, 2, \\dots\\}$ before the first success.',
           formulaLatex:
             '\\text{Pois}(\\lambda): P(K=k)=\\frac{e^{-\\lambda}\\lambda^k}{k!},\\; E[K]=\\text{Var}(K)=\\lambda \\qquad \\text{Geom}(p): P(X=k)=(1-p)^{k-1}p,\\; E[X]=\\frac{1}{p},\\; \\text{Var}(X)=\\frac{1-p}{p^2}',
           plainEnglishDecoding:
-            'Here is why Geometric($p$) on $\\{1, 2, \\dots\\}$ is called **memoryless**: $P(X > s + t \\mid X > s) = P(X > t) = (1-p)^t$. Having already failed $s$ times in a row gives you zero "overdue credit"—the coin has no memory of your bad streak.',
+            'Decode both formulas intuitively: in $\\text{Geom}(p)$, hitting the first success on trial $k$ requires exactly $k-1$ failures in a row ($(1-p)^{k-1}$) followed by $1$ success ($p$), and if your success rate is $p = 1/4$ ($1$ in $4$ tries), of course you wait $1/p = 4$ tries on average! Here is why Geometric($p$) on $\\{1, 2, \\dots\\}$ is called **memoryless**: $P(X > s + t \\mid X > s) = P(X > t) = (1-p)^t$. Having already failed $s$ times in a row gives you zero "overdue credit"—the coin has no memory of your bad streak.',
           workedMiniExamples: [
             {
               prompt: 'If $X \\sim \\text{Poisson}(\\lambda)$ satisfies $E[X^2] = 6$, compute $P(X = 0)$.',
@@ -628,6 +652,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Why density is probability-per-unit-length (so $f_X(x)$ can beat $1$!) and how $F_X$ handles transforms cleanly',
         priority: 'core-pillar',
         buildsOn: 'Definite integrals, Fundamental Theorem of Calculus & discrete CDFs',
+        whyStudy:
+          'Discrete PMFs work for integer counts, yet real measurements — server latency, temperature, stock returns, or a model’s continuous weight — can take **uncountably many real values**! If you tried assigning even a tiny positive probability like $0.00001$ to every real number in $[0, 1]$, the total probability would blow up to $+\\infty$. Mathematicians solved this by switching from point mass to **density** $f_X(x)$ (probability *per unit length*, whose **area** under the curve gives probability). Understanding why a PDF height can legally be $5$ or $100$ while total area equals $1$, and why every single exact point has $P(X = c) = 0$, prevents the most frequent GATE DA MSQ traps (**2025 Q.19 & Q.39**).',
+        groundRules: [
+          '**$f_X(x)$ Is Density (Height), NOT Probability (Area):** Probability is always an **area** $\\int_a^b f_X(x)\\,dx$, NEVER a single curve height $f_X(x)$. Because $\\text{base} \\times \\text{height} = 1$, squeezing a distribution onto a narrow interval of width $0.2$ *forces* the PDF height to climb to $f_X(x) = 5 > 1$ — completely valid as long as $f_X(x) \\ge 0$ and $\\int_{-\\infty}^{\\infty} f_X(x)\\,dx = 1$!',
+          '**Single Points Always Carry Zero Probability ($P(X = c) = 0$):** A single point $c$ on the real line has width $0$, so $\\int_c^c f_X(x)\\,dx = 0$ automatically. Consequently, strict `$<$` and non-strict `$\\le$` give the exact same probability for continuous RVs: $P(a < X < b) = P(a \\le X \\le b) = F_X(b) - F_X(a)$.',
+          '**Continuous CDF $F_X(x)$ Has Zero Jumps & Differentiates to $f_X(x)$:** Because no point has positive mass, $F_X(x) = P(X \\le x) = \\int_{-\\infty}^x f_X(t)\\,dt$ is a smooth, continuous, non-decreasing curve from $0$ to $1$. By the Fundamental Theorem of Calculus, differentiating $F_X(x)$ recovers the density: $f_X(x) = F_X\'(x)$.',
+          '**Median & Quantiles Read Straight Off $F_X(x)$:** The median $m$ is simply the half-area cutoff where $F_X(m) = 0.5$ (and the $q$-th quantile solves $F_X(x_q) = q$). For transformed events like $P(X^2 \\le 0.25)$, isolate $X$ first ($-0.5 \\le X \\le 0.5$) and read $F_X(0.5) - F_X(-0.5)$ directly without even computing a new PDF!',
+        ],
         toyExample: {
           title: 'Throwing a Dart at a Narrow $[0, 0.5]$ Meter Strip',
           scenario:
@@ -643,11 +675,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'A continuous random variable $X$ has a non-negative PDF $f_X(x) \\ge 0$ integrating to $1$. Its CDF $F_X(x) = P(X \\le x)$ is continuous everywhere on $\\mathbb{R}$, non-decreasing, and recovers the PDF via differentiation wherever $F_X$ is differentiable.',
+            'A continuous random variable $X$ is governed by a non-negative Probability Density Function (PDF) $f_X(x) \\ge 0$ whose total area over $\\mathbb{R}$ (all real numbers) equals $1$. Its Cumulative Distribution Function (CDF) $F_X(x) = P(X \\le x)$ is continuous everywhere on $\\mathbb{R}$, non-decreasing, and recovers the PDF via differentiation wherever $F_X$ is differentiable.',
           formulaLatex:
             '\\int_{-\\infty}^{\\infty} f_X(x)\\,dx = 1, \\qquad P(a \\le X \\le b) = \\int_{a}^{b} f_X(x)\\,dx = F_X(b) - F_X(a), \\qquad f_X(x) = \\frac{d}{dx}F_X(x)',
           plainEnglishDecoding:
-            'Notice how forgiving continuous endpoints are: because $P(X=c)=0$ at every single point, open, half-open, and closed intervals $(a,b)$, $[a,b)$, $(a,b]$, and $[a,b]$ all carry the exact same probability $F_X(b) - F_X(a)$.',
+            'Read the three formulas as one tight loop: (1) total area under $f_X(x)$ equals $1$, (2) the probability of landing between $a$ and $b$ is the area under $f_X(x)$ from $a$ to $b$ — or simply the CDF difference $F_X(b) - F_X(a)$ if you already have $F_X$, and (3) slope of CDF = height of PDF ($F_X\'(x) = f_X(x)$). Notice how forgiving continuous endpoints are: because $P(X=c)=0$ at every single point, open, half-open, and closed intervals $(a,b)$, $[a,b)$, $(a,b]$, and $[a,b]$ all carry the exact same probability $F_X(b) - F_X(a)$.',
           workedMiniExamples: [
             {
               prompt: 'A continuous RV has CDF $F_X(x) = \\frac{x-t}{4-t}$ on $[t, 4]$ ($0$ below $t$, $1$ above $4$). If the median is $3$, find $t$.',
@@ -688,6 +720,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Flat density over $[a, b]$, why variance divides by $12$, and inverse-transform sampling',
         priority: 'high-yield',
         buildsOn: 'Definite integration of polynomials & affine variance scaling',
+        whyStudy:
+          'When you know a quantity lies between $a$ and $b$ and have zero reason to favor one spot over another — a random bus arrival time, rounding error in floating-point arithmetic, or initializing neural network weights — the **Continuous Uniform Distribution** $U(a, b)$ is the cleanest model of pure, unbiased uncertainty. Better still, Python’s `random.random()` ($U(0, 1)$) is the universal seed from which *every* other continuous distribution (Exponential, Normal, Cauchy) is generated via inverse-transform sampling, and 2D Uniform rectangles appear directly in GATE DA (**2024 Q.56**).',
+        groundRules: [
+          '**Equal Length = Equal Probability:** Because the PDF $f_X(x) = \\frac{1}{b-a}$ is completely flat across $[a, b]$ (and $0$ outside), probability is literally just the fraction of total length: $P(c \\le X \\le d) = \\frac{d - c}{b - a}$ for any $[c, d] \\subseteq [a, b]$.',
+          '**Every $U(a, b)$ Is a Shifted, Stretched Copy of $U(0, 1)$:** Writing $X = a + (b - a)U$ where $U \\sim U(0, 1)$ proves both formulas instantly: $E[X] = a + (b-a)(\\frac{1}{2}) = \\frac{a+b}{2}$ and $\\text{Var}(X) = (b-a)^2 \\text{Var}(U) = \\frac{(b-a)^2}{12}$.',
+          '**Why the Denominator Is Specifically $12$:** For unit $U(0, 1)$, $E[U] = \\frac{1}{2}$ and $E[U^2] = \\int_0^1 u^2\\,du = \\frac{1}{3}$, so $\\text{Var}(U) = \\frac{1}{3} - (\\frac{1}{2})^2 = \\frac{1}{3} - \\frac{1}{4} = \\frac{1}{12}$. Never confuse $12$ with $4$ or $6$!',
+          '**Shift Invariance of Variance:** Sliding the entire interval $[a, b]$ to $[a+100, b+100]$ leaves the width $(b-a)$ untouched, so $\\text{Var}(X) = \\frac{(b-a)^2}{12}$ depends ONLY on the width $(b-a)$, never on $a$ or $b$ individually.',
+        ],
         toyExample: {
           title: 'Bus Arriving Uniformly Between 8:00 and 8:10',
           scenario:
@@ -702,11 +742,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'For $X \\sim U(a, b)$ with $a < b$, the PDF is constant on $[a, b]$ and the CDF grows linearly from $0$ to $1$.',
+            'For $X \\sim U(a, b)$ with $a < b$, the PDF $f_X(x)$ is constant at height $\\frac{1}{b-a}$ on $[a, b]$ ($0$ outside) and the CDF $F_X(x) = \\frac{x-a}{b-a}$ climbs linearly from $0$ at $a$ to $1$ at $b$.',
           formulaLatex:
             'f_X(x) = \\frac{1}{b-a}\\; (a \\le x \\le b), \\qquad E[X] = \\frac{a+b}{2}, \\qquad \\text{Var}(X) = \\frac{(b-a)^2}{12}',
           plainEnglishDecoding:
-            'You never need calculus for a Uniform sub-interval $[c, d] \\subseteq [a, b]$: just divide the sub-interval’s length by the total length to get $P(c \\le X \\le d) = \\frac{d - c}{b - a}$.',
+            'Remember the notation $[a, b]$ means the closed interval from $a$ to $b$, and $(b-a)$ is simply its total width. You never need calculus for a Uniform sub-interval $[c, d] \\subseteq [a, b]$: just divide the sub-interval’s length by the total length to get $P(c \\le X \\le d) = \\frac{d - c}{b - a}$.',
           workedMiniExamples: [
             {
               prompt: 'For $X \\sim U[-2, 6]$, compute $E[X]$, $\\text{Var}(X)$, and $P(|X - 2| \\le 1)$.',
@@ -737,6 +777,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Why $P(X > t) = e^{-\\lambda t}$ makes integrals vanish and turns $\\lfloor X \\rfloor$ into Geometric',
         priority: 'core-pillar',
         buildsOn: 'Poisson rate $\\lambda$ & improper integrals $\\int_0^\\infty e^{-\\lambda x}\\,dx$',
+        whyStudy:
+          'When customers arrive at a server or photons hit a sensor at a steady Poisson rate of $\\lambda$ events per hour, what is the distribution of the **continuous waiting time $X$ until the very next event**? It is the **Exponential($\\lambda$) distribution** — the continuous twin of the Geometric distribution! Because waiting longer than $t$ means "zero Poisson arrivals in $[0, t]$", its survival tail collapses to a single effortless formula $P(X > t) = e^{-\\lambda t}$. GATE DA tests Exponential properties almost every single year (**2024 Q.57**, **2025 Q.21**, **2025 Q.41**).',
+        groundRules: [
+          '**Always Work With the Survival Function $P(X > t) = e^{-\\lambda t}$:** Instead of integrating $\\lambda e^{-\\lambda x}$, memorize that the upper tail is exact $e^{-\\lambda t}$ (so CDF is $F_X(t) = 1 - e^{-\\lambda t}$). Any interval probability $P(a \\le X < b)$ drops out immediately as $e^{-\\lambda a} - e^{-\\lambda b}$.',
+          '**Rate $\\lambda$ vs. Mean $1/\\lambda$ (Check Parameterization First!):** Faster arrival rate $\\lambda$ means *shorter* waiting time! So with rate $\\lambda$ in $f_X(x) = \\lambda e^{-\\lambda x}$, the mean is $E[X] = \\frac{1}{\\lambda}$, standard deviation is ALSO $\\frac{1}{\\lambda}$, and variance is $\\text{Var}(X) = \\frac{1}{\\lambda^2}$ (squared!).',
+          '**Continuous Memorylessness Comes From the Exponent Law $e^{-\\lambda(s+t)} = e^{-\\lambda s}e^{-\\lambda t}$:** Dividing $P(X > s + t)$ by $P(X > s)$ cancels $e^{-\\lambda s}$ completely, leaving $P(X > t)$! An Exponential clock never ages and never accumulates "overdue" probability.',
+          '**Flooring an Exponential Always Produces a Geometric RV:** Setting $Y = \\lfloor X \\rfloor$ (drop the decimal part of $X$) splits $[0, \\infty)$ into unit intervals $[\\ell, \\ell+1)$, giving $P(Y = \\ell) = e^{-\\lambda \\ell}(1 - e^{-\\lambda}) = q^\\ell(1 - q)$ with $q = e^{-\\lambda}$ — an exact Geometric distribution on $\\{0, 1, 2, \\dots\\}$!',
+        ],
         toyExample: {
           title: 'The Ageless Light Bulb ($\\lambda = 0.5$ failures/year)',
           scenario:
@@ -752,11 +800,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'An Exponential random variable $X \\sim \\text{Exp}(\\lambda)$ with rate $\\lambda > 0$ has survival function $P(X > x) = e^{-\\lambda x}$ for $x \\ge 0$, equal mean and standard deviation $1/\\lambda$, and is the **unique** continuous positive distribution satisfying memorylessness.',
+            'An Exponential random variable $X \\sim \\text{Exp}(\\lambda)$ with positive rate $\\lambda > 0$ has PDF $f_X(x) = \\lambda e^{-\\lambda x}$ for $x \\ge 0$ ($0$ for $x < 0$), survival tail $P(X > x) = e^{-\\lambda x}$, equal mean and standard deviation $1/\\lambda$, and is the **unique** continuous positive distribution satisfying memorylessness.',
           formulaLatex:
             'f_X(x) = \\lambda e^{-\\lambda x}\\; (x \\ge 0), \\quad P(X > x) = e^{-\\lambda x}, \\quad E[X] = \\frac{1}{\\lambda}, \\quad \\text{Var}(X) = \\frac{1}{\\lambda^2}, \\quad P(X > s+t \\mid X > s) = P(X > t)',
           plainEnglishDecoding:
-            'Skip integrating $\\lambda e^{-\\lambda x}$ altogether in the exam: any interval probability $P(a \\le X < b)$ is simply the survival difference $P(X \\ge a) - P(X \\ge b) = e^{-\\lambda a} - e^{-\\lambda b}$.',
+            'Decode $\\lambda$ as "average events per unit time" and $1/\\lambda$ as "average time per event." Skip integrating $\\lambda e^{-\\lambda x}$ altogether in the exam: any interval probability $P(a \\le X < b)$ is simply the survival difference $P(X \\ge a) - P(X \\ge b) = e^{-\\lambda a} - e^{-\\lambda b}$.',
           workedMiniExamples: [
             {
               prompt: 'Let $X \\sim \\text{Exp}(\\ln 10)$ and define the integer floor $Y = \\lfloor X \\rfloor$. Find $q$ such that $P(Y = \\ell) = q^\\ell (1 - q)$ for $\\ell = 0, 1, 2, \\dots$.',
@@ -1114,6 +1162,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Converting any bell curve to $\\mathcal{N}(0,1)$ and exploiting $\\Phi(-z) = 1 - \\Phi(z)$',
         priority: 'core-pillar',
         buildsOn: 'Continuous PDFs, affine scaling $aX+b$ & even function symmetry',
+        whyStudy:
+          'Human heights, sensor measurement noise, sample averages, and neural network initialization weights all mysteriously pile up into the exact same symmetric bell curve: the **Normal (Gaussian) distribution** $\\mathcal{N}(\\mu, \\sigma^2)$. There is one catch — the Normal PDF $\\frac{1}{\\sqrt{2\\pi}\\sigma}e^{-(x-\\mu)^2/(2\\sigma^2)}$ has **no elementary antiderivative**, so you cannot integrate it by hand! **Z-standardization** solves that problem completely: by converting every Normal curve into one universal master curve $\\mathcal{N}(0, 1)$, a single CDF function $\\Phi(z)$ and bell symmetry solve every Normal problem in seconds (**GATE DA 2025 Q.20**, **2026 Q.28, Q.44 & Q.45**).',
+        groundRules: [
+          '**Second Parameter Is VARIANCE $\\sigma^2$ (Not SD $\\sigma$!):** In GATE DA notation $\\mathcal{N}(\\mu, \\sigma^2)$, the first slot is mean $\\mu$ and the second slot is **variance** $\\sigma^2$ — so always take the square root $\\sigma = \\sqrt{\\sigma^2}$ before dividing in $Z = \\frac{X - \\mu}{\\sigma}$!',
+          '**Z-Score Measures "How Many Standard Deviations From the Mean":** Subtracting $\\mu$ centers any Normal at $0$, and dividing by $\\sigma$ scales its spread to $1$, turning $X \\sim \\mathcal{N}(\\mu, \\sigma^2)$ into the universal Standard Normal $Z \\sim \\mathcal{N}(0, 1)$ whose CDF is written $\\Phi(z) = P(Z \\le z)$.',
+          '**Mirror Symmetry Gives $\\Phi(-z) = 1 - \\Phi(z)$ & $\\Phi(0) = 0.5$:** Because the Standard Normal bell $\\phi(z)$ is perfectly mirror-symmetric across $0$, the area to the left of $-z$ equals the area to the right of $+z$ ($1 - \\Phi(z)$), and the area in $[-z, +z]$ equals $2\\Phi(z) - 1$.',
+          '**Linear Combinations of Independent Normals Stay Normal — With Squared Variance Weights:** If $X \\perp Y$ are Normal, then $aX + bY$ is STILL Normal with mean $a\\mu_X + b\\mu_Y$ and variance $a^2\\sigma_X^2 + b^2\\sigma_Y^2$. Notice that for a difference $X - Y$, $b = -1$ squares to $+1$, so variances ALWAYS **ADD**: $\\text{Var}(X - Y) = \\sigma_X^2 + \\sigma_Y^2$!',
+        ],
         toyExample: {
           title: 'Standardizing Test Scores on $\\mathcal{N}(70, 10^2)$',
           scenario:
@@ -1128,11 +1184,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'If $X \\sim \\mathcal{N}(\\mu, \\sigma^2)$, then $Z = \\frac{X - \\mu}{\\sigma} \\sim \\mathcal{N}(0, 1)$. Any linear combination $aX + bY$ of independent Normals is again Normal, with means adding linearly and **variances adding with squared weights**.',
+            'If $X \\sim \\mathcal{N}(\\mu, \\sigma^2)$, then standardizing gives $Z = \\frac{X - \\mu}{\\sigma} \\sim \\mathcal{N}(0, 1)$, whose PDF is denoted $\\phi(z)$ (lowercase phi) and CDF is denoted $\\Phi(z) = P(Z \\le z)$ (uppercase Phi). Any linear combination $aX + bY$ of independent Normals is again Normal, with means adding linearly and **variances adding with squared weights**.',
           formulaLatex:
             'Z = \\frac{X - \\mu}{\\sigma} \\sim \\mathcal{N}(0, 1), \\quad \\Phi(-z) = 1 - \\Phi(z), \\quad X \\perp Y \\implies aX + bY \\sim \\mathcal{N}(a\\mu_X + b\\mu_Y,\\; a^2\\sigma_X^2 + b^2\\sigma_Y^2)',
           plainEnglishDecoding:
-            'Watch out for a classic intuition trap on $X - Y$: here $a=1$ and $b=-1$, so $(-1)^2 = +1$ and $\\text{Var}(X - Y) = \\sigma_X^2 + \\sigma_Y^2$. Subtracting two independent noisy measurements always makes the combined uncertainty **wider**, never narrower!',
+            'Read $\\Phi(z)$ out loud as "total area under the standard bell curve to the left of $z$." Watch out for a classic intuition trap on $X - Y$: here $a=1$ and $b=-1$, so $(-1)^2 = +1$ and $\\text{Var}(X - Y) = \\sigma_X^2 + \\sigma_Y^2$. Subtracting two independent noisy measurements always makes the combined uncertainty **wider**, never narrower!',
           workedMiniExamples: [
             {
               prompt: 'Let $Z \\sim \\mathcal{N}(0, 1)$ and $X = aZ + b$ satisfy $E[X] = 1$, $\\text{Var}(X) = 4$, and $E[(X - E[X])Z] = -2$. Find $(a, b)$.',
@@ -1174,6 +1230,14 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         subtitle: 'Slicing 2D surfaces into marginals and conditionals, and why triangular support kills independence',
         priority: 'core-pillar',
         buildsOn: 'Single-variable PDFs & double integration regions',
+        whyStudy:
+          'Data Science is rarely about one variable living alone — you constantly study how **two variables move together**: house size $X$ and price $Y$, study hours $X$ and exam score $Y$, or two arrival times $X$ and $Y$ (**GATE DA 2024 Q.56 & Q.59**). A **Joint PDF** $f_{X,Y}(x, y)$ builds a 3D probability landscape over the $(x, y)$-plane whose total *volume* equals $1$. From that single landscape, you can collapse out one variable to get a 1D **Marginal PDF** $f_X(x)$, or take a razor-thin vertical slice at $X = x$ to predict $Y$ via the **Conditional PDF** $f_{Y|X}(y \\mid x)$ and regression curve $E[Y \\mid X = x]$!',
+        groundRules: [
+          '**Joint Probability Is Volume Under a 3D Surface:** For any 2D region $R$, $P((X, Y) \\in R) = \\iint_R f_{X,Y}(x, y)\\,dx\\,dy$, and the total volume over the entire support MUST equal $1$. (Always check total volume $= 1$ first — if a constant $c$ is missing, this finds it!)',
+          '**Marginalizing Means Integrating Out the Unwanted Variable:** To get $f_X(x)$ alone, hold $x$ fixed and integrate $f_{X,Y}(x, y)$ across **all allowed values of $y$ at that $x$**! Always sketch the 2D support region first so your inner integration limits $y_{\\min}(x)$ and $y_{\\max}(x)$ are exact.',
+          '**Conditioning Means Slicing and Re-Normalizing:** Fixing $X = x$ cuts a 1D vertical slice out of $f_{X,Y}(x, y)$. Because that slice’s area equals $f_X(x)$ (not $1$), dividing by $f_X(x)$ restores its area to $1$, yielding $f_{Y|X}(y \\mid x) = \\frac{f_{X,Y}(x, y)}{f_X(x)}$.',
+          '**Independence Requires BOTH a Factored Formula AND a Rectangular Support:** Even if $f_{X,Y}(x, y) = c\\,g(x)h(y)$ factors neatly into an $x$-piece times a $y$-piece, $X$ and $Y$ are **NEVER independent** if the support has coupled boundaries like a triangle $0 < y < x < 2$ or a disk $x^2 + y^2 \\le 1$!',
+        ],
         toyExample: {
           title: 'Uniform Dart on the Triangle $0 < y < x < 2$',
           scenario:
@@ -1189,11 +1253,11 @@ export const MODULE_3_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'For jointly continuous $(X, Y)$ with joint PDF $f_{X,Y}(x,y) \\ge 0$ integrating to $1$ over $\\mathbb{R}^2$, marginals integrate out the other variable and conditionals divide the joint by the marginal. $X$ and $Y$ are **independent** iff $f_{X,Y}(x,y) = f_X(x)f_Y(y)$ everywhere (which requires a rectangular support!).',
+            'For jointly continuous $(X, Y)$ with joint PDF $f_{X,Y}(x,y) \\ge 0$ integrating to $1$ over $\\mathbb{R}^2$ (the 2D real plane), marginals integrate out the other variable and conditionals divide the joint by the marginal. $X$ and $Y$ are **independent** iff $f_{X,Y}(x,y) = f_X(x)f_Y(y)$ everywhere (which requires a rectangular support!).',
           formulaLatex:
             'f_X(x) = \\int_{-\\infty}^{\\infty} f_{X,Y}(x,y)\\,dy, \\qquad f_{Y|X}(y \\mid x) = \\frac{f_{X,Y}(x,y)}{f_X(x)}, \\qquad E[Y \\mid X=x] = \\int_{-\\infty}^{\\infty} y\\,f_{Y|X}(y \\mid x)\\,dy',
           plainEnglishDecoding:
-            'Before writing any integral limits for $f_X(x)$, always **sketch the 2D support region first**: drop a vertical line at $x$ and read off exactly where it enters ($y_{\\min}(x)$) and exits ($y_{\\max}(x)$) the region.',
+            'Unpack the three symbols cleanly: $f_{X,Y}(x, y)$ is the 2D height above $(x, y)$, $f_X(x)$ is the 1D shadow you get after crushing all $y$-values together, and $f_{Y|X}(y \\mid x)$ is the 1D curve for $Y$ once $X$ is frozen at $x$ (which lets you average $y$ to find the conditional mean $E[Y \\mid X = x]$). Before writing any integral limits for $f_X(x)$, always **sketch the 2D support region first**: drop a vertical line at $x$ and read off exactly where it enters ($y_{\\min}(x)$) and exits ($y_{\\max}(x)$) the region.',
           workedMiniExamples: [
             {
               prompt: 'Let $X \\sim U[1, 3]$ and $Y \\sim U[2, 4]$ be independent. Find $P(X \\ge Y)$.',

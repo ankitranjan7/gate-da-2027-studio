@@ -112,14 +112,22 @@ export const chapter3: ChapterData = {
       subtitle: 'Connecting Chapter 2 limits to the actual dot $f(c)$ plotted at $x = c$',
       priority: 'core-pillar',
       buildsOn: 'Ch.2 Two-sided limit $\\lim_{x\\to c} f(x)$',
+      whyStudy:
+        'In Probability, Machine Learning, and Physics, almost every powerful theorem — taking derivatives, training with Gradient Descent, locating roots without solving equations (IVT), and distinguishing continuous random variables from discrete ones (**GATE DA 2026 Q.54**) — demands that your curve does NOT suddenly teleport or shatter at a point. **Continuity** is the exact mathematical guarantee that tiny nudges to your input only cause tiny nudges to your output, with zero surprise jumps.',
+      groundRules: [
+        '**The 3-Way Handshake Rule:** Being continuous at $x = c$ requires THREE independent things to hold simultaneously: (1) the dot $f(c)$ actually exists as a finite real number, (2) the two-sided limit $\\lim_{x \\to c} f(x)$ exists ($\\text{LHL} = \\text{RHL}$), AND (3) the limit equals the dot itself ($\\text{LHL} = \\text{RHL} = f(c)$). Breaking even ONE breaks continuity!',
+        '**Why Holes Are Fixable While Jumps Are Permanent:** If $\\text{LHL} = \\text{RHL} = L$ yet $f(c)$ is missing or misplaced, that is a **removable discontinuity** — patching the single dot $f(c) := L$ fixes the curve completely. If $\\text{LHL} \\neq \\text{RHL}$ (a **jump discontinuity**, like $\\lfloor x \\rfloor$ or a discrete CDF), NO single choice of $f(c)$ can ever touch both heights at once!',
+        '**Everyday Building Blocks Stay Continuous Automatically:** Polynomials, $e^x$, $\\sin x$, $\\cos x$, $|x|$, and $\\text{ReLU}(x)$ are continuous everywhere on $\\mathbb{R}$, and sums, differences, products, compositions $f(g(x))$, and quotients (where denominator $\\neq 0$) of continuous functions remain continuous automatically — so you only need to inspect **trouble spots** (zero denominators, piecewise seams, $\\lfloor x \\rfloor$, or $1/x$)!',
+        '**Right-Continuity Still Counts Half a Handshake:** A function is **right-continuous** at $c$ when $\\lim_{x \\to c^+} f(x) = f(c)$ (the dot sits cleanly on the right-hand branch, even if there is a drop from the left). Every Probability CDF $F_X(x) = P(X \\le x)$ obeys this exact rule!',
+      ],
       toyExample: {
         title: 'Three Ways a Bridge Across $x = 2$ Can Break',
         scenario:
           'Picture yourself driving smoothly along the curve $y = f(x)$ and approaching a bridge at $x = 2$. What are the three ways your car could be prevented from crossing cleanly without teleporting?',
         walkthroughSteps: [
-          '1. **Pothole (Removable Discontinuity):** Left road aims at height $4$, Right road aims at height $4$ ($\\lim_{x\\to 2} f(x) = 4$), but the plank at $x = 2$ is missing or placed at $f(2) = 9$! Easy fix: redefine $f(2) := 4$.',
-          '2. **Broken Drawbridge (Jump Discontinuity):** Left road ends at height $1$, Right road starts at height $3$ ($\\text{LHL} \\neq \\text{RHL}$, like a step function or Discrete RV CDF!). Moving the single dot $f(2)$ can NEVER bridge a vertical gap of $2$!',
-          '3. **Cliff Into Space (Infinite / Oscillating Discontinuity):** $f(x) = \\frac{1}{x-2}$ shoots to $\\pm\\infty$ at $x = 2$.',
+          '1. **Pothole (Removable Discontinuity):** Left road aims at height $4$ ($\\text{LHL} = 4$), Right road aims at height $4$ ($\\text{RHL} = 4$), so $\\lim_{x \\to 2} f(x) = 4$ exists — yet the center plank at $x = 2$ is missing or sitting up at $f(2) = 9$! Easy fix: redefine $f(2) := 4$.',
+          '2. **Broken Drawbridge (Jump Discontinuity):** Left road ends at height $1$ while Right road starts at height $3$ ($\\text{LHL} = 1 \\neq 3 = \\text{RHL}$, just like a staircase or a Discrete RV CDF!). Moving the single dot $f(2)$ can NEVER close a vertical gap of $2$!',
+          '3. **Cliff Into Space (Infinite / Oscillating Discontinuity):** Something like $f(x) = \\frac{1}{x - 2}$ shoots off to $-\\infty$ on the left and $+\\infty$ on the right — no finite height exists at all near $x = 2$.',
         ],
         ahaMoment:
           'In plain words, continuity at $x = c$ simply promises that **nothing goes wrong at the bridge**: the left road, the right road, and the center plank $f(c)$ all meet cleanly at the **exact same finite height**!',
@@ -130,17 +138,17 @@ export const chapter3: ChapterData = {
         formulaLatex:
           'f \\text{ continuous at } c \\iff \\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c) \\in \\mathbb{R}',
         plainEnglishDecoding:
-          'Whenever you want to patch a $0/0$ hole like $f(x) = \\frac{\\sin(3x)}{x}$ at $x=0$ to make the curve unbroken everywhere, just compute the limit and drop the dot right there: $f(0) = \\lim_{x\\to 0} \\frac{\\sin(3x)}{x} = 3$!',
+          'Read that equation in plain English: "$f$ is unbroken at $c$ **means the exact same thing as** ($\\iff$) the left-approaching height, the right-approaching height, and the actual plotted dot $f(c)$ all matching the same finite real number (belongs to $\\mathbb{R}$)." Whenever you want to patch a $0/0$ hole like $f(x) = \\frac{\\sin(3x)}{x}$ at $x = 0$, simply compute the limit ($3$) and drop the dot $f(0) = 3$ right into the hole!',
         workedMiniExamples: [
           {
             prompt: 'For $f(x) = x \\sin(1/x)$ ($x \\neq 0$), what value of $f(0)$ makes $f$ continuous at $x = 0$?',
             solution:
-              'From Ch.2 Squeeze Theorem, $\\lim_{x\\to 0} x\\sin(1/x) = 0$. Setting $f(0) = 0$ makes $f$ continuous at $0$!',
+              '**Step 1 (Compute the limit as $x \\to 0$):** From Chapter 2’s Squeeze Theorem, $-|x| \\le x\\sin(1/x) \\le +|x|$ pinches both walls to $0$, so $\\lim_{x \\to 0} x\\sin(1/x) = 0$.\n**Step 2 (Match the dot to the limit):** Setting $f(0) = \\mathbf{0}$ satisfies $\\lim_{x \\to 0} f(x) = f(0)$, patching the hole cleanly!',
           },
           {
             prompt: 'Where is $g(x) = \\lfloor x \\rfloor$ (floor function) discontinuous?',
             solution:
-              'At **every integer $n \\in \\mathbb{Z}$**! Since $\\lim_{x\\to n^-} \\lfloor x \\rfloor = n - 1$ while $\\lim_{x\\to n^+} \\lfloor x \\rfloor = \\lfloor n \\rfloor = n$, $\\lfloor x \\rfloor$ is **right-continuous** with jump $1$ at integers.',
+              '**Step 1 (Test any non-integer, e.g. $x = 1.5$):** Slightly left ($1.499$) and slightly right ($1.501$) both round down to $1 = \\lfloor 1.5 \\rfloor$ — completely continuous!\n**Step 2 (Test any integer $n \\in \\mathbb{Z}$, where $\\mathbb{Z} = \\{\\dots, -2, -1, 0, 1, 2, \\dots\\}$):** Just below $n$ (like $n - 0.001$), $\\lfloor x \\rfloor = n - 1$ ($\\text{LHL} = n - 1$). At and just above $n$ (like $n + 0.001$), $\\lfloor x \\rfloor = n$ ($\\text{RHL} = \\lfloor n \\rfloor = n$).\n**Step 3 (Conclude):** Discontinuous at **every integer $n \\in \\mathbb{Z}$** (with a jump of size $1$), yet **right-continuous** everywhere because $\\text{RHL} = \\lfloor n \\rfloor$!',
           },
         ],
       },
@@ -169,34 +177,42 @@ export const chapter3: ChapterData = {
       priority: 'high-yield',
       buildsOn: 'Step 3.1 LHL = RHL = f(c)',
       sandboxId: 'piecewise-gluer-lab',
+      whyStudy:
+        'Real-world models rarely follow one single formula forever — tax brackets, neural network activations like $\\text{ReLU}(x)$ and Leaky ReLU, Huber loss (switching from quadratic to linear to resist outliers), and piecewise probability densities all stitch different formulas together at cutoff points. Checking and tuning unknown parameters $(a, b, c)$ so pieces meet without vertical tears is the mandatory Step 1 of every piecewise differentiability problem in GATE DA (like **GATE DA 2024 Q.37**).',
+      groundRules: [
+        '**Only Switching Points Need Checking (When Pieces Are Elementary):** Inside each open region (strictly left of $c$ or strictly right of $c$), ordinary polynomials, exponentials, and trig formulas are already continuous automatically. The ONLY place a break can happen is right at the seam $x = c$ where one formula hands off to the next!',
+        '**Each Boundary Seam Hands You One Height Equation:** At a switching point $x = c$ between continuous left formula $g(x)$ and right formula $h(x)$, enforcing $\\text{LHL} = \\text{RHL} = f(c)$ simplifies directly to plugging $c$ into both neighbors and setting **$g(c) = h(c)$** (and if a third separate dot $f(c) = b$ is given right at $c$, set all three equal!).',
+        '**Continuity ($C^0$) Only Matches Heights, NOT Slopes:** The symbol $C^0$ means "continuous" (0th derivatives — the heights — agree, so pieces touch with no gap). Two touching pieces can still form a sharp corner (like $|x|$ at $0$); smoothing out that corner ($C^1$) requires matching slopes in Chapter 4.',
+        '**Vanishing Terms Leave Coefficients Free:** If an unknown parameter multiplies $(x - c)$ (for instance $a \\cdot x$ at the boundary $x = 0$), plugging in $x = c$ turns $a \\cdot 0$ into $0$ — meaning continuity alone places **zero restriction** on $a$!',
+      ],
       toyExample: {
         title: 'Welding Two Railway Tracks Together at $x = 1$',
         scenario:
           'Suppose a left railway track ($x \\le 1$) follows the line $y = 3x + k$, and a right track ($x > 1$) follows the parabola $y = x^2 + 5$. How do you choose $k$ so the two ends weld together with zero vertical drop at $x = 1$?',
         walkthroughSteps: [
-          '1. Height of left track at $x = 1$: $3(1) + k = 3 + k$.',
-          '2. Approaching height of right track as $x \\to 1^+$: $(1)^2 + 5 = 6$.',
-          '3. Equate heights: $3 + k = 6 \\implies k = 3$. (Notice at $k=3$ the tracks touch, though their slopes $3$ vs $2$ still form a slight corner — we will smooth that corner in Chapter 4!)',
+          '1. **Compute the left track height at the seam $x = 1$:** Plug $x = 1$ into $3x + k$ to get $\\text{LHL} = f(1) = 3(1) + k = 3 + k$.',
+          '2. **Compute the right track height approaching $x = 1^+$:** Even though the right branch uses strict inequality $x > 1$, the continuous parabola $x^2 + 5$ approaches $(1)^2 + 5 = 6$ as $x \\to 1^+$ ($\\text{RHL} = 6$).',
+          '3. **Equate both heights:** Set $3 + k = 6 \\implies k = \\mathbf{3}$. (Notice at $k = 3$ the tracks touch cleanly, though their slopes $3$ vs. $2$ still form a slight bend — we will smooth that bend out in Chapter 4!)',
         ],
         ahaMoment:
           'Keep this clean mental picture: **touching ($C^0$ continuity)** gives you 1 equation at each boundary ($f_-(c) = f_+(c)$). In Chapter 4, **blending smoothly ($C^1$ differentiability)** will add a 2nd equation matching their slopes ($f\'_-(c) = f\'_+(c)$)!',
       },
       theoremAndFormula: {
         statement:
-          'If $f(x) = g(x)$ for $x \\le c$ and $f(x) = h(x)$ for $x > c$, where $g, h$ are continuous formulas, then $f$ is continuous at $x = c$ iff:',
+          'If $f(x) = g(x)$ for $x \\le c$ and $f(x) = h(x)$ for $x > c$, where $g, h$ are continuous formulas, then $f$ is continuous at $x = c$ if and only if (abbreviated **iff**):',
         formulaLatex: 'g(c) = \\lim_{x \\to c^+} h(x) = h(c)',
         plainEnglishDecoding:
-          'In plain words, just plug the boundary point $c$ into both neighboring formulas and set them equal! If a function switches formulas at two points (say $x = -2$ and $x = +2$, like GATE 2024 Q.37), each switching point hands you one clean equation.',
+          'In plain words, just plug the boundary number $c$ into the left formula and into the right formula, and set the two expressions equal! If a piecewise function switches formulas at two boundaries (say $x = -2$ and $x = +2$, like GATE 2024 Q.37), each switching point hands you one clean linear equation.',
         workedMiniExamples: [
           {
             prompt: 'Find $k$ so $f(x) = \\frac{x^2 - 9}{x - 3}$ ($x \\neq 3$) and $f(3) = 2k$ is continuous at $x = 3$.',
             solution:
-              'For $x \\neq 3$, $\\frac{(x-3)(x+3)}{x-3} = x + 3 \\to 6$ as $x \\to 3$. Set $2k = 6 \\implies k = 3$.',
+              '**Step 1 (Compute the limit as $x \\to 3$):** For $x \\neq 3$, factor the numerator: $\\frac{(x - 3)(x + 3)}{x - 3} = x + 3$. As $x \\to 3$, this approaches $3 + 3 = 6$.\n**Step 2 (Set $f(3)$ equal to the limit):** $2k = 6 \\implies k = \\mathbf{3}$.',
           },
           {
             prompt: 'For $f(x) = ax + 1$ ($x < 0$), $b$ ($x = 0$), and $e^x + c$ ($x > 0$), what makes $f$ continuous at $0$?',
             solution:
-              '$\\text{LHL} = 1$, $f(0) = b$, $\\text{RHL} = 1 + c$. Equating all three: $b = 1$ and $1 + c = 1 \\implies c = 0$, while **$a$ can be ANY real number**!',
+              '**Step 1 (Evaluate all three pieces at $x = 0$):**\n• $\\text{LHL} = a(0) + 1 = 1$ (notice $a$ disappears completely!)\n• Center dot: $f(0) = b$\n• $\\text{RHL} = e^0 + c = 1 + c$.\n**Step 2 (Equate all three):** $b = 1$ and $1 + c = 1 \\implies c = 0$, while **$a$ can be ANY real number** ($a \\in \\mathbb{R}$)!',
           },
         ],
       },
@@ -214,35 +230,43 @@ export const chapter3: ChapterData = {
       subtitle: 'Proving roots exist inside intervals without solving cubic/transcendental equations',
       priority: 'core-pillar',
       buildsOn: 'Step 3.1 Continuity on $[a,b]$',
+      whyStudy:
+        'Almost no real-world equation — like $e^x + x - 2 = 0$, $x^5 + 5x + 1 = 0$, or quantile equations $F_X(q) = 0.95$ in Statistics — can be solved with a clean closed-form formula! Mathematicians invented the **Intermediate Value Theorem (IVT)** so you can prove a root exists, trap it inside a tiny interval (which powers **Binary Search / Bisection** in numerical algorithms!), and count exact roots in GATE DA MSQs like **GATE DA 2026 Q.27** without ever wrestling with ugly formulas.',
+      groundRules: [
+        '**No-Teleportation Rule (Continuity on Closed $[a, b]$):** On a closed interval $[a, b]$ (square brackets include BOTH endpoints $a$ and $b$), an unbroken curve $f$ cannot jump over any intermediate height between $f(a)$ and $f(b)$. In particular, if $f(a)$ and $f(b)$ have **opposite signs** — written compactly as $f(a) \\cdot f(b) < 0$ (negative $\\times$ positive $=$ negative) — the curve MUST cross $y = 0$ at least once inside the open interval $(a, b)$!',
+        '**IVT Guarantees $\\ge 1$ Root, Monotonicity Guarantees $\\le 1$ Root:** Opposite signs at the ends ONLY tell you the curve crossed $0$ an **odd** number of times ($1, 3, 5, \\dots$, so at least $1$). To prove there is **EXACTLY ONE** root, add strict monotonicity ($f\'(x) > 0$ everywhere or $f\'(x) < 0$ everywhere): a one-way escalator can NEVER turn around to cross $0$ a second time!',
+        '**Same Sign Does NOT Mean Zero Roots:** If $f(a) \\cdot f(b) > 0$ (both endpoints positive, or both negative), the curve could still dip below $0$ and climb right back up (an **even** number of crossings: $0, 2, 4, \\dots$). Never conclude "no roots" just because $f(a)$ and $f(b)$ share the same sign!',
+        '**Read Interval Brackets Like a Hawk (`[` vs `(`):** A square bracket `[` or `]` means the endpoint is **inside** the domain (so a root or extremum sitting there COUNTS!). A round parenthesis `(` or `)` means the endpoint is **excluded** — you can creep arbitrarily close to it without ever standing on it (the exact trap tested in GATE DA 2026 Q.27 on $(-1, 3]$)!',
+      ],
       toyExample: {
         title: 'Room Temperature Going From $-2^\\circ\\text{C}$ to $+5^\\circ\\text{C}$',
         scenario:
           'Suppose at 6:00 AM your thermometer reads $-2^\\circ\\text{C}$, and by 12:00 PM it reads $+5^\\circ\\text{C}$. Because temperature changes **continuously** rather than jumping instantaneously, must there have been at least one exact moment when the thermometer read $0.000^\\circ\\text{C}$?',
         walkthroughSteps: [
-          '1. **Yes!** You cannot move continuously from below $0$ to above $0$ without crossing $y = 0$ at least once!',
-          '2. Could it cross $0^\\circ\\text{C}$ *three* times (warming up, dipping below $0$, warming again)? Yes — IVT alone guarantees **at least one** root in $(a,b)$.',
-          '3. How do you upgrade "at least one" to "**EXACTLY one**"? Check that $f$ is strictly increasing (or strictly decreasing) on $(a,b)$ — a one-way escalator can cross $0$ only once!',
+          '1. **Existence ($\\ge 1$ crossing):** **Yes!** You cannot move continuously from negative height ($-2$) to positive height ($+5$) without crossing height $0$ at least once between 6:00 AM and 12:00 PM!',
+          '2. **Could it cross $0^\\circ\\text{C}$ multiple times?** Yes — if the room warmed to $+1^\\circ\\text{C}$, cooled back to $-0.5^\\circ\\text{C}$, and warmed to $+5^\\circ\\text{C}$, it would cross $0^\\circ\\text{C}$ **three** times. So IVT alone guarantees **at least one** root inside $(a, b)$.',
+          '3. **How do you upgrade "at least one" to "EXACTLY one"?** Check that temperature is **strictly increasing** ($f\'(t) > 0$) across the whole interval — a thermometer that only moves upward can cross $0^\\circ\\text{C}$ only once!',
         ],
         ahaMoment:
           'Think of this as a two-part lock: a **sign flip $f(a)\\cdot f(b) < 0$ (IVT)** guarantees **$\\ge 1$ root**, while **strict monotonicity ($f\' > 0$ or $f\' < 0$)** guarantees **$\\le 1$ root**. Together they lock in **EXACTLY 1 root** — the exact duo tested in GATE DA 2026 Q.27!',
       },
       theoremAndFormula: {
         statement:
-          '**Intermediate Value Theorem (IVT):** If $f$ is continuous on a closed interval $[a, b]$ and $f(a) \\cdot f(b) < 0$ (opposite signs), then there exists **at least one** $c \\in (a, b)$ such that $f(c) = 0$.',
+          '**Intermediate Value Theorem (IVT):** If $f$ is continuous on a closed interval $[a, b]$ (written $f \\in C([a, b])$, where $C([a, b])$ is the family of all continuous functions on $[a, b]$) and $f(a) \\cdot f(b) < 0$ (opposite signs), then there exists **at least one** number $c$ strictly between $a$ and $b$ such that $f(c) = 0$:',
         formulaLatex:
           'f \\in C([a,b]) \\;\\wedge\\; f(a)f(b) < 0 \\implies \\exists\\, c \\in (a,b) \\text{ with } f(c) = 0',
         plainEnglishDecoding:
-          'While using IVT in GATE MSQs, keep a sharp eye on the **interval brackets** too! If a root lands right on an endpoint (say $f(1) = 0$), it counts inside $[1, 3]$ and $(-1, 1]$, whereas it does NOT sit inside the open interval $(1, 3)$.',
+          'Let’s unpack every single logic symbol in that line so you can read math notation effortlessly: $\\wedge$ means **"AND"**, $\\implies$ means **"forces / guarantees"**, and $\\exists\\, c \\in (a, b)$ reads **"there exists at least one number $c$ strictly inside the open interval $(a, b)$."** While using IVT in GATE MSQs, always double-check **interval brackets** too: if a root lands right on $x = 1$, it belongs to $[1, 3]$ and $(-1, 1]$, whereas it does NOT belong to the open interval $(1, 3)$!',
         workedMiniExamples: [
           {
             prompt: 'Show $e^x + x - 2 = 0$ has a unique real root, and locate which unit interval contains it.',
             solution:
-              'Let $f(x) = e^x + x - 2$ (continuous everywhere). Test $f(0) = 1 + 0 - 2 = -1 < 0$ and $f(1) = e + 1 - 2 = e - 1 > 0 \\implies$ root in $(0, 1)$! Since $f\'(x) = e^x + 1 > 0$ everywhere, $f$ is strictly increasing $\\implies$ **unique** real root!',
+              '**Step 1 (Check continuity & test easy integers):** Let $f(x) = e^x + x - 2$, which is continuous on all of $\\mathbb{R}$. Plug $x = 0$: $f(0) = e^0 + 0 - 2 = 1 - 2 = -1 < 0$. Plug $x = 1$: $f(1) = e^1 + 1 - 2 = e - 1 \\approx 1.718 > 0$.\n**Step 2 (Apply IVT for $\\ge 1$ root):** Since $f(0) < 0$ and $f(1) > 0$, IVT guarantees at least one root inside $(0, 1)$.\n**Step 3 (Check derivative for $\\le 1$ root):** $f\'(x) = e^x + 1$. Because $e^x > 0$ always, $f\'(x) > 1 > 0$ everywhere on $\\mathbb{R}$ — so $f$ is strictly increasing and has a **unique** real root, trapped cleanly in $(0, 1)$!',
           },
           {
             prompt: 'Factor or trap all roots of $f(x) = x^3 - 3x^2 + 2$ (GATE DA 2026 Q.27).',
             solution:
-              'Always test $x = 1$ first on polynomials (sum of coefficients $1 - 3 + 2 = 0$!): $(x - 1)(x^2 - 2x - 2) = 0 \\implies$ roots are $1,\\; 1 - \\sqrt{3} \\approx -0.732,$ and $1 + \\sqrt{3} \\approx 2.732$!',
+              '**Step 1 (Test $x = 1$ first — add the coefficients!):** $1 - 3 + 2 = 0$, so $x = 1$ is an immediate root and $(x - 1)$ divides $f(x)$ cleanly!\n**Step 2 (Factor out $(x - 1)$):** $x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)$.\n**Step 3 (Solve the quadratic $x^2 - 2x - 2 = 0$):** Using the quadratic formula $x = \\frac{2 \\pm \\sqrt{4 - 4(1)(-2)}}{2} = \\frac{2 \\pm \\sqrt{12}}{2} = 1 \\pm \\sqrt{3}$. Since $\\sqrt{3} \\approx 1.732$, the three exact roots are **$1 - \\sqrt{3} \\approx -0.732$**, **$1$**, and **$1 + \\sqrt{3} \\approx 2.732$**!',
           },
         ],
       },

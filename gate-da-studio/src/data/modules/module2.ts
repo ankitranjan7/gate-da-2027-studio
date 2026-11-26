@@ -116,12 +116,20 @@ const chapter1: ChapterData = {
       subtitle: 'Flipping hard "at least one" counts into trivial "none at all" complements',
       priority: 'core-pillar',
       buildsOn: 'Basic arithmetic & Module 1 bijections',
+      whyStudy:
+        'Before you can compute a single finite probability ($\\text{favorable} / \\text{total}$), you have to know how to count huge collections of outcomes accurately without listing them one by one. In Machine Learning and Data Science, counting shows up constantly — from measuring how many binary feature combinations exist ($2^K$ subsets) to calculating the chance that a random sample contains **at least one** target item (like **GATE DA 2026 Q.19** on subsets of $\\{1, \\dots, 2026\\}$). Trying to list "at least one" cases directly explodes into thousands of overlapping cases; learning to count via **independent choices** and the **complement shortcut** turns impossible-looking problems into 2-line arithmetic.',
+      groundRules: [
+        '**The Independent-Stage Product Rule:** If a decision happens in sequential stages where stage 1 has $a$ choices and, *no matter which choice you made*, stage 2 always has $b$ choices, the total number of complete paths is $a \\times b$ (never $a + b$).',
+        '**Order-Matters ($P$) vs. Order-Ignored ($\\binom{n}{r}$):** Choosing $r$ items from $n$ distinct items *in ranked order* gives $P(n,r) = n(n-1)\\cdots(n-r+1)$. If order does NOT matter (a committee or set), every chosen group of $r$ items has been counted $r!$ times in different orders, so dividing by $r!$ (where $r! = r \\times (r-1) \\times \\dots \\times 1$) removes the duplicate shuffles to give $\\binom{n}{r} = \\frac{n!}{r!(n-r)!}$.',
+        '**Binary Switch Rule for Subsets:** Building any subset of an $n$-item set is equivalent to walking down the $n$ items and flipping an independent **IN / OUT** switch ($2$ choices) for each item — forcing exactly $2^n$ total subsets (which ALWAYS includes the empty set $\\emptyset$, so **non-empty** subsets equal $2^n - 1$).',
+        '**The Complement Flip Law:** Every outcome in the full universe $\\Omega$ either satisfies condition $A$ or fails it (belongs to the complement $A^c$, with zero overlap). Therefore $|A| = |\\Omega| - |A^c|$ (where $|S|$ simply means the count of items inside set $S$) — whenever "at least one" is messy, count "zero of them" and subtract from the total!',
+      ],
       toyExample: {
         title: '3-Item Subset Toggle & Product Parity',
         scenario:
-          'Take the small set $S = \\{1, 2, 3\\}$. You pick a non-empty subset $T \\subseteq S$ and multiply all numbers inside $T$. How many non-empty subsets have an **even** product?',
+          'Take the small set $S = \\{1, 2, 3\\}$. You pick a non-empty subset $T \\subseteq S$ (where $\\subseteq$ means "contained inside") and multiply all numbers inside $T$. How many non-empty subsets have an **even** product?',
         walkthroughSteps: [
-          '1. **Count all subsets:** Each of the $3$ numbers says either **IN** or **OUT** ($2 \\times 2 \\times 2 = 8$ subsets). Drop $\\emptyset$ to get $2^3 - 1 = 7$ non-empty subsets.',
+          '1. **Count all subsets:** Each of the $3$ numbers says either **IN** or **OUT** ($2 \\times 2 \\times 2 = 8$ subsets). Drop the empty set $\\emptyset$ to get $2^3 - 1 = 7$ non-empty subsets.',
           '2. **Direct attempt gets messy:** A product is even if $T$ contains $2$ alone, or $2$ with $1$, or $2$ with $3$, etc. With $2026$ numbers, listing cases directly is hopeless!',
           '3. **Flip to the complement:** When is a product of integers **ODD**? Only when **every single chosen element is odd**!',
           '4. **Count the complement in 1 line:** The odd elements are $\\{1, 3\\}$ ($2$ elements), giving $2^2 - 1 = 3$ non-empty all-odd subsets: $\\{1\\}, \\{3\\}, \\{1,3\\}$.',
@@ -132,11 +140,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'For $n$ distinct items, the number of $r$-permutations is $P(n,r)$, the number of $r$-combinations is $\\binom{n}{r}$, total subsets is $2^n$, and for any event $A \\subseteq \\Omega$, $|A| = |\\Omega| - |A^c|$.',
+          'For $n$ distinct items, the number of ordered $r$-permutations is $P(n,r) = \\frac{n!}{(n-r)!}$, the number of unordered $r$-combinations is $\\binom{n}{r}$ (read "$n$ choose $r$"), the total number of subsets in the power set $\\mathcal{P}(S)$ is $2^{|S|}$, and for any event $A \\subseteq \\Omega$, $|A| = |\\Omega| - |A^c|$.',
         formulaLatex:
           '\\binom{n}{r} = \\frac{n!}{r!(n-r)!}, \\qquad |\\mathcal{P}(S)| = 2^{|S|}, \\qquad |A| = |\\Omega| - |A^c|',
         plainEnglishDecoding:
-          'Ask yourself one quick question first: does order matter? If yes, multiply your choices stage by stage to get $P(n,r)$. If no, divide out the $r!$ internal shuffles to get $\\binom{n}{r}$. And whenever each element gets an independent yes/no switch, you immediately get $2^n$.',
+          'Unpack every symbol right away: $n!$ ("$n$ factorial") multiplies all whole numbers from $n$ down to $1$ (with $0! = 1$ by convention), $|S|$ counts the elements in set $S$, and $A^c$ is everything in the universe $\\Omega$ outside $A$. Ask yourself one quick question first: does order matter? If yes, multiply your choices stage by stage to get $P(n,r)$. If no, divide out the $r!$ internal shuffles to get $\\binom{n}{r}$. And whenever each element gets an independent yes/no switch, you immediately get $2^n$.',
         workedMiniExamples: [
           {
             prompt:
@@ -189,6 +197,14 @@ const chapter1: ChapterData = {
       subtitle: 'Turning integer equations into arranging identical stars and divider bars',
       priority: 'high-yield',
       buildsOn: 'Combinations $\\binom{n}{r}$',
+      whyStudy:
+        'Suppose you want to know how many different Bag-of-Words histograms a $20$-word email can form over $4$ keywords, or how many ways $20$ identical compute credits can be split across $4$ servers ($n_1 + n_2 + n_3 + n_4 = 20$, tested directly in **GATE DA 2026 Q.20**). Standard power counting ($k^n$) fails completely because the $20$ units are **identical** — only the *count* inside each bin matters, not which specific unit landed where. **Stars and Bars** solves this cleanly by converting every integer sum into a simple line of identical stars (`*`) separated by divider walls (`|`), reducing the whole problem to a single binomial coefficient $\\binom{\\cdot}{\\cdot}$.',
+      groundRules: [
+        '**Identical Items vs. Distinct Bins Only:** Stars-and-Bars applies ONLY when the $n$ objects being distributed are **indistinguishable** (identical laddoos, coins, or unit counts) and the $k$ bins/variables ($x_1, \\dots, x_k$) are **distinct** (order of the tuple matters: $(2, 0)$ differs from $(0, 2)$).',
+        '**$k$ Bins Always Need Exactly $k - 1$ Divider Bars:** Think of slicing a single loaf of bread into $k$ pieces — you make **$k - 1$** cuts, never $k$. Putting $k - 1$ bars among $n$ stars creates $n + k - 1$ total slots; choosing where the $k - 1$ bars sit automatically fixes every bin’s count.',
+        '**Adjacent Bars Mean an Empty Bin ($x_i = 0$):** Because two bars are allowed to sit right next to each other (`||`) or at the very start/end, any bin can naturally receive $0$ stars — that is why the unconstrained formula $\\binom{n+k-1}{k-1}$ counts **non-negative** ($x_i \\ge 0$) solutions.',
+        '**Lower Bounds Are Just Pre-Paid Stars:** Whenever a bin requires at least $L_i$ items ($x_i \\ge L_i$), simply hand $L_i$ stars to bin $i$ *before* the game starts! Define the leftover variable $x_i\' = x_i - L_i \\ge 0$; your total pool shrinks to $n\' = n - \\sum L_i$ and drops straight back into the $\\ge 0$ formula.',
+      ],
       toyExample: {
         title: '5 Identical Laddoos Shared Among 3 Children',
         scenario:
@@ -196,7 +212,7 @@ const chapter1: ChapterData = {
         walkthroughSteps: [
           '1. **Encode distributions as pictures:** Write $5$ stars and $2$ vertical divider bars (`|`). Everything left of bar 1 goes to Child 1, between bars goes to Child 2, right of bar 2 goes to Child 3.',
           '2. **Check concrete codes:** `** | ** | *` means $(2, 2, 1)$. `| *** | **` means $(0, 3, 2)$. `***** | |` means $(5, 0, 0)$.',
-          '3. **Count the codes:** Every picture has $5 + 2 = 7$ slots total, and you just choose which $2$ slots hold the bars (the remaining $5$ hold stars). That is $\\binom{7}{2} = 21$!',
+          '3. **Count the codes:** Every picture has $5 + 2 = 7$ slots total, and you just choose which $2$ slots hold the bars (the remaining $5$ hold stars). That is $\\binom{7}{2} = \\frac{7 \\times 6}{2} = 21$!',
           '4. **Now require every child to get at least 1 ($n_i \\ge 1$):** Pre-give $1$ laddoo to each of the $3$ children first! Only $5 - 3 = 2$ laddoos remain to distribute freely ($n_i\' \\ge 0$), giving $\\binom{2 + 2}{2} = \\binom{4}{2} = 6$ (equivalently, place $2$ bars in the $4$ gaps strictly between the $5$ stars: $\\binom{5-1}{3-1} = 6$).',
         ],
         ahaMoment:
@@ -204,11 +220,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'The number of integer tuples $(x_1, \\dots, x_k)$ summing to $n$ equals $\\binom{n+k-1}{k-1}$ when $x_i \\ge 0$, and $\\binom{n-1}{k-1}$ when $x_i \\ge 1$ (for $n \\ge k$). Arbitrary lower bounds $x_i \\ge L_i$ reduce to the $x_i\' \\ge 0$ case by substituting $x_i\' = x_i - L_i$ with new sum $n\' = n - \\sum L_i$.',
+          'The count (written $\\#\\{\\dots\\}$) of integer tuples $(x_1, \\dots, x_k)$ summing to $n$ equals $\\binom{n+k-1}{k-1}$ when every $x_i \\ge 0$, and $\\binom{n-1}{k-1}$ when every $x_i \\ge 1$ (for $n \\ge k$). Arbitrary lower bounds $x_i \\ge L_i$ reduce to the $x_i\' \\ge 0$ case by substituting $x_i\' = x_i - L_i$ with reduced sum $n\' = n - \\sum_{i=1}^k L_i$.',
         formulaLatex:
           '\\#\\{x_1+\\dots+x_k = n,\\; x_i \\ge 0\\} = \\binom{n+k-1}{k-1}, \\qquad \\#\\{x_1+\\dots+x_k = n,\\; x_i \\ge 1\\} = \\binom{n-1}{k-1}',
         plainEnglishDecoding:
-          'Picture $n$ as identical objects and $k$ as distinct bins waiting to be filled. Once you pre-fill each bin with its minimum quota $L_i$, whatever is left over ($n\' = n - \\sum L_i$) drops straight into the base formula $\\binom{n\'+k-1}{k-1}$.',
+          'Read $\\binom{n+k-1}{k-1}$ out loud as: "Out of $n$ identical stars plus $k - 1$ divider walls, choose which $k - 1$ positions hold the walls." (By combination symmetry $\\binom{N}{r} = \\binom{N}{N-r}$, choosing the $k-1$ bar slots gives the exact same number as choosing the $n$ star slots.) Once you pre-fill each bin with its minimum quota $L_i$, whatever is left over ($n\' = n - \\sum L_i$) drops straight into the base formula $\\binom{n\'+k-1}{k-1}$.',
         workedMiniExamples: [
           {
             prompt:
@@ -252,6 +268,14 @@ const chapter1: ChapterData = {
       subtitle: 'Correcting double-counts cleanly across overlapping conditions',
       priority: 'high-yield',
       buildsOn: 'Basic sets & Stars-and-Bars',
+      whyStudy:
+        'Real counting and probability problems almost never hand you cleanly separated groups — numbers can be divisible by *both* $3$ and $5$, students can know *both* Python and SQL, and in Stars-and-Bars a bin can have an **upper cap** like $x_i \\le 5$ (so two bins might both overflow at once!). If you naively add group sizes together, every overlapping item gets double- or triple-counted. The **Inclusion-Exclusion Principle (IEP)** gives an exact algebraic bookkeeping rule to cancel every overcount and undercount automatically, and it scales seamlessly from finite sets to probability unions ($P(A \\cup B)$) and ML generalization bounds.',
+      groundRules: [
+        '**Every Valid Element Must Have Net Tally = $+1$:** The whole goal of Inclusion-Exclusion is to make sure every element belonging to *at least one* set ends up counted a net total of $+1$, and every element outside all sets stays at $0$.',
+        '**Alternating Sign Rhythm ($+\\; -\\; +\\; -$):** Adding all single sets overcounts pairwise overlaps (counted twice instead of once), so you **subtract** all pairwise intersections ($A \\cap B$, where $\\cap$ means "AND / overlap"). That accidentally wipes out triple overlaps ($+3 - 3 = 0$), so you **add back** all triple intersections, and keep alternating signs by intersection size.',
+        '**Upper Bounds Flip Into "Bad" Lower Bounds:** Stars-and-Bars cannot directly enforce an upper cap like $x_i \\le U_i$. Instead, define the **bad event** $B_i$ as violating the cap: $x_i \\ge U_i + 1$ (a lower bound!), count the union of all bad events via IEP, and subtract from the unconstrained total.',
+        '**Floor Shortcut for Multiples:** The count of positive integers in $\\{1, 2, \\dots, N\\}$ divisible by $d$ is always the floor $\\lfloor N / d \\rfloor$ (divide and drop the decimal remainder). For divisibility by *both* $a$ and $b$, use their least common multiple $\\text{lcm}(a, b)$ — never blindly multiply $a \\times b$ if they share a common factor!',
+      ],
       toyExample: {
         title: 'Two-Skill Survey in a 10-Student Lab',
         scenario:
@@ -267,11 +291,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'For finite sets $A_1, \\dots, A_m$, the cardinality of their union alternates by intersection size.',
+          'For finite sets $A_1, \\dots, A_m$, the size (cardinality $|\\cdot|$) of their union $\\bigcup_{i=1}^m A_i$ (elements in *at least one* set) alternates signs by the number $k$ of sets intersected together.',
         formulaLatex:
           '|A \\cup B| = |A| + |B| - |A \\cap B|, \\qquad \\left|\\bigcup_{i=1}^m A_i\\right| = \\sum_{k=1}^m (-1)^{k-1} \\sum_{1\\le i_1<\\dots<i_k\\le m} |A_{i_1} \\cap \\dots \\cap A_{i_k}|',
         plainEnglishDecoding:
-          'Start by counting each individual set, subtract every pairwise overlap you double-counted, and add back any triple overlap you just removed too many times. Paired with Stars-and-Bars, defining a "bad violation $B_i$" as $x_i \\ge U_i + 1$ lets you handle upper bounds without tedious case-listing.',
+          'Unpack the big formula piece by piece: $\\cup$ means "OR (union)", $\\cap$ means "AND (overlap)", and $(-1)^{k-1}$ simply generates the alternating sign ($+1$ for $k=1$ singles, $-1$ for $k=2$ pairs, $+1$ for $k=3$ triples). Start by adding each individual set, subtract every pairwise overlap you double-counted, and add back any triple overlap you just removed too many times. Paired with Stars-and-Bars, defining a "bad violation $B_i$" as $x_i \\ge U_i + 1$ lets you handle upper bounds without tedious case-listing.',
         workedMiniExamples: [
           {
             prompt:
@@ -310,6 +334,14 @@ const chapter1: ChapterData = {
       subtitle: 'Counting self-inverse bijections via disjoint fixed points and 2-cycles',
       priority: 'sleeping-giant',
       buildsOn: 'Module 1 Bijections & Involutions',
+      whyStudy:
+        'A permutation is simply a reversible shuffle of $n$ items, and looking at how items jump around reveals hidden **cycles** (closed loops). In **GATE DA 2026 Q.33**, the exam asked directly for the number of bijections on $\\{1, 2, 3, 4\\}$ that undo themselves in two steps ($f(f(n)) = n$, called **involutions**). Trying to inspect all $4! = 24$ (or $5! = 120$) permutations by hand under exam stress is slow and error-prone. Decomposing a permutation into disjoint cycles reduces the entire question to counting simple **fixed points** and **swap pairs** — turning a brute-force slog into a 15-second exact count.',
+      groundRules: [
+        '**Every Permutation Splits Into Disjoint Cycles:** Follow any item under $f$ ($a \\to f(a) \\to f(f(a)) \\to \\dots$); because the set is finite and $f$ is one-to-one, every item MUST eventually loop back to itself, partitioning all $n$ elements into non-overlapping closed loops.',
+        '**The $f(f(x)) = x$ Cycle Ceiling:** Applying a cycle of length $L$ twice advances every element by $2$ steps around the loop. It lands back on the start ONLY if $L$ divides $2$ — meaning every cycle has length **$1$** (stays fixed) or **$2$** (swaps with one buddy). Any cycle of length $3$ or more breaks $f(f(x)) = x$!',
+        '**Order of Forming Disjoint Pairs Does Not Matter:** When selecting $k$ disjoint swap pairs one after another (e.g., $\\binom{4}{2}\\binom{2}{2}$), picking $\\{1,2\\}$ first and $\\{3,4\\}$ second creates the exact same function as picking $\\{3,4\\}$ first and $\\{1,2\\}$ second — so you MUST divide by $k!$ to avoid overcounting.',
+        '**The Two-Choice Recurrence Split:** Focus on the last element $n$: either $n$ stays fixed ($1$ choice, leaving $I_{n-1}$ valid ways for the remaining $n-1$ items) OR $n$ swaps with one of the other $n-1$ elements ($n-1$ choices, leaving $I_{n-2}$ valid ways for the remaining $n-2$ items).',
+      ],
       toyExample: {
         title: 'Counting Self-Reversing Locker Swaps on 4 Lockers',
         scenario:
@@ -326,11 +358,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'The number $I_n$ of involutions ($f: \\{1,\\dots,n\\} \\to \\{1,\\dots,n\\}$ bijective with $f \\circ f = \\text{id}$) equals the sum over $k$ disjoint 2-cycles, and satisfies a 2-term linear recurrence.',
+          'The number $I_n$ of involutions — bijections $f: \\{1,\\dots,n\\} \\to \\{1,\\dots,n\\}$ satisfying $f \\circ f = \\text{id}$ (meaning $f(f(x)) = x$ for every $x$) — equals the sum over choosing $k$ disjoint swap pairs, and obeys a fast 2-term recurrence.',
         formulaLatex:
           'I_n = I_{n-1} + (n-1)I_{n-2} \\quad (I_0=1,\\; I_1=1), \\qquad I_n = \\sum_{k=0}^{\\lfloor n/2 \\rfloor} \\binom{n}{2k}(2k-1)!!',
         plainEnglishDecoding:
-          'You can step up the recurrence to $n=6$ in five seconds flat: $I_1=1,\\; I_2=2,\\; I_3=4,\\; I_4=10,\\; I_5=26,\\; I_6=76$. Just remember: if you count $k$ swap pairs by choosing them one after another, divide by $k!$ because the order in which you formed the pairs does not matter.',
+          'Unpack the unfamiliar double-factorial symbol right away: $(2k-1)!!$ simply multiplies all odd integers from $1$ up to $2k-1$ (for example, $3!! = 3 \\times 1 = 3$ and $5!! = 5 \\times 3 \\times 1 = 15$, which counts the ways to pair up $2k$ items into $k$ unlabeled pairs, while $\\lfloor n/2 \\rfloor$ is the maximum number of pairs that fit inside $n$ items). In practice, the recurrence is even faster — you can step up to $n=6$ in five seconds flat: $I_1=1,\\; I_2=2,\\; I_3=4,\\; I_4=10,\\; I_5=26,\\; I_6=76$. Just remember: if you count $k$ swap pairs by choosing them one after another, divide by $k!$ because the order in which you formed the pairs does not matter.',
         workedMiniExamples: [
           {
             prompt: 'Compute $I_5$ (involutions on $\\{1,2,3,4,5\\}$).',
@@ -778,6 +810,14 @@ const chapter2: ChapterData = {
       subtitle: 'Probability as a normalized 1-liter budget shared across disjoint outcomes',
       priority: 'core-pillar',
       buildsOn: 'Ch.1 Sample spaces & set operations',
+      whyStudy:
+        'Everyday words like "likely" or "maybe" are too vague to build medical tests, spam filters, or neural network softmax layers. Mathematician Andrey Kolmogorov solved this by defining probability with just **three ironclad accounting rules** (just like distributing exactly $1$ liter of water across buckets). Every formula in the rest of this course — complements, union bounds, Bayes’ Theorem, and machine learning loss functions — is not a separate rule to memorize; it is a direct logical consequence of those three axioms.',
+      groundRules: [
+        '**Probability Is a Fixed 1-Liter Budget:** Every valid probability $P(A)$ is a number between $0$ and $1$ ($0 \\le P(A) \\le 1$), and the entire sample space $\\Omega$ (the set of all possible outcomes) ALWAYS totals exact $P(\\Omega) = 1$.',
+        '**Additivity Only Holds Free of Charge for Disjoint Events:** You may write $P(A \\cup B) = P(A) + P(B)$ (where $\\cup$ means "A OR B") ONLY when $A$ and $B$ cannot happen together ($A \\cap B = \\emptyset$, mutually exclusive). If they overlap, you MUST subtract the double-counted overlap: $P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$.',
+        '**Mutually Exclusive $\\neq$ Independent:** Saying two events are **mutually exclusive** means knowing $A$ happened *guarantees* $B$ did NOT happen ($P(A \\cap B) = 0$) — they are maximally *dependent*! By contrast, **independent** events satisfy $P(A \\cap B) = P(A)P(B)$, which is strictly $> 0$ whenever both events have positive probability.',
+        '**Zero Probability Does Not Always Mean Impossible:** On a finite discrete space where every outcome has positive weight, $P(E) = 0$ means $E = \\emptyset$. On a continuous line (like picking a real number in $[0,1]$), a single exact point has $0$ width so $P(X = 0.5) = 0$, even though $0.5$ is a perfectly valid outcome!',
+      ],
       toyExample: {
         title: 'The 1-Liter Probability Jug on a Weighted 4-Sided Die',
         scenario:
@@ -785,7 +825,7 @@ const chapter2: ChapterData = {
         walkthroughSteps: [
           '1. **Non-negativity:** No cup can hold negative water ($P(A) \\ge 0$).',
           '2. **Normalization:** All 4 cups together hold $0.1 + 0.2 + 0.3 + 0.4 = 1.0$ liter ($P(\\Omega) = 1$).',
-          '3. **Disjoint Additivity:** Let $E = \\{1, 2\\}$ and $O = \\{3, 4\\}$. Because they share no faces ($E \\cap O = \\emptyset$), $P(E \\cup O) = 0.3 + 0.7 = 1.0$.',
+          '3. **Disjoint Additivity:** Let $E = \\{1, 2\\}$ and $O = \\{3, 4\\}$. Because they share no faces ($E \\cap O = \\emptyset$, meaning their overlap is the empty set), $P(E \\cup O) = 0.3 + 0.7 = 1.0$.',
           '4. **Overlapping Additivity (Inclusion-Exclusion):** Let $A = \\{1, 2\\}$ ($0.3$) and $B = \\{2, 3\\}$ ($0.5$). Face $2$ is in both, so $P(A \\cup B) = 0.3 + 0.5 - 0.2 = 0.6$.',
         ],
         ahaMoment:
@@ -793,11 +833,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'A probability space $(\\Omega, \\mathcal{F}, P)$ satisfies Kolmogorov’s 3 axioms: non-negativity, unit normalization, and countable additivity on pairwise disjoint events.',
+          'A probability space $(\\Omega, \\mathcal{F}, P)$ consists of all outcomes $\\Omega$, the collection of measurable events $\\mathcal{F}$, and a probability function $P$ obeying Kolmogorov’s 3 axioms: non-negativity, unit normalization, and additivity over pairwise disjoint (non-overlapping) events.',
         formulaLatex:
           'P(A) \\ge 0, \\quad P(\\Omega) = 1, \\quad A\\cap B=\\emptyset \\implies P(A\\cup B)=P(A)+P(B), \\quad P(A\\cup B)=P(A)+P(B)-P(A\\cap B)',
         plainEnglishDecoding:
-          'If two events can never happen together ($A \\cap B = \\emptyset$), their overlap is automatically $0$. On the flip side, if $P(A) + P(B) > 1$, the two events are forced to overlap by at least $P(A)+P(B)-1$ because their union can never exceed $1$.',
+          'Read the set symbols cleanly: $A \\cap B$ means "$A$ AND $B$ both happen", $A \\cup B$ means "$A$ OR $B$ (or both) happen", $\\emptyset$ is the empty (impossible) set, and $\\implies$ means "forces / therefore". If two events can never happen together ($A \\cap B = \\emptyset$), their overlap is automatically $0$. On the flip side, if $P(A) + P(B) > 1$, the two events are forced to overlap by at least $P(A)+P(B)-1$ because their union can never exceed $1$.',
         workedMiniExamples: [
           {
             prompt:
@@ -841,6 +881,14 @@ const chapter2: ChapterData = {
       subtitle: 'Conditioning on B simply deletes everything outside B and re-normalizes',
       priority: 'core-pillar',
       buildsOn: 'Kolmogorov’s axioms',
+      whyStudy:
+        'In the real world, probabilities are never static — the moment new evidence arrives (a patient develops a fever, an email contains the word `"URGENT"`, or the first card drawn is an Ace), our old odds become outdated! **Conditional probability** $P(A \\mid B)$ (read "the probability of $A$ **given** that $B$ has already happened") is the mathematical mechanism for updating beliefs when you receive partial information. It is also the engine behind every sequential probability tree, Markov chain, Naive Bayes model, and LLM next-token prediction $P(w_t \\mid w_1, \\dots, w_{t-1})$.',
+      groundRules: [
+        '**The Vertical Bar `|` Means "Restrict the Universe":** In $P(A \\mid B)$, whatever sits to the **right** of the bar ($B$) becomes your brand-new $100\\%$ sample space. Everything outside $B$ is thrown away, so you divide the surviving overlap $P(A \\cap B)$ by $P(B)$ to restore the total budget back to $1$.',
+        '**$P(\\cdot \\mid B)$ Obeys Every Axiom as Long as $B$ Stays Fixed:** Inside the shrunk world $B$, complements and unions work identically: $P(A^c \\mid B) = 1 - P(A \\mid B)$ and $P(A_1 \\cup A_2 \\mid B) = P(A_1 \\mid B) + P(A_2 \\mid B) - P(A_1 \\cap A_2 \\mid B)$.',
+        '**Never Flip the Event on the Right Side of `|`:** While $P(A^c \\mid B) = 1 - P(A \\mid B)$ is ALWAYS true, $P(A \\mid B^c)$ is **NOT** equal to $1 - P(A \\mid B)$! Changing $B$ to $B^c$ swaps the entire denominator universe.',
+        '**Direction Matters ($P(A \\mid B) \\neq P(B \\mid A)$):** Both share the exact same numerator $P(A \\cap B)$, but they divide by **different** denominators ($P(B)$ vs. $P(A)$). Confusing the two is the famous Prosecutor’s Fallacy.',
+      ],
       toyExample: {
         title: 'Peeking at a Fair Die Roll',
         scenario:
@@ -856,11 +904,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'For any event $B$ with $P(B) > 0$, the conditional probability of $A$ given $B$ scales $P(A \\cap B)$ by $1/P(B)$, yielding the chain/multiplication rule for joint events.',
+          'For any conditioning event $B$ with $P(B) > 0$, the conditional probability $P(A \\mid B)$ ("probability of $A$ given $B$") rescales the joint overlap $P(A \\cap B)$ by $1/P(B)$. Rearranging gives the Multiplication (Chain) Rule for joint events.',
         formulaLatex:
           'P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}, \\qquad P(A \\cap B) = P(A \\mid B)\\,P(B) = P(B \\mid A)\\,P(A)',
         plainEnglishDecoding:
-          'When you want the chance that both $A$ and $B$ happen sequentially, first ask for the chance that $B$ happens ($P(B)$), and then multiply by the chance that $A$ follows inside that smaller $B$ world ($P(A \\mid B)$).',
+          'Read $P(A \\mid B)$ out loud as "out of the times $B$ happens, what fraction ALSO have $A$?" When you want the chance that both $A$ and $B$ happen sequentially ($P(A \\cap B)$), first ask for the chance that $B$ happens ($P(B)$), and then multiply by the chance that $A$ follows inside that smaller $B$ world ($P(A \\mid B)$). Notice the right-hand equality $P(A \\mid B)P(B) = P(B \\mid A)P(A)$ — that one-line identity is the entire seed of Bayes’ Theorem!',
         workedMiniExamples: [
           {
             prompt:
@@ -904,11 +952,19 @@ const chapter2: ChapterData = {
       subtitle: 'Inverting P(Symptom | Disease) into P(Disease | Symptom) without base-rate blindness',
       priority: 'core-pillar',
       buildsOn: 'Conditional probability & partition of sample space',
+      whyStudy:
+        'Lab trials easily measure the **forward** direction: *"Given a patient has Disease $D$, how often does our test beep positive?"* — $P(+ \\mid D)$. Yet a doctor sitting with a patient who just tested positive needs the exact **opposite** direction: *"Given the test beeped positive, what is the chance this patient actually has Disease $D$?"* — $P(D \\mid +)$. Humans routinely confuse those two numbers and fall into the Base-Rate Fallacy (assuming a $99\\%$ accurate test means a $99\\%$ chance of being sick). **Bayes’ Theorem** flips the conditional arrow mathematically accurately, and it shows up on virtually every GATE DA paper (**2024 Q.58**, **2025 Q.31**, **2026 Q.57**)!',
+      groundRules: [
+        '**Bayes Only Flips the Direction Using the Joint Overlap:** Because $P(H_i \\cap E)$ equals BOTH $P(H_i \\mid E)P(E)$ AND $P(E \\mid H_i)P(H_i)$, dividing both sides by $P(E)$ immediately reverses the conditioning arrow from $P(E \\mid H_i)$ to $P(H_i \\mid E)$.',
+        '**Hypotheses Must Form a Clean Partition:** The competing causes $H_1, \\dots, H_k$ (e.g., Sick $D$ vs. Healthy $\\bar{D}$, or Box 1 / Box 2 / Box 3) must be mutually exclusive (no overlap) and exhaustive (their priors add to $100\\%$), so every way evidence $E$ can occur belongs to *exactly one* branch.',
+        '**The Denominator $P(E)$ Is Just the Sum of All Branch Weights:** Every branch contributes a joint weight $\\text{Prior} \\times \\text{Likelihood} = P(H_j)P(E \\mid H_j)$. Adding those weights across all $k$ branches automatically produces $P(E)$ (the Law of Total Probability).',
+        '**Rare Priors Can Swamp Accurate Tests (Base-Rate Rule):** A tiny false-positive rate applied to a massive healthy group ($99.9\\%$ of the population) can easily generate MORE false alarms than a high sensitivity applied to a tiny sick group ($0.1\\%$) — always multiply by the prior first!',
+      ],
       sandboxId: 'bayes-posterior-lab',
       toyExample: {
         title: '1,000 Patients Screened for Disease D (GATE 2026 Q.57 Numbers)',
         scenario:
-          'Disease $D$ has prevalence $30\\%$. A diagnostic test has sensitivity $P(+ \\mid D) = 80\\%$ and false-positive rate $P(+ \\mid \\bar{D}) = 10\\%$. If you test positive, what is $P(D \\mid +)$?',
+          'Disease $D$ has prevalence (prior rate) $30\\%$. A diagnostic test has sensitivity $P(+ \\mid D) = 80\\%$ and false-positive rate $P(+ \\mid \\bar{D}) = 10\\%$ (where $\\bar{D}$ means "not $D$ / healthy"). If you test positive, what is $P(D \\mid +)$?',
         walkthroughSteps: [
           '1. **Imagine $1,000$ people** instead of abstract fractions:',
           '2. **Split by prior ($30\\%$ vs $70\\%$):** $300$ people have $D$, and $700$ are healthy ($\\bar{D}$).',
@@ -921,11 +977,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'Given mutually exclusive, exhaustive hypotheses $H_1, \\dots, H_k$ ($\\sum P(H_j)=1$) and observed evidence $E$ with $P(E) > 0$, Bayes’ Theorem updates prior $P(H_i)$ to posterior $P(H_i \\mid E)$.',
+          'Given mutually exclusive, exhaustive hypotheses $H_1, \\dots, H_k$ ($\\sum_{j=1}^k P(H_j)=1$) and observed evidence $E$ with $P(E) > 0$, Bayes’ Theorem updates each **prior** belief $P(H_i)$ into its updated **posterior** belief $P(H_i \\mid E)$.',
         formulaLatex:
           'P(H_i \\mid E) = \\frac{P(E \\mid H_i)\\,P(H_i)}{\\sum_{j=1}^k P(E \\mid H_j)\\,P(H_j)}',
         plainEnglishDecoding:
-          'Think of Bayes’ rule as a two-step update: first multiply each hypothesis’s **prior weight** by its **likelihood** of producing the evidence $E$; then divide by the total sum of those weights so your updated probabilities add back up to $1$.',
+          'Unpack the three Bayes vocabulary words: $P(H_i)$ is the **prior** (how common hypothesis $H_i$ was before seeing evidence), $P(E \\mid H_i)$ is the **likelihood** (how well $H_i$ explains evidence $E$), and $P(H_i \\mid E)$ is the **posterior** (your updated belief after seeing $E$). Think of Bayes’ rule as a two-step update: first multiply each hypothesis’s prior weight by its likelihood of producing $E$; then divide by the total sum of those weights so your updated probabilities add back up to $1$.',
         workedMiniExamples: [
           {
             prompt:
@@ -965,6 +1021,14 @@ const chapter2: ChapterData = {
       subtitle: 'How Bayes’ rule chooses the winning class and measures its exact error rate',
       priority: 'high-yield',
       buildsOn: 'Bayes’ Theorem',
+      whyStudy:
+        'Once Bayes’ Theorem hands you posterior probabilities like $P(\\text{Spam} \\mid x) = 0.60$ and $P(\\text{Ham} \\mid x) = 0.40$, a real Machine Learning classifier still has to commit to **one final decision** (Spam or Ham?) — and quantify how often that decision will be wrong! The **Bayes Optimal (MAP) Classifier** proves the theoretically best possible decision boundary for minimum error rate, and GATE DA loves testing the subtle step of computing its exact pointwise misclassification error (e.g., **GATE DA 2025 Q.35**).',
+      groundRules: [
+        '**Pick the Highest Posterior to Minimize Error:** At any fixed input $x$, predicting class $C_k$ is right with probability $P(C_k \\mid x)$ and wrong with probability $1 - P(C_k \\mid x)$. Therefore, choosing the class with the **largest** posterior automatically forces the **smallest** possible error probability!',
+        '**Why $P(x)$ Cancels When Picking the Winner:** Every class’s posterior $P(C_c \\mid x) = \\frac{P(x \\mid C_c)P(C_c)}{P(x)}$ divides by the exact same positive number $P(x)$. So to decide *which class wins*, comparing the raw numerators $P(x \\mid C_c)P(C_c)$ is 100% sufficient.',
+        '**Why You MUST Divide by $P(x)$ to Report the Error Rate:** The raw losing weight $P(x \\mid C_{\\text{loser}})P(C_{\\text{loser}})$ is a *joint* probability $P(x \\cap C_{\\text{loser}})$, NOT a conditional error probability! To report $P(\\text{misclassify} \\mid x)$, you MUST normalize by $P(x) = \\sum_c P(x \\mid C_c)P(C_c)$ so the posteriors sum to $1$.',
+        '**MAP Equals MLE Only Under Uniform Priors:** Maximum A Posteriori (MAP) maximizes $P(x \\mid C_c)P(C_c)$, while Maximum Likelihood (MLE) maximizes $P(x \\mid C_c)$ alone. When all classes have equal prior probabilities ($P(C_1) = P(C_2) = \\dots$), the constant prior cancels and MAP reduces directly to MLE.',
+      ],
       toyExample: {
         title: 'Two-Class Email Filter on the Word "FREE" (GATE 2025 Q.35)',
         scenario:
@@ -982,11 +1046,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'The Maximum A Posteriori (MAP) decision rule maximizes $P(C_c \\mid x) \\propto P(x \\mid C_c)P(C_c)$, minimizing pointwise misclassification risk.',
+          'The Maximum A Posteriori (MAP) decision rule $\\hat{y}(x)$ selects the class $c$ maximizing $P(C_c \\mid x) \\propto P(x \\mid C_c)P(C_c)$ (where $\\propto$ means "proportional to", dropping the shared constant $1/P(x)$), which achieves the minimum possible misclassification probability at every point $x$.',
         formulaLatex:
           '\\hat{y}(x) = \\arg\\max_c P(x \\mid C_c)\\,P(C_c), \\qquad P(\\text{misclassify } x) = 1 - \\max_c P(C_c \\mid x) = \\min\\{P(C_1\\mid x), P(C_2\\mid x)\\}',
         plainEnglishDecoding:
-          'If a question only asks which class wins, you can compare the unnormalized joint weights $P(x \\mid C_c)P(C_c)$ directly and skip dividing by $P(x)$. If it asks for the exact error probability at $x$, normalize those weights and report the losing class’s share.',
+          'Unpack $\\arg\\max_c$: it simply means "return the **class label $c$** that achieves the largest value" (not the largest value itself!). If a question only asks which class wins, you can compare the unnormalized joint weights $P(x \\mid C_c)P(C_c)$ directly and skip dividing by $P(x)$. If it asks for the exact error probability at $x$, normalize those weights and report the losing class’s share.',
         workedMiniExamples: [
           {
             prompt:
@@ -1370,6 +1434,14 @@ const chapter3: ChapterData = {
       subtitle: 'When knowing B leaves the odds of A completely untouched',
       priority: 'core-pillar',
       buildsOn: 'Ch.2 Conditional Probability',
+      whyStudy:
+        'Without independence, tracking the joint probability of $100$ coin flips or $100$ independent servers requires $2^{100}$ separate conditional probabilities — completely intractable! **Independence** is the superpower that lets you multiply individual probabilities directly ($P(A \\cap B) = P(A)P(B)$) and turns massive "at least one success" questions (like **GATE DA 2025 Q.45** rolling $100$ dice, or calculating server cluster uptime) into a single $1 - (1-p)^n$ expression. It is also the core assumption behind i.i.d. datasets and Maximum Likelihood Estimation in Machine Learning.',
+      groundRules: [
+        '**Algebraic Definition Beats Gut Feeling:** Two events $A$ and $B$ are independent (written $A \\perp B$) if and only if $P(A \\cap B) = P(A)\\,P(B)$. When $P(B) > 0$, this means $P(A \\mid B) = P(A)$ — learning $B$ occurred does not nudge $A$’s probability up or down by even a tiny bit.',
+        '**Independence Automatically Transfers to Complements:** If knowing $B$ gives zero information about $A$, then knowing $B$ did *not* happen ($B^c$) also gives zero information about $A$ (or $A^c$). Thus $A \\perp B$ automatically gives $A \\perp B^c$, $A^c \\perp B$, and $A^c \\perp B^c$.',
+        '**Independent $\\neq$ Disjoint (Mutually Exclusive):** Disjoint events have $P(A \\cap B) = 0$ and add for unions ($P(A \\cup B) = P(A) + P(B)$). Independent events with positive probabilities MUST overlap ($P(A \\cap B) = P(A)P(B) > 0$), so their union is $P(A) + P(B) - P(A)P(B)$, NOT $P(A) + P(B)$!',
+        '**The "At Least One" Complement Product:** For mutually independent events $A_1, \\dots, A_n$, the complement of "at least one happens" ($\\bigcup_{i=1}^n A_i$) is "ALL of them fail" ($\\bigcap_{i=1}^n A_i^c$). By complement independence, the failure probabilities multiply cleanly: $P(\\text{at least one}) = 1 - \\prod_{i=1}^n (1 - P(A_i))$.',
+      ],
       toyExample: {
         title: 'Rolling 100 Dice vs. 2 Dice for "At Least One 1"',
         scenario:
@@ -1385,11 +1457,11 @@ const chapter3: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'Events $A$ and $B$ are independent ($A \\perp B$) iff $P(A \\cap B) = P(A)P(B)$ (equivalently $P(A \\mid B) = P(A)$ when $P(B)>0$). Independence implies $A^c \\perp B^c$.',
+          'Events $A$ and $B$ are independent ($A \\perp B$) if and only if (iff) $P(A \\cap B) = P(A)P(B)$ (equivalently $P(A \\mid B) = P(A)$ whenever $P(B)>0$). Independence automatically extends to complements ($A^c \\perp B^c$).',
         formulaLatex:
           'A \\perp B \\iff P(A \\cap B) = P(A)\\,P(B), \\qquad P\\!\\left(\\bigcup_{i=1}^n A_i\\right) = 1 - \\prod_{i=1}^n \\bigl(1 - P(A_i)\\bigr) \\;\\text{ (mutually indep.)}',
         plainEnglishDecoding:
-          'Make this a strict habit: always verify independence algebraically with $P(A\\cap B) = P(A)P(B)$ rather than guessing whether two events "feel unrelated"—and never mix up mutually exclusive (disjoint) with independent!',
+          'Unpack the symbols: $\\perp$ reads "is independent of", $\\iff$ reads "means the exact same thing as", and big pi $\\prod_{i=1}^n$ is the multiplication cousin of $\\sum$ (multiply all factors from $i=1$ to $n$). Make this a strict habit: always verify independence algebraically with $P(A\\cap B) = P(A)P(B)$ rather than guessing whether two events "feel unrelated"—and never mix up mutually exclusive (disjoint) with independent!',
         workedMiniExamples: [
           {
             prompt:
@@ -1428,6 +1500,14 @@ const chapter3: ChapterData = {
       subtitle: 'Why checking every pair is NOT enough to guarantee full independence',
       priority: 'high-yield',
       buildsOn: 'Independent events definition',
+      whyStudy:
+        'When dealing with $3$ or more events, our intuition tells us: *"If $A$ is independent of $B$, $B$ is independent of $C$, and $A$ is independent of $C$, then all three must be completely independent!"* That intuition is **dead wrong** — and it is one of the highest-yield MSQ traps in GATE Probability! Understanding the gap between **pairwise independence** and **mutual independence** protects you on theoretical MSQs and also explains a superpower in Computer Science: why hash tables and sum-of-variances only need cheap pairwise independence instead of full mutual independence.',
+      groundRules: [
+        '**Pairwise Only Checks Subsets of Size 2:** Pairwise independence only verifies that every individual pair factors: $P(A \\cap B) = P(A)P(B)$, $P(B \\cap C) = P(B)P(C)$, and $P(A \\cap C) = P(A)P(C)$ — it says NOTHING about what happens when you combine $2$ events to predict the $3$rd!',
+        '**Mutual Independence Must Hold for EVERY Subset of Size $\\ge 2$:** For $n$ events, full mutual independence requires $2^n - n - 1$ separate equations (every pair, every triple, every quadruple, all the way up to all $n$ together). For $n = 3$, that means **all $4$ equations** ($3$ pairs $+$ $1$ triple).',
+        '**Triple Product Alone Is Also NOT Enough:** Even if $P(A \\cap B \\cap C) = P(A)P(B)P(C)$ happens to match, the events are STILL NOT mutually independent unless all $3$ pairwise equations hold too!',
+        '**Hidden Parity / XOR Coupling:** Knowing $1$ bit of a 2-coin XOR/parity bit reveals nothing (pairwise independent), yet knowing *both* coins determines their XOR with $100\\%$ certainty — the canonical counterexample to memorize.',
+      ],
       toyExample: {
         title: 'Two Fair Coin Tosses + The "Do They Match?" Event',
         scenario:
@@ -1445,11 +1525,11 @@ const chapter3: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'Events $A_1, \\dots, A_n$ are **mutually independent** iff the intersection probability factors for **every** subset $S \\subseteq \\{1,\\dots,n\\}$ of size $|S| \\ge 2$ ($2^n - n - 1$ equations total). Checking only size $2$ gives **pairwise independence**.',
+          'Events $A_1, \\dots, A_n$ are **mutually independent** iff the intersection probability factors into a product for **every** subset $S \\subseteq \\{1,\\dots,n\\}$ of size $|S| \\ge 2$ ($2^n - n - 1$ equations total, where $\\forall$ means "for every"). Checking only subsets of size $2$ gives **pairwise independence**.',
         formulaLatex:
           '\\text{Mutual Indep.: } \\forall S\\subseteq\\{1,\\dots,n\\}\\;(|S|\\ge 2), \\quad P\\!\\left(\\bigcap_{i\\in S} A_i\\right) = \\prod_{i\\in S} P(A_i)',
         plainEnglishDecoding:
-          'For $3$ events, mutual independence asks you to verify **4 separate equations**: the $3$ pairwise products PLUS the triple product $P(A\\cap B\\cap C) = P(A)P(B)P(C)$. If even a single one fails, mutual independence is broken.',
+          'Read the symbols cleanly: $\\forall S$ means "for every possible subgroup $S$ of at least two events", $\\bigcap_{i \\in S} A_i$ is the event that every member of that subgroup occurs together, and $\\prod_{i \\in S} P(A_i)$ multiplies their individual probabilities. For $3$ events, mutual independence asks you to verify **4 separate equations**: the $3$ pairwise products PLUS the triple product $P(A\\cap B\\cap C) = P(A)P(B)P(C)$. If even a single one fails, mutual independence is broken.',
         workedMiniExamples: [
           {
             prompt:
@@ -1487,10 +1567,18 @@ const chapter3: ChapterData = {
       subtitle: 'Breaking overlapping dependence by conditioning on the shared bottleneck',
       priority: 'core-pillar',
       buildsOn: 'Ch.2 Conditional probability & partition rule',
+      whyStudy:
+        'Many real GATE problems hand you two events that look *almost* independent — such as Row 2 and Column 3 of a random binary matrix (**GATE DA 2026 Q.64**), or drawing two balls without replacement from an urn. Because the two events share one overlapping piece (a single corner cell $A_{2,3}$, or the outcome of draw 1), naively multiplying $P(A) \\times P(B)$ gives the **wrong** answer! The **Law of Total Probability** gives you a surgical scalpel: freeze that shared hinge into clean cases ($H_1, H_2, \\dots$), watch the remaining pieces immediately decouple into independent subproblems, and add the weighted branch results back together.',
+      groundRules: [
+        '**A Valid Partition Covers $100\\%$ With Zero Overlap:** Your splitting cases $H_1, \\dots, H_k$ must be mutually exclusive ($H_i \\cap H_j = \\emptyset$) and exhaustive ($\\sum P(H_i) = 1$) — every possible scenario in the universe falls into *exactly one* branch.',
+        '**Freezing a Shared Hinge Unlocks Independence:** Two overlapping events $A$ and $B$ are dependent *solely because* they share a hidden variable $H$. The moment you condition on a fixed value $H = h$, the remaining parts of $A$ and $B$ live on disjoint variables, so $P(A \\cap B \\mid H=h) = P(A \\mid H=h)\\,P(B \\mid H=h)$!',
+        '**Multiply Along a Branch, Add Across Branches:** On a probability tree, moving down one sequential path uses the Chain Rule (multiply edge probabilities); collecting all distinct leaf paths that satisfy your target event uses Disjoint Additivity (add leaf probabilities).',
+        '**Weighted Average Sanity Check:** Because $P(E) = \\sum P(E \\mid H_i)P(H_i)$ is a weighted average of the branch probabilities, your final answer $P(E)$ MUST sit strictly between the smallest and largest branch probabilities $\\min_i P(E\\mid H_i) \\le P(E) \\le \\max_i P(E\\mid H_i)$!',
+      ],
       toyExample: {
         title: 'Why Row 2 & Column 3 of a Binary Grid Are NOT Independent (GATE 2026 Q.64)',
         scenario:
-          'Fill a $5 \\times 5$ grid independently with $\\text{Bernoulli}(0.5)$ coins ($0$ or $1$). What is the probability that **Row 2 sums to $3$** AND **Column 3 sums to $3$**?',
+          'Fill a $5 \\times 5$ grid independently with $\\text{Bernoulli}(0.5)$ coins ($0$ or $1$, each with probability $1/2$). What is the probability that **Row 2 sums to $3$** AND **Column 3 sums to $3$**?',
         walkthroughSteps: [
           '1. **Spot the trap:** Row 2 has $5$ cells, Column 3 has $5$ cells, and they collide at ONE shared cell $A_{2,3}$! So you CANNOT just multiply $P(R_2=3) \\times P(C_3=3)$.',
           '2. **Split a 2-branch tree on the hinge $A_{2,3}$:**',
@@ -1503,11 +1591,11 @@ const chapter3: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'If $\\{H_1, \\dots, H_k\\}$ partitions $\\Omega$ with $P(H_i) > 0$, then any event $E$ (or joint event $A \\cap B$) decomposes cleanly across the partition.',
+          'If $\\{H_1, \\dots, H_k\\}$ partitions $\\Omega$ (disjoint, exhaustive cases with $P(H_i) > 0$), then any event $E$ — or any joint event $A \\cap B$ whose pieces become independent once $H_i$ is fixed — decomposes cleanly across the partition.',
         formulaLatex:
           'P(E) = \\sum_{i=1}^k P(E \\mid H_i)\\,P(H_i), \\qquad P(A \\cap B) = \\sum_{i=1}^k P(A \\mid H_i)\\,P(B \\mid H_i)\\,P(H_i) \\;\\text{ (if } A \\perp B \\mid H_i\\text{)}',
         plainEnglishDecoding:
-          'Sketch a quick tree branching out from the shared hinge $H_i$, multiply the probabilities along each branch, and add up the leaves that match your target event.',
+          'Read the condition $A \\perp B \\mid H_i$ as "$A$ and $B$ are independent *once you know* case $H_i$ occurred." Sketch a quick tree branching out from the shared hinge $H_i$, multiply the probabilities along each branch, and add up the leaves that match your target event.',
         workedMiniExamples: [
           {
             prompt:
@@ -1541,6 +1629,14 @@ const chapter3: ChapterData = {
       subtitle: 'Why observing a common effect couples two independent causes',
       priority: 'sleeping-giant',
       buildsOn: 'Bayes’ Theorem & Total Probability',
+      whyStudy:
+        'Suppose Rain ($U$) and a Sprinkler ($V$) operate completely independently, and either one makes the Lawn wet ($W$). Before looking at the lawn, knowing it didn’t rain tells you nothing about the sprinkler. Yet the instant you **see the lawn is wet** ($W = \\text{ON}$) and learn it did *not* rain, you suddenly know the sprinkler MUST have turned on! This dramatic reversal — where observing a shared effect creates dependence between independent causes, while observing a shared cause *breaks* dependence — is the backbone of **Naive Bayes**, **Causal Inference**, and **Bayesian Networks** (directly tested in **GATE DA 2024 Q.24**).',
+      groundRules: [
+        '**Marginal and Conditional Independence Are Two Separate Worlds:** Knowing $A \\perp B$ (marginally, averaging over everything) does **NOT** guarantee $A \\perp B \\mid C$, and knowing $A \\perp B \\mid C$ does **NOT** guarantee $A \\perp B$!',
+        '**Common Cause (Fork: $X \\leftarrow W \\to Y$) Breaks Dependence When Observed:** Two symptoms $X, Y$ caused by the same disease $W$ look strongly correlated in the general population ($X \\not\\perp Y$), yet once you know whether the patient has disease $W$, the two symptoms become independent ($X \\perp Y \\mid W$). This is the exact structure of **Naive Bayes**!',
+        '**Common Effect (Collider: $U \\to W \\leftarrow V$) Creates Dependence When Observed:** Two independent causes $U, V$ start out uncorrelated ($U \\perp V$), yet the moment you observe their shared downstream effect $W$, they become coupled ($U \\not\\perp V \\mid W$) through **"explaining away"** — one cause explains the effect, shifting the odds of the other.',
+        '**Algebraic Factoring Test:** In a joint formula like $P(U)P(V)P(W\\mid U,V)$, summing out $W$ eliminates the coupling term $P(W\\mid U,V)$ (since $\\sum_w P(w\\mid U,V) = 1$), leaving $P(U)P(V)$ (independent). Conditioning on a fixed $W = w$ freezes $P(w\\mid U,V)$ inside the formula, locking $U$ and $V$ together!',
+      ],
       toyExample: {
         title: 'Two Independent Coins & a "Sum Buzzer" (Collider)',
         scenario:
@@ -1556,11 +1652,11 @@ const chapter3: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'Events $A$ and $B$ are **conditionally independent given $C$** ($A \\perp B \\mid C$) iff $P(A \\cap B \\mid C) = P(A \\mid C)P(B \\mid C)$. Neither marginal independence nor conditional independence implies the other.',
+          'Events $A$ and $B$ are **conditionally independent given $C$** (written $A \\perp B \\mid C$) iff $P(A \\cap B \\mid C) = P(A \\mid C)P(B \\mid C)$ — meaning once $C$ is already known, learning $B$ adds zero new information about $A$. Neither marginal independence nor conditional independence implies the other.',
         formulaLatex:
           'A \\perp B \\mid C \\iff P(A \\cap B \\mid C) = P(A \\mid C)\\,P(B \\mid C) \\iff P(A \\mid B, C) = P(A \\mid C)',
         plainEnglishDecoding:
-          'Read a factored joint distribution like $P(U)P(V)P(W\\mid U,V)P(X\\mid W)P(Y\\mid W)$ (GATE 2024 Q.24) as a mini causal diagram: $U$ and $V$ meet head-to-head at $W$ (a collider), so $U \\perp V$ marginally yet $U \\not\\perp V \\mid W$. Meanwhile $X$ and $Y$ branch out from $W$ (a fork), so knowing $W$ makes $X \\perp Y \\mid W$.',
+          'Read the notation $\\not\\perp$ as "is NOT independent of (is dependent on)." Read a factored joint distribution like $P(U)P(V)P(W\\mid U,V)P(X\\mid W)P(Y\\mid W)$ (GATE 2024 Q.24) as a mini causal diagram where each term $P(\\text{child} \\mid \\text{parents})$ draws arrows from parents to child: $U$ and $V$ meet head-to-head at $W$ (a collider), so $U \\perp V$ marginally yet $U \\not\\perp V \\mid W$. Meanwhile $X$ and $Y$ branch out from $W$ (a fork), so knowing $W$ makes $X \\perp Y \\mid W$.',
         workedMiniExamples: [
           {
             prompt:

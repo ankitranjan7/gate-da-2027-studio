@@ -119,6 +119,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Why 1:N absorbs into the N-side, 1:1 total-total collapses to 1 table, and M:N NEVER merges—even under total participation',
         priority: 'core-pillar',
         buildsOn: 'Basic functions & many-to-one vs many-to-many relations',
+        whyStudy:
+          'Before creating a single SQL table, database architects map the real world as an Entity-Relationship (ER) diagram of objects and links. Converting that diagram into the exact minimum number of clean 3NF tables avoids two costly errors: cramming multiple values into one table (which causes duplicate bloat and update bugs) or spawning unnecessary extra tables (which forces slow joins on every query).',
+        groundRules: [
+          '**Relational tables enforce First Normal Form (1NF)—one atomic value per cell:** You can never store a list of phone numbers or multiple course IDs in a single cell, which is why every multi-valued attribute and every $M:N$ relationship needs its own separate table.',
+          '**A relationship diamond merges into an entity ONLY when each row of that entity holds at most ONE link:** In a $1:N$ relationship, every $N$-side row links to at most one $1$-side row, so adding one Foreign Key column on the $N$-side absorbs the diamond with $0$ extra tables.',
+          '**Total participation (double line) is a `NOT NULL` constraint, NOT an automatic table merger:** Only a **$1:1$** relationship with total participation on **both** sides forms a 1-to-1 bijection collapsing two entities into $1$ table; total participation on $M:N$ never merges!',
+          '**Composite and derived attributes add $0$ extra tables:** Composite attributes (`Name(First, Last)`) flatten into ordinary scalar columns in the same table, and derived attributes (`Age`) are computed on demand.',
+        ],
         toyExample: {
           title: '2 Students, 2 Faculty Advisors (1:N) vs. 2 Courses (M:N)',
           scenario:
@@ -196,6 +204,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Why a weak entity always absorbs its identifying diamond and inherits its owner’s primary key',
         priority: 'high-yield',
         buildsOn: 'Concept 1.1 (1:N total-participation merging)',
+        whyStudy:
+          'Many real-world objects cannot be uniquely named on their own—Room `101` repeats in every campus building, and Order Line `#1` repeats in every e-commerce order. Weak entities give databases a clean way to anchor dependent objects to an owner entity so every row stays uniquely identifiable without inventing disconnected global IDs.',
+        groundRules: [
+          '**A weak entity lacks a standalone key and relies on a local Discriminator ($D_W$):** The discriminator (dashed underline) distinguishes siblings under the same owner (`Room 101` vs `Room 102`), forming a full Primary Key only when combined with the owner’s PK: $\\text{PK}(W) = \\text{PK}(E) \\cup D_W$.',
+          '**Every identifying relationship ($R_I$) is strictly $N:1$ (or $1:1$) and TOTAL on the weak entity:** Because a weak entity cannot exist without its owner, the inherited owner PK inside $W$ is simultaneously part of $W$’s Primary Key and a `NOT NULL` Foreign Key referencing the owner.',
+          '**The identifying double-diamond ALWAYS merges into the weak entity’s table:** Owner $E$, identifying relationship $R_I$, and weak entity $W$ always produce exactly **$2$ tables**—any descriptive attributes on $R_I$ simply become columns in $W$.',
+          '**Multi-level weak chains pass keys cumulatively down the hierarchy:** In a chain $E \\to W_1 \\to W_2$, each level inherits every ancestor’s PK plus its own discriminator ($\\text{PK}(W_2) = \\text{PK}(E) \\cup D_1 \\cup D_2$) across just $3$ tables.',
+        ],
         toyExample: {
           title: 'Hotel Room 101 in Two Different Buildings',
           scenario:
@@ -258,6 +274,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Which SQL table operations can NEVER break a Foreign Key, and why NULLs are legal in a child FK',
         priority: 'core-pillar',
         buildsOn: 'Concept 1.1 (FK placement on N-side)',
+        whyStudy:
+          'Once data is split across linked tables like `Person` and `Customer`, one careless `DELETE` or typo in an `INSERT` can leave orphan pointers referencing nonexistent records—silently corrupting reports and ML joins. Primary Keys and Foreign Keys let the DBMS enforce **referential integrity** automatically on every write.',
+        groundRules: [
+          '**A `PRIMARY KEY` enforces TWO strict guarantees—`UNIQUE` and `NOT NULL`:** Every row in a table must have a distinct, non-missing identifier; duplicating a PK or setting it to `NULL` is always rejected.',
+          '**A bare `FOREIGN KEY` enforces valid targets—NOT uniqueness or non-nullability:** Unless `UNIQUE` or `NOT NULL` is explicitly added, a child FK column $S.E$ legally allows both repeated parent keys (needed for $1:N$ links!) and `NULL` values (optional links).',
+          '**Referential integrity is a one-way check from Child ($S.E$) into Parent ($R.A$):** Every non-`NULL` value stored in $S.E$ must currently appear in the projected parent key set $\\Pi_A(R)$ (where $\\Pi_A$ extracts column $A$ from table $R$).',
+          '**Only TWO operations can NEVER create a dangling pointer:** **Inserting into Parent $R$** (growing the set of valid targets) and **Deleting from Child $S$** (removing an outgoing pointer) are unconditionally FK-safe; inserting into $S$ or deleting from $R$ can break referential integrity.',
+        ],
         toyExample: {
           title: 'Parent `Person(aadhaar PK, name)` & Child `Customer(email PK, aadhaar FK)`',
           scenario:
@@ -747,6 +771,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'How $X \\to Y$ acts like a directed reachability rule—and why you can split RHSs, never LHSs',
         priority: 'core-pillar',
         buildsOn: 'Key uniqueness from Ch.1',
+        whyStudy:
+          'When you dump all business columns into one giant spreadsheet table, the same professor’s department or customer’s address gets copied hundreds of times—so updating one row leaves stale contradictions elsewhere. **Functional Dependencies ($X \\to Y$)** mathematically capture which columns uniquely determine which other columns, and **Attribute Closure ($X^+$)** gives you a mechanical algorithm to discover every hidden rule and superkey inside a schema.',
+        groundRules: [
+          '**An FD $X \\to Y$ (“$X$ functionally determines $Y$”) is a schema-wide law, not a lucky coincidence:** It means that in EVERY legal instance of table $R$, if two rows agree on all columns in $X$, they MUST agree on all columns in $Y$.',
+          '**Armstrong’s 3 Axioms generate the entire implied rulebook $F^+$:** Reflexivity ($Y \\subseteq X \\implies X \\to Y$), Augmentation ($X \\to Y \\implies XZ \\to YZ$), and Transitivity ($X \\to Y, Y \\to Z \\implies X \\to Z$) are sound and complete—every logically implied FD follows from them.',
+          '**Right-hand sides split freely; left-hand sides NEVER split:** $X \\to YZ$ is identical to $X \\to Y$ and $X \\to Z$ (Decomposition), whereas a composite LHS like $XY \\to Z$ requires BOTH $X$ and $Y$ to be known before firing—never assume $X \\to Z$!',
+          '**Attribute Closure ($X^+$) is a greedy fixed-point unlock loop:** Start with `bag = X`, repeatedly fire any FD $A \\to B \\in F$ whose entire LHS $A$ is already inside `bag` to add $B$, and stop when nothing new unlocks. Then $X \\to Y \\in F^+ \\iff Y \\subseteq X^+$, and $X$ is a superkey iff $X^+ = R$.',
+        ],
         toyExample: {
           title: '4-Column Schedule Table `Class(Prof, Dept, Room, Time)`',
           scenario:
@@ -823,6 +855,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Never test $2^n$ subsets by brute force—lock in the Essential Core first and expand only into M',
         priority: 'core-pillar',
         buildsOn: 'Concept 2.1 (Attribute closure $X^+$)',
+        whyStudy:
+          'Finding just *one* key is easy, but Normal Form tests (especially 2NF and 3NF) depend on knowing **every** Candidate Key so you know the exact set of Prime attributes! On a 6- or 7-attribute table, testing all $2^7 - 1 = 127$ subsets by hand is impossible under exam time pressure—the **L-M-R Classification** mathematically narrows your search down to 2–4 closure checks.',
+        groundRules: [
+          '**A Candidate Key (CK) is a MINIMAL superkey:** $K$ is a CK if and only if $K^+ = R$ (unlocks every column) AND removing any single attribute from $K$ breaks $K^+ = R$. No proper superset of a found CK can ever be another CK.',
+          '**Columns absent from EVERY RHS ($L$-only and $N$-neither) are mandatory in every CK:** Because no non-trivial FD can ever produce an attribute that never appears on any right-hand side, the Essential Core $E_0 = L \\cup N$ MUST sit inside every single Candidate Key.',
+          '**Columns appearing ONLY on RHSs ($R$-only) never join a minimal key:** Since an $R$-only column never sits on the left-hand side of any FD, adding it to a set can never trigger a single new rule—so you only ever expand $E_0$ using attributes from $M$ (appearing on both sides).',
+          '**Prime attributes come from the UNION of ALL Candidate Keys:** Even if you pick one CK as the table’s `PRIMARY KEY`, every attribute belonging to *any* alternate Candidate Key is still **Prime** for 2NF and 3NF grading.',
+        ],
         toyExample: {
           title: 'Unlocking GATE DA 2026 Q.17 (`R(A,B,C,D,E)`) in 10 Seconds',
           scenario:
@@ -887,6 +927,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Spotting the exact highest normal form in seconds—and why BCNF sometimes forces expensive SQL JOINs',
         priority: 'core-pillar',
         buildsOn: 'Concept 2.2 (Prime vs Non-Prime attributes)',
+        whyStudy:
+          'Normalization systematically removes insertion, update, and deletion anomalies by splitting messy tables along offending Functional Dependencies. Yet splitting carelessly creates two fatal bugs—either generating fake rows when re-joined (**lossy join**) or scattering an FD across two tables so every write requires a costly `JOIN` (**lost dependency preservation**)—which is why knowing the exact 2NF/3NF/BCNF trade-off is essential.',
+        groundRules: [
+          '**Normal Forms form a strict inclusion ladder ($\\text{BCNF} \\subset \\text{3NF} \\subset \\text{2NF} \\subset \\text{1NF}$):** Every BCNF table is automatically in 3NF and 2NF, so grading top-down (BCNF $\\to$ 3NF $\\to$ 2NF $\\to$ 1NF) immediately finds the highest normal form.',
+          '**Each level forbids a specific kind of non-trivial FD $X \\to A$ ($A \\notin X$):** **BCNF** requires $X$ to be a superkey with zero exceptions; **3NF** relaxes this to “$X$ is a superkey OR $A$ is prime”; **2NF** forbids only partial dependencies ($X$ is a proper subset of some CK and $A$ is non-prime).',
+          '**Binary decomposition $(R_1, R_2)$ is Lossless iff the shared columns determine at least one side:** Simply sharing a column ($R_1 \\cap R_2 \\neq \\emptyset$) is NOT enough—rejoining $R_1 \\bowtie R_2$ avoids spurious rows if and only if $(R_1 \\cap R_2)^+$ contains all of $R_1$ OR all of $R_2$.',
+          '**The 3NF vs. BCNF fundamental theorem:** Every relation can ALWAYS be decomposed into **3NF** with *both* lossless join AND dependency preservation; **BCNF** ALWAYS achieves lossless join, but may sacrifice dependency preservation (forcing cross-table `JOIN`s on updates).',
+        ],
         toyExample: {
           title: 'The Classic 3NF-Yes, BCNF-No Triangle: `SCI(Student, Course, Instr)`',
           scenario:
@@ -1395,6 +1443,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Why Natural Join silently drops unmatched/NULL rows, why Outer Joins restore them, and how $A - B = \\emptyset$ encodes $\\subseteq$',
         priority: 'core-pillar',
         buildsOn: 'Set operations & Foreign Keys from Ch.1',
+        whyStudy:
+          'Every time you execute a SQL query, the database engine translates your English-like SQL into a procedural tree of **Relational Algebra** operators—filtering rows with Selection ($\\sigma$), picking columns with Projection ($\\pi$), combining tables with Joins ($\\bowtie$), and subtracting sets with Difference ($-$). Understanding how these operators really behave under the hood explains why Inner Joins silently vanish `NULL` rows, when filters can be pushed down early for $100\\times$ speedups, and how subset rules ($A \\subseteq B$) get encoded cleanly.',
+        groundRules: [
+          '**Relational Algebra obeys strict SET semantics (never bags):** Every relation is a mathematical set with zero duplicate tuples, so Projection ($\\pi_X$, picking columns $X$) and Union ($\\cup$) automatically collapse duplicate rows immediately.',
+          '**Selection ($\\sigma_P$) filters rows horizontally; Projection ($\\pi_X$) slices columns vertically:** Selection keeps rows matching predicate $P$ and preserves all columns, whereas Projection keeps only columns $X$—and crucially, $\\pi$ distributes over $\\cup$ (`UNION`), NEVER over $-$ (`DIFFERENCE`) or $\\cap$ (`INTERSECT`).',
+          '**Natural Join ($R \\bowtie S$) matches ONLY equal, non-`NULL` values across ALL shared column names:** Any row with a `NULL` in a common column or no match on the other side is silently discarded; Outer Joins ($\\bowtie_L, \\bowtie_R, \\bowtie_F$) rescue unmatched rows by padding missing attributes with `NULL` (and are **not** associative).',
+          '**Set Difference ($A - B$) encodes subset inclusion cleanly:** Relational Algebra has no $\\subseteq$ symbol, so testing “every element of $A$ is in $B$” is always written as $A - B = \\emptyset$ (nothing in $A$ sits outside $B$).',
+        ],
         toyExample: {
           title: '3 Employees & 2 Departments Under 4 Join Flavors',
           scenario:
@@ -1471,6 +1527,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'How double-negation turns "every required item" into a 10-second cancellation check',
         priority: 'core-pillar',
         buildsOn: 'Concept 3.1 (Set Difference & Cartesian Product)',
+        whyStudy:
+          'Ordinary Joins ($\\bowtie$) answer *existential* questions like “find students who took **at least one** required course,” but real analytics and database queries constantly need *universal* checks: “find customers who hold a loan at **EVERY** branch” or “find users who completed **ALL** onboarding steps.” **Relational Division ($R \\div S$)** is the exact algebraic operator built for these “for ALL” queries—and its double-negation formula directly reveals how to write them in SQL.',
+        groundRules: [
+          '**Division ($R(A, B) \\div S(B)$) requires $S$’s columns to be a subset of $R$’s columns:** The result has schema $A = \\text{Attr}(R) \\setminus \\text{Attr}(S)$, returning every candidate $a$ that is paired in $R$ with **all** required $b$ values in $S$.',
+          '**Division checks superset coverage ($\\supseteq$), NOT exact equality:** Having extra bonus pairs $(a, b_{\\text{extra}})$ for values $b_{\\text{extra}} \\notin S$ never disqualifies $a$—as long as every required value in $S$ is covered, $a$ survives.',
+          '**Division is derived from the 5 primitive operators via double negation:** Instead of testing “covered all of $S$” directly, the engine builds all ideal pairs ($\\Pi_A(R) \\times S$), subtracts actual pairs ($- R$) to find **disqualified** candidates who missed $\\ge 1$ item, and subtracts those disqualified candidates from $\\Pi_A(R)$.',
+          '**One unmatchable requirement in $S$ empties the entire output:** If $S$ contains even a single value $b^*$ that appears with zero candidates in $R$, every candidate is disqualified and $R \\div S = \\emptyset$.',
+        ],
         toyExample: {
           title: 'Who Completed ALL Mandatory Gate Mock Tests?',
           scenario:
@@ -1534,6 +1598,14 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Evaluating $\\exists$ and $\\forall$ queries directly on tables—and fixing the FOL implication trap',
         priority: 'high-yield',
         buildsOn: 'First-Order Logic quantifiers (Module 11)',
+        whyStudy:
+          'Relational Algebra tells the engine *how* to compute an answer step-by-step (join here, filter there), whereas real SQL users want to declare *what* tuples they want and let the query optimizer choose the execution plan. **Tuple Relational Calculus (TRC)** bridges First-Order Logic and SQL: it expresses queries declaratively as $\\{ t \\mid P(t) \\}$ (“the set of all tuples $t$ making predicate $P(t)$ true”) and proves why safe TRC has the exact same expressive power as Relational Algebra.',
+        groundRules: [
+          '**TRC is declarative and strictly SET-based:** Writing $\\{ t \\mid P(t) \\}$ collects every distinct tuple $t$ satisfying formula $P(t)$—even if a value like $t[A] = 1$ has multiple matching witness rows under $\\exists$, it appears **only once** in the output set.',
+          '**Free variables define the output; bound variables are scoped by $\\exists$ or $\\forall$:** The lone free tuple variable $t$ becomes the returned row, while internal variables bound by $\\exists x$ (“there exists a row $x$”) or $\\forall x$ (“for every row $x$”) act as search/verification helpers.',
+          '**Safety prevents infinite answers:** A TRC query is **safe** only if every value in its result comes from the finite active domain (constants + values stored in the tables). Unbounded negations like $\\{ t \\mid \\neg(t \\in R) \\}$ are unsafe because infinitely many non-table tuples satisfy them.',
+          '**Quantifier-connective pairing is identical to FOL:** Pair $\\exists x \\in R$ with $\\land$ (witness must satisfy both conditions), and pair $\\forall x \\in R$ with $\\implies$ (filtering to relevant rows)—and rewrite $\\forall x\\,(Q \\implies C)$ as $\\neg\\exists x\\,(Q \\land \\neg C)$ to translate straight into SQL `NOT EXISTS`.',
+        ],
         toyExample: {
           title: 'Evaluating a 2-Table TRC Query (`X` & `Y`) with Set Deduplication',
           scenario:
@@ -1975,10 +2047,18 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Why `WHERE` runs before grouping, why unaggregated columns fail `SELECT`, and how `COUNT(*)` differs from `COUNT(col)`',
         priority: 'core-pillar',
         buildsOn: 'Joins & Set vs Bag contrast from Ch.3',
+        whyStudy:
+          'Beginners read SQL top-to-bottom starting with `SELECT` and get baffled when `WHERE` rejects a column alias or aggregate function, or when selecting an ungrouped `EmpID` alongside `COUNT(*)` under `GROUP BY TeamID` throws a syntax error. Learning the **actual 6-stage logical order** in which the SQL engine evaluates clauses turns every `GROUP BY`, `HAVING`, and `COUNT(col)` behavior into a completely predictable consequence.',
+        groundRules: [
+          '**SQL evaluates clauses in a fixed logical pipeline—NOT the order you type them:** The engine runs `FROM / JOIN` $\\to$ `WHERE` $\\to$ `GROUP BY` $\\to$ `HAVING` $\\to$ `SELECT` $\\to$ `DISTINCT` $\\to$ `ORDER BY`. Because `WHERE` runs before `GROUP BY` and `SELECT`, it can never see aggregates or `SELECT` aliases.',
+          '**SQL defaults to Multiset (Bag) semantics, unlike Relational Algebra:** Duplicate rows are preserved automatically unless you explicitly write `SELECT DISTINCT` or set operators like `UNION` (as opposed to `UNION ALL`).',
+          '**`GROUP BY` collapses each bucket into ONE output row:** Therefore, every column appearing in `SELECT` or `HAVING` MUST either be listed in `GROUP BY` or wrapped inside an aggregate (`COUNT`, `SUM`, `AVG`, `MIN`, `MAX`)—otherwise the engine wouldn’t know which single row’s value to pick!',
+          '**`COUNT(*)` counts rows, whereas column aggregates ignore `NULL`s:** `COUNT(*)` counts every row in a group (even all-`NULL` rows), while `COUNT(col)`, `SUM(col)`, `AVG(col)`, `MIN(col)`, and `MAX(col)` skip `NULL` values. On an empty or all-`NULL` set, `COUNT(col)` returns `0`, while `SUM`/`AVG`/`MIN`/`MAX` return `NULL`.',
+        ],
         toyExample: {
           title: '5-Row `Employee(EmpID, TeamID, Salary)` Trace',
           scenario:
-            'Rows: `(1, T1, 50), (2, T1, 70), (3, T2, 40), (4, T2, NULL), (5, T3, 90)`. Run:\n`SELECT TeamID, COUNT(*) AS C1, COUNT(Salary) AS C2, AVG(Salary) AS AvgSal FROM Employee WHERE Salary IS NOT NULL GROUP BY TeamID HAVING COUNT(*) >= 2;`',
+            'Rows: `(1, T1, 50), (2, T1, 70), (3, T2, 40), (4, T2, NULL), (5, T3, 90)`. Run:\n```sql\nSELECT\n  TeamID,\n  COUNT(*) AS C1,\n  COUNT(Salary) AS C2,\n  AVG(Salary) AS AvgSal\nFROM Employee\nWHERE Salary IS NOT NULL\nGROUP BY TeamID\nHAVING COUNT(*) >= 2;\n```',
           walkthroughSteps: [
             '1. **`FROM`:** Loads all 5 rows.',
             '2. **`WHERE Salary IS NOT NULL`:** Drops row `4` (`T2` now has only 1 row left!) $\\implies 4$ rows remain.',
@@ -1995,13 +2075,13 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           formulaLatex:
             '\\text{FROM} \\to \\text{WHERE} \\to \\text{GROUP BY} \\to \\text{HAVING} \\to \\text{SELECT} \\to \\text{DISTINCT} \\to \\text{ORDER BY}',
           plainEnglishDecoding:
-            'Ever need a row-level column like `EmpID` right next to a group-level metric like `TeamSize`? You cannot simply write `SELECT EmpID, COUNT(*) FROM Employee GROUP BY TeamID`—the compiler will reject it! Instead, pair them cleanly with a **self-join**, a **derived-table join**, or a **correlated subquery** (just like **GATE DA 2026 Q.51**!).',
+            'Ever need a row-level column like `EmpID` right next to a group-level metric like `TeamSize`? The compiler rejects selecting an ungrouped `EmpID` under `GROUP BY TeamID`:\n```sql\n-- INVALID SQL: EmpID is neither in GROUP BY nor aggregated\nSELECT EmpID, COUNT(*)\nFROM Employee\nGROUP BY TeamID;\n```\nInstead, pair them cleanly with a **self-join**, a **derived-table join**, or a **correlated subquery** (just like **GATE DA 2026 Q.51**!).',
           workedMiniExamples: [
             {
               prompt:
-                'GATE DA 2026 Q.51 Pattern: Given `Employee(EmpID, TeamID)`, compare `SELECT EmpID, COUNT(*) FROM Employee GROUP BY TeamID` vs `SELECT E1.EmpID, COUNT(*) FROM Employee E1 JOIN Employee E2 ON E1.TeamID = E2.TeamID GROUP BY E1.EmpID`.',
+                'GATE DA 2026 Q.51 Pattern: Given `Employee(EmpID, TeamID)`, compare Query 1:\n```sql\nSELECT EmpID, COUNT(*)\nFROM Employee\nGROUP BY TeamID;\n```\nvs. Query 2:\n```sql\nSELECT E1.EmpID, COUNT(*)\nFROM Employee E1\nJOIN Employee E2\n  ON E1.TeamID = E2.TeamID\nGROUP BY E1.EmpID;\n```',
               solution:
-                'The first query is **INVALID SQL** because `EmpID` is neither in `GROUP BY` nor aggregated. The second query is **VALID** and returns exact `(EmpID, TeamSize)`: joining `E1` to `E2` on `TeamID` replicates each `E1.EmpID` once per teammate, and grouping by `E1.EmpID` counts them!',
+                'Query 1 is **INVALID SQL** because `EmpID` is neither in `GROUP BY` nor aggregated. Query 2 is **VALID** and returns exact `(EmpID, TeamSize)`: joining `E1` to `E2` on `TeamID` replicates each `E1.EmpID` once per teammate, and grouping by `E1.EmpID` counts them!',
             },
             {
               prompt:
@@ -2025,7 +2105,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
             reality:
               'Half-true trap! `COUNT(col)` returns `0`, **but `SUM(col)`, `AVG(col)`, `MIN(col)`, and `MAX(col)` return `NULL`** when the input set has zero non-NULL values!',
             counterExample:
-              '`SELECT MAX(Amount) FROM Loan WHERE Branch = "Ghost"` returns `NULL`, NOT `0`!',
+              'When no rows match `"Ghost"`, the query below returns `NULL`, NOT `0`:\n```sql\nSELECT MAX(Amount)\nFROM Loan\nWHERE Branch = "Ghost";\n```',
           },
         ],
         forwardBridges: [
@@ -2052,10 +2132,18 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Why a single `NULL` inside a subquery turns `NOT IN` into the empty set—and why `NOT EXISTS` is immune',
         priority: 'sleeping-giant',
         buildsOn: 'Boolean truth tables (Module 11) + Concept 4.1',
+        whyStudy:
+          'Real production tables are full of missing values (`NULL`), yet one innocent-looking `WHERE id NOT IN (SELECT id FROM ...)` query can silently return **zero rows** without throwing a single error—wiping out an entire analytics dashboard or ML training cohort. Knowing SQL’s **Three-Valued Logic** explains this notorious bug from first principles and shows why `NOT EXISTS` is bulletproof.',
+        groundRules: [
+          '**`NULL` means “unknown value”, NEVER zero or empty string:** Comparing anything with `NULL` via `=`, `<>`, `<`, or `>`—even `NULL = NULL`—returns the 3rd truth value **`UNKNOWN`**, never `TRUE` or `FALSE`. Use `IS NULL` / `IS NOT NULL` to test for `NULL`.',
+          '**SQL `WHERE` and `HAVING` keep ONLY rows evaluating to `TRUE`:** Any row whose condition evaluates to `FALSE` **or** `UNKNOWN` is silently discarded. Under Kleene 3-valued logic, `TRUE AND UNKNOWN = UNKNOWN`, `FALSE AND UNKNOWN = FALSE`, and `TRUE OR UNKNOWN = TRUE`.',
+          '**`IN` is an `OR`-chain while `NOT IN` is an `AND`-chain:** A stray `NULL` inside `S` doesn’t break `IN` for matching rows (`TRUE OR UNKNOWN = TRUE`), but it poisons `NOT IN` for EVERY row because `(x <> y) AND UNKNOWN` can NEVER become `TRUE`!',
+          '**`EXISTS` / `NOT EXISTS` are strictly 2-valued, and `GROUP BY` / `DISTINCT` merge all `NULL`s:** `EXISTS` only asks “did the inner query produce $\\ge 1$ row?” (`TRUE` or `FALSE` only—never `UNKNOWN`!), and SQL explicitly groups all `NULL`s into one single bucket under `GROUP BY` and `SELECT DISTINCT`.',
+        ],
         toyExample: {
           title: 'The Silent Wipeout: `Users = {1, 2, 3}` vs `Blocked = {2, NULL}`',
           scenario:
-            'You want active users who are NOT blocked: `SELECT uid FROM Users WHERE uid NOT IN (SELECT uid FROM Blocked);`. Someone accidentally left one `NULL` in `Blocked`!',
+            'You want active users who are NOT blocked, but someone accidentally left one `NULL` inside `Blocked`:\n```sql\nSELECT uid\nFROM Users\nWHERE uid NOT IN (\n  SELECT uid\n  FROM Blocked\n);\n```',
           walkthroughSteps: [
             '1. SQL expands `uid NOT IN (2, NULL)` as **`(uid <> 2) AND (uid <> NULL)`**.',
             '2. Test `uid = 1`: `(1 <> 2)` is `TRUE`; `(1 <> NULL)` is **`UNKNOWN`**! `TRUE AND UNKNOWN = UNKNOWN`.',
@@ -2072,11 +2160,11 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           formulaLatex:
             'x \\in S \\equiv \\bigvee_{y \\in S}(x = y), \\qquad x \\notin S \\equiv \\bigwedge_{y \\in S}(x \\neq y) \\implies \\text{if } \\text{NULL} \\in S,\\; (x \\notin S) \\neq \\text{TRUE}',
           plainEnglishDecoding:
-            'Build this rock-solid habit: whenever you want “not in another table,” reach for **`NOT EXISTS (SELECT * FROM S WHERE S.y = R.x)`** (or explicitly filter `WHERE y IS NOT NULL` inside `NOT IN`). And remember one helpful contrast: unlike `WHERE`, both `GROUP BY` and `DISTINCT` collect all `NULL`s together into one single `NULL` bucket!',
+            'Build this rock-solid habit: whenever you want “not in another table,” reach for **`NOT EXISTS`** (or explicitly filter `WHERE y IS NOT NULL` inside `NOT IN`). And remember one helpful contrast: unlike `WHERE`, both `GROUP BY` and `DISTINCT` collect all `NULL`s together into one single `NULL` bucket!',
           workedMiniExamples: [
             {
               prompt:
-                'Compare `SELECT x FROM P WHERE NOT EXISTS (SELECT * FROM Q WHERE Q.y = P.x)` vs `NOT IN` when `P = {1, 2, 3, 4}` and `Q = {2, NULL}`.',
+                'Compare this `NOT EXISTS` query against `NOT IN` when `P = {1, 2, 3, 4}` and `Q = {2, NULL}`:\n```sql\nSELECT x\nFROM P\nWHERE NOT EXISTS (\n  SELECT *\n  FROM Q\n  WHERE Q.y = P.x\n);\n```',
               solution:
                 'With `NOT IN`, **0 rows** return. With `NOT EXISTS`: for `x=1`, `Q.y = 1` evaluates to `FALSE` (on `2`) and `UNKNOWN` (on `NULL`), so the subquery returns 0 rows $\\implies$ `NOT EXISTS` is **`TRUE`**! Same for `3` and `4` $\\implies$ **`{1, 3, 4}` (3 rows)** survive!',
             },
@@ -2096,7 +2184,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
             reality:
               'FALSE! SQL explicitly defines `GROUP BY`, `SELECT DISTINCT`, and `UNION` to treat all `NULL`s as **equal for grouping/deduplication**, creating **one single `NULL` group**!',
             counterExample:
-              'On `[(1, NULL), (2, NULL), (3, "A")]`, `SELECT COUNT(*) FROM T GROUP BY col` returns two counts: `2` and `1`.',
+              'On `[(1, NULL), (2, NULL), (3, "A")]`, this query returns two counts (`2` for the single `NULL` group and `1` for `"A"`):\n```sql\nSELECT COUNT(*)\nFROM T\nGROUP BY col;\n```',
           },
         ],
         forwardBridges: [
@@ -2116,10 +2204,18 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           'Tracing outer-to-inner correlated loops without mistakes—including rank comparisons and empty-set `ALL`',
         priority: 'high-yield',
         buildsOn: 'Concept 4.1 & Concept 4.2',
+        whyStudy:
+          'Many real analytical questions—finding accounts above the median, ranking employees inside their own department, or computing causal historical counts before a timestamp—cannot be answered in one flat `WHERE` scan. **Nested and correlated subqueries** let one SQL statement compare each row against dynamic aggregates of the rest of the table, and GATE DA repeatedly tests their exact tie, `NULL`, and empty-set semantics.',
+        groundRules: [
+          '**Uncorrelated subqueries run ONCE upfront; correlated subqueries act like a nested `for`-loop:** If the inner query never mentions an outer alias, the engine computes its scalar/set once and plugs it in; if it references an outer alias (like `A1.Balance`), the inner query re-evaluates fresh for every outer candidate row `A1`.',
+          '**Quantified comparisons over an empty set follow formal logic ($\\forall$ vs. $\\exists$):** `x > ALL(∅)` is vacuously **`TRUE`** (there is no counterexample in `∅`), whereas `x > ANY(∅)` is **`FALSE`** (no witness exists in `∅`).',
+          '**`> ALL(S)` and `> (SELECT MAX(y) FROM S)` diverge on BOTH empty sets and `NULL`s:** When `S` is empty, `> ALL(∅)` keeps every outer row while `MAX(∅) = NULL` drops every row (`x > NULL` is `UNKNOWN`); when `S` contains a `NULL`, `> ALL` turns `UNKNOWN` (drops all) while `MAX` ignores `NULL`!',
+          '**Strict (`>`/`<`) tie comparisons skip equal rows on both sides:** In a correlated rank query comparing `# strictly larger` vs. `# strictly smaller`, sorting the column once with duplicates preserved lets you read off exact counts in seconds.',
+        ],
         toyExample: {
           title: 'Finding Accounts At or Below the Median (GATE DA 2026 Q.60)',
           scenario:
-            'Given `Account(AccID, Balance) = {(A1, 100), (A2, 300), (A3, 300), (A4, 500), (A5, 800)}`, trace:\n`SELECT AccID FROM Account A1 WHERE (SELECT COUNT(*) FROM Account A2 WHERE A2.Balance > A1.Balance) >= (SELECT COUNT(*) FROM Account A3 WHERE A3.Balance < A1.Balance);`',
+            'Given `Account(AccID, Balance) = {(A1, 100), (A2, 300), (A3, 300), (A4, 500), (A5, 800)}`, trace:\n```sql\nSELECT AccID\nFROM Account A1\nWHERE (\n  SELECT COUNT(*)\n  FROM Account A2\n  WHERE A2.Balance > A1.Balance\n) >= (\n  SELECT COUNT(*)\n  FROM Account A3\n  WHERE A3.Balance < A1.Balance\n);\n```',
           walkthroughSteps: [
             '1. **Decode the Loop:** For each row `A1`, left subquery counts rows **strictly larger** than `A1.Balance`; right subquery counts rows **strictly smaller**.',
             '2. **Sort balances once (mental shortcut!):** `[100, 300, 300, 500, 800]`.',
@@ -2141,7 +2237,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
           workedMiniExamples: [
             {
               prompt:
-                'GATE DA 2025 Q.33 Pattern: `SELECT COUNT(*) FROM Loan WHERE Amount > (SELECT MAX(Amount) FROM Loan WHERE Branch = "SR Nagar")`. What if `"SR Nagar"` has 0 rows?',
+                'GATE DA 2025 Q.33 Pattern: Trace this query—what happens if `"SR Nagar"` has $0$ rows?\n```sql\nSELECT COUNT(*)\nFROM Loan\nWHERE Amount > (\n  SELECT MAX(Amount)\n  FROM Loan\n  WHERE Branch = "SR Nagar"\n);\n```',
               solution:
                 'If `"SR Nagar"` has rows, `MAX` returns their maximum and the outer `WHERE` counts loans strictly exceeding it. If `"SR Nagar"` has 0 rows, `MAX(...)` returns **`NULL`**, so `Amount > NULL` is `UNKNOWN` for every row and `COUNT(*)` returns **`0`**!',
             },
@@ -2282,7 +2378,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         sourceLabel: 'Warmup Drill #1 · WHERE, GROUP BY & COUNT(col)',
         marks: 1,
         type: 'NAT',
-        stem: 'Consider `Sales(Sid, Region, Amt) = {(1, "N", 100), (2, "N", NULL), (3, "N", 200), (4, "S", 50), (5, "S", NULL)}`. What single integer is returned by:\n`SELECT SUM(x) FROM (SELECT COUNT(Amt) AS x FROM Sales GROUP BY Region HAVING COUNT(*) >= 3) T;`',
+        stem: 'Consider `Sales(Sid, Region, Amt) = {(1, "N", 100), (2, "N", NULL), (3, "N", 200), (4, "S", 50), (5, "S", NULL)}`. What single integer is returned by:\n```sql\nSELECT SUM(x)\nFROM (\n  SELECT COUNT(Amt) AS x\n  FROM Sales\n  GROUP BY Region\n  HAVING COUNT(*) >= 3\n) T;\n```',
         natAnswer: { min: 2, max: 2, exactDisplay: '2' },
         triggerHint: '`COUNT(*)` checks total rows per region (including NULL `Amt`), while `COUNT(Amt)` skips NULLs.',
         intuitiveSolution: [
@@ -2300,7 +2396,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         year: 2025,
         marks: 1,
         type: 'NAT',
-        stem: 'Consider a 7-row `Loan(LoanID, Branch, Amount)` table:\n`(L1, "SR Nagar", 250), (L2, "SR Nagar", 400), (L3, "Madhapur", 350), (L4, "Madhapur", 500), (L5, "Kukatpally", 400), (L6, "Kukatpally", 600), (L7, "Gachibowli", 450)`.\nHow many rows are returned by:\n`SELECT LoanID FROM Loan WHERE Amount > (SELECT MAX(Amount) FROM Loan WHERE Branch = "SR Nagar");`',
+        stem: 'Consider a 7-row `Loan(LoanID, Branch, Amount)` table:\n`(L1, "SR Nagar", 250), (L2, "SR Nagar", 400), (L3, "Madhapur", 350), (L4, "Madhapur", 500), (L5, "Kukatpally", 400), (L6, "Kukatpally", 600), (L7, "Gachibowli", 450)`.\nHow many rows are returned by:\n```sql\nSELECT LoanID\nFROM Loan\nWHERE Amount > (\n  SELECT MAX(Amount)\n  FROM Loan\n  WHERE Branch = "SR Nagar"\n);\n```',
         natAnswer: { min: 3, max: 3, exactDisplay: '3' },
         triggerHint: 'Compute the inner scalar `MAX` for `"SR Nagar"`, then count strictly greater amounts across ALL branches.',
         intuitiveSolution: [
@@ -2321,22 +2417,22 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         options: [
           {
             id: 'A',
-            text: '`SELECT E1.EmpID, COUNT(*) AS TeamSize FROM Employee E1 JOIN Employee E2 ON E1.TeamID = E2.TeamID GROUP BY E1.EmpID;`',
+            text: '```sql\nSELECT E1.EmpID, COUNT(*) AS TeamSize\nFROM Employee E1\nJOIN Employee E2\n  ON E1.TeamID = E2.TeamID\nGROUP BY E1.EmpID;\n```',
             whyTrueOrFalse: 'True: self-joining on `TeamID` pairs each `E1.EmpID` with every teammate in `E2`, and grouping by `E1.EmpID` counts the exact team size.',
           },
           {
             id: 'B',
-            text: '`SELECT EmpID, COUNT(*) AS TeamSize FROM Employee GROUP BY TeamID;`',
+            text: '```sql\nSELECT EmpID, COUNT(*) AS TeamSize\nFROM Employee\nGROUP BY TeamID;\n```',
             whyTrueOrFalse: 'False: `EmpID` is neither inside `GROUP BY` nor aggregated, making this invalid SQL.',
           },
           {
             id: 'C',
-            text: '`SELECT E1.EmpID, (SELECT COUNT(*) FROM Employee E2 WHERE E2.TeamID = E1.TeamID) AS TeamSize FROM Employee E1;`',
+            text: '```sql\nSELECT\n  E1.EmpID,\n  (\n    SELECT COUNT(*)\n    FROM Employee E2\n    WHERE E2.TeamID = E1.TeamID\n  ) AS TeamSize\nFROM Employee E1;\n```',
             whyTrueOrFalse: 'True: a valid scalar correlated subquery counts teammates for each outer `E1` row.',
           },
           {
             id: 'D',
-            text: '`SELECT E.EmpID, T.TeamSize FROM Employee E JOIN (SELECT TeamID, COUNT(*) AS TeamSize FROM Employee GROUP BY TeamID) T ON E.EmpID = T.TeamID;`',
+            text: '```sql\nSELECT E.EmpID, T.TeamSize\nFROM Employee E\nJOIN (\n  SELECT TeamID, COUNT(*) AS TeamSize\n  FROM Employee\n  GROUP BY TeamID\n) T\n  ON E.EmpID = T.TeamID;\n```',
             whyTrueOrFalse: 'False: the join condition wrongly equates `E.EmpID = T.TeamID` instead of `E.TeamID = T.TeamID`!',
           },
         ],
@@ -2357,7 +2453,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         year: 2026,
         marks: 2,
         type: 'NAT',
-        stem: 'Consider `Account(AccID, Balance) = {(A1, 100), (A2, 300), (A3, 300), (A4, 500), (A5, 800)}`. How many rows are returned by:\n`SELECT A1.AccID FROM Account A1 WHERE (SELECT COUNT(*) FROM Account A2 WHERE A2.Balance > A1.Balance) >= (SELECT COUNT(*) FROM Account A3 WHERE A3.Balance < A1.Balance);`',
+        stem: 'Consider `Account(AccID, Balance) = {(A1, 100), (A2, 300), (A3, 300), (A4, 500), (A5, 800)}`. How many rows are returned by:\n```sql\nSELECT A1.AccID\nFROM Account A1\nWHERE (\n  SELECT COUNT(*)\n  FROM Account A2\n  WHERE A2.Balance > A1.Balance\n) >= (\n  SELECT COUNT(*)\n  FROM Account A3\n  WHERE A3.Balance < A1.Balance\n);\n```',
         natAnswer: { min: 3, max: 3, exactDisplay: '3' },
         triggerHint: 'Compare `(strictly larger) >= (strictly smaller)` on the sorted list `[100, 300, 300, 500, 800]`.',
         intuitiveSolution: [
@@ -2374,7 +2470,7 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         sourceLabel: 'IITM-Style Tricky · NOT IN (NULL) vs NOT EXISTS',
         marks: 2,
         type: 'NAT',
-        stem: 'Consider single-column tables `P(x) = {(1), (2), (3), (4)}` and `Q(y) = {(2), (NULL)}`. Let $n_1$ be the row count returned by `SELECT x FROM P WHERE x NOT IN (SELECT y FROM Q);` and $n_2$ be the row count returned by `SELECT x FROM P WHERE NOT EXISTS (SELECT * FROM Q WHERE Q.y = P.x);`. Compute $n_1 + 10 \\cdot n_2$.',
+        stem: 'Consider single-column tables `P(x) = {(1), (2), (3), (4)}` and `Q(y) = {(2), (NULL)}`. Let $n_1$ be the row count returned by Query 1:\n```sql\nSELECT x\nFROM P\nWHERE x NOT IN (\n  SELECT y\n  FROM Q\n);\n```\nand $n_2$ be the row count returned by Query 2:\n```sql\nSELECT x\nFROM P\nWHERE NOT EXISTS (\n  SELECT *\n  FROM Q\n  WHERE Q.y = P.x\n);\n```\nCompute $n_1 + 10 \\cdot n_2$.',
         natAnswer: { min: 30, max: 30, exactDisplay: '30' },
         triggerHint: '`Q` contains `NULL`! Expand `x NOT IN (2, NULL)` using 3-valued logic.',
         intuitiveSolution: [
@@ -2394,17 +2490,17 @@ export const MODULE_12_CHAPTERS: ChapterData[] = [
         options: [
           {
             id: 'A',
-            text: 'If `S` is empty, `SELECT * FROM R WHERE R.a > ALL (SELECT S.b FROM S)` returns all rows of `R`.',
+            text: 'If `S` is empty, the query below returns all rows of `R`:\n```sql\nSELECT *\nFROM R\nWHERE R.a > ALL (\n  SELECT S.b\n  FROM S\n);\n```',
             whyTrueOrFalse: 'True: `x > ALL(∅)` is vacuously `TRUE` for every row in `R`.',
           },
           {
             id: 'B',
-            text: 'If `S` is empty, `SELECT * FROM R WHERE R.a > (SELECT MAX(S.b) FROM S)` returns all rows of `R`.',
+            text: 'If `S` is empty, the query below returns all rows of `R`:\n```sql\nSELECT *\nFROM R\nWHERE R.a > (\n  SELECT MAX(S.b)\n  FROM S\n);\n```',
             whyTrueOrFalse: 'False: `MAX` on an empty set returns `NULL`, and `R.a > NULL` evaluates to `UNKNOWN`, returning **0 rows**!',
           },
           {
             id: 'C',
-            text: 'In `SELECT dept, COUNT(*) FROM Emp GROUP BY dept`, all rows with `dept IS NULL` are placed into a single `NULL` group.',
+            text: 'In the query below, all rows with `dept IS NULL` are placed into a single `NULL` group:\n```sql\nSELECT dept, COUNT(*)\nFROM Emp\nGROUP BY dept;\n```',
             whyTrueOrFalse: 'True: SQL `GROUP BY` and `DISTINCT` treat all `NULL`s as equal for grouping.',
           },
           {

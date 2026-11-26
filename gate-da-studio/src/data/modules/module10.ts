@@ -117,10 +117,18 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Why BFS finds shortest unweighted hop counts while DFS dives deep—and how reversing edges flips reachability',
         priority: 'core-pillar',
         buildsOn: 'Queues (FIFO), Stacks (LIFO), and adjacency list representations',
+        whyStudy:
+          'Real networks — road maps, social graphs, web hyperlinks, and AI puzzle state spaces — are general **graphs** full of cycles and competing paths, not neat trees. To answer everyday questions like *"what is the fewest-hop route from $S$ to $G$?"* or *"which nodes can $u$ reach?"*, computer science relies on two core traversal engines: **BFS** (FIFO queue) and **DFS** (LIFO recursion stack). Seeing the exact queue/stack mechanics and edge-reversal rules behind BFS and DFS immediately unlocks unweighted shortest-path witnesses (**GATE DA 2025 Q.58**), large-$V$ DFS orderings (**GATE DA 2025 Q.65**), and reversed-graph duality (**GATE DA 2026 Q.40**).',
+        groundRules: [
+          '**BFS Uses a FIFO Queue — Guaranteeing Non-Decreasing Hop Distance From Start $s$:** Every vertex at distance $d$ is enqueued and expanded before any vertex at distance $d + 1$, so the *very first time* BFS discovers vertex $v$, it locks in the exact shortest unweighted distance $\\delta(s, v)$.',
+          '**DFS Uses a LIFO Stack (or Recursion) — Diving Deep With Zero Distance Awareness:** DFS follows the first unvisited neighbor all the way down one corridor before backtracking, so its path to a goal can be much longer than the shortest path — yet starting from the same vertex $u$, BFS and DFS ALWAYS visit the **exact same reachable set** $\\text{Reach}_G(u)$.',
+          '**Graph Storage Determines Traversal Runtime ($\\Theta(|V| + |E|)$ vs. $\\Theta(|V|^2)$):** On **adjacency lists**, every vertex enters the frontier once and each edge is scanned once (twice if undirected), taking $\\Theta(|V| + |E|)$ time. On an **adjacency matrix**, scanning all $|V|$ entries of each vertex’s row forces $\\Theta(|V|^2)$ even on sparse trees!',
+          '**Reversing All Directed Edges ($G^R$) Swaps Source and Destination Reachability:** A directed path $u \\to x_1 \\to \\dots \\to v$ exists in $G$ if and only if the reversed directed path $v \\to \\dots \\to x_1 \\to u$ exists in $G^R$ — proving $v \\in \\text{DFS}(G, u) \\iff u \\in \\text{BFS}(G^R, v)$!',
+        ],
         toyExample: {
           title: 'Two Ways to Escape a 5-Room Museum',
           scenario:
-            'You start at Lobby $S$ and want to reach Exit $G$. Hallways are $S\\!-\\!A$, $S\\!-\\!B$, $A\\!-\\!C$, $C\\!-\\!D$, $D\\!-\\!G$, and $B\\!-\\!G$, with neighbors listed alphabetically.',
+            'You start at Lobby $S$ and want to reach Exit $G$. Hallways are $S\\!-\\!A$, $S\\!-\\!B$, $A\\!-\\!C$, $C\\!-\\!D$, $D\\!-\\!G$, and $B\\!-\\!G$, with neighbors listed alphabetically. Compare the two 6-line Python engines side-by-side:\n```python\nfrom collections import deque\n\ndef bfs(adj, start):\n    visited = {start}\n    q = deque([start])              # FIFO queue -> ripples level by level\n    while q:\n        u = q.popleft()\n        for v in adj[u]:\n            if v not in visited:\n                visited.add(v)\n                q.append(v)\n\ndef dfs(adj, u, visited):\n    visited.add(u)                  # LIFO call stack -> dives deep first\n    for v in adj[u]:\n        if v not in visited:\n            dfs(adj, v, visited)\n```',
           walkthroughSteps: [
             '1. **BFS (FIFO Queue — ripple outward):** Start at $S$ (dist $0$). Enqueue neighbors $A, B$ (dist $1$). Pop $A \\to$ enqueue $C$ (dist $2$). Pop $B \\to$ enqueue $G$ (dist $2$). Pop $C \\to$ enqueue $D$. Pop $G$: found via $S \\to B \\to G$ in **2 hops**!',
             '2. **DFS (Recursion Stack — commit to one corridor):** Start at $S$, take first neighbor $A \\to C \\to D \\to G$! It reaches $G$ in **4 hops** before ever backtracking to $B$.',
@@ -186,6 +194,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Using nested timestamps like parentheses to classify edges and catch directed cycles without false alarms',
         priority: 'high-yield',
         buildsOn: 'Recursive DFS call stack',
+        whyStudy:
+          'In a package installer (`pip`, `npm`), a spreadsheet formula sheet, or a PyTorch neural-network computation graph, a **directed cycle** (`A` waits on `B`, `B` waits on `C`, `C` waits on `A`) causes an immediate deadlock! If you try detecting directed cycles using only a binary `visited` set, you get hit by false alarms on completely valid diamond graphs (`A -> B -> C` and `A -> C`). Tracking **3 DFS colors (`WHITE / GRAY / BLACK`)** and **discovery/finish timestamps $(d[u], f[u])$** eliminates false alarms and lets you classify every edge in a graph on sight.',
+        groundRules: [
+          '**DFS Stamps $d[u]$ on Entry and $f[u]$ on Exit — Creating Perfectly Nested Parentheses:** Because recursive DFS uses a LIFO call stack, every child finishes completely before its parent finishes. Hence for any two vertices $u$ and $v$, intervals $[d[u], f[u]]$ and $[d[v], f[v]]$ are either **completely disjoint** or **strictly nested** (Parenthesis Theorem!).',
+          '**Three Colors Distinguish Active Call-Stack Ancestors (`GRAY`) From Finished Nodes (`BLACK`):** `WHITE` = untouched; `GRAY` = currently active on the recursion stack ($d[u]$ stamped, $f[u]$ still open); `BLACK` = completely finished and popped ($f[u]$ closed).',
+          '**A Directed Graph Contains a Cycle If and Only If DFS Spots a Back Edge to a `GRAY` Node:** An edge $(u, v)$ landing on a `GRAY` ancestor ($d[v] \\le d[u] < f[u] \\le f[v]$) closes a real directed cycle $v \\leadsto u \\to v$. An edge landing on a finished `BLACK` node is merely a harmless **Forward** or **Cross** edge — NEVER a cycle!',
+          '**Undirected DFS Can ONLY Produce Tree Edges and Back Edges:** Because every undirected edge $(u, v)$ is two-way, if $v$ were already finished (`BLACK`), the edge $(v, u)$ would already have been explored from $v$ earlier! Therefore Forward and Cross edges NEVER occur in undirected DFS.',
+        ],
         toyExample: {
           title: 'Tracing Clock Ticks on a 4-Node Directed Graph',
           scenario:
@@ -249,6 +265,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Linearizing dependency graphs so every arrow points strictly left-to-right',
         priority: 'core-pillar',
         buildsOn: 'DFS finish times $f[u]$ and Back-edge cycle detection',
+        whyStudy:
+          'Whether you are ordering university course prerequisites, compiling interdependent software modules, sampling variables in a **Bayesian Network**, or running the forward pass and backpropagation of a **Neural Network autograd graph**, you face the exact same problem: *given one-way dependency arrows $u \\to v$ ("finish $u$ before starting $v$"), can we line up every vertex left-to-right so every arrow points forward?* **Topological Sort** solves this cleanly in $\\Theta(|V| + |E|)$ time — and is tested directly in **GATE DA 2024 Q.51**.',
+        groundRules: [
+          '**A Directed Graph Admits a Topological Sort If and Only If It Is a DAG (Zero Cycles):** Any directed cycle creates a circular dependency (`A` before `B` before `A`) that can never be arranged strictly left-to-right.',
+          '**In a DAG, Every Directed Edge $(u, v)$ Strictly Satisfies $f[u] > f[v]$:** Because a DAG has no Back Edges, when DFS inspects $(u, v)$, either $v$ is untouched (`WHITE`, so $v$ finishes *inside* $u$’s call $\\implies f[v] < f[u]$) or $v$ is already finished (`BLACK` $\\implies f[v] < d[u] < f[u]$). Therefore listing vertices by **decreasing finish time $f[u]$** (NEVER discovery time $d[u]$!) is guaranteed valid!',
+          '**Kahn’s Algorithm Repeatedly Peels Zero-Indegree Vertices (Tasks With No Unmet Prerequisites):** Enqueue every vertex with $\\text{deg}^-(v) = 0$; pop one, emit it, and decrement $\\text{deg}^-$ of its neighbors (pushing any neighbor reaching $0$). If the queue empties before outputting all $|V|$ vertices, the leftover subgraph MUST contain a cycle!',
+          '**Topological Sort Is Usually NOT Unique:** Independent branches with no directed path between them can appear in either relative order. A DAG has a *unique* topological sort if and only if it contains a Hamiltonian directed path visiting all $|V|$ vertices.',
+        ],
         toyExample: {
           title: 'Scheduling 4 Prerequisites Without Breaking Order',
           scenario:
@@ -742,6 +766,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Why Dijkstra pops the lowest-cost frontier node—and why a single negative edge breaks the lock',
         priority: 'sleeping-giant',
         buildsOn: 'BFS distance layers and priority queues (Min-Heaps)',
+        whyStudy:
+          'Plain BFS minimizes hop count, which treats a 500 km highway and a 1 km street identically! Real GPS routing, packet networks, and AI planners operate on **weighted graphs** where every edge has a numeric cost. **Dijkstra’s algorithm** — and its AI twin **Uniform Cost Search (UCS)** — finds optimal weighted shortest paths in $O((|V| + |E|)\\log |V|)$ using a Min-Heap. Understanding the exact non-negative precondition behind Dijkstra’s greedy lock-in (and why optimality is only confirmed on **pop**, never on **push**) prevents the two deadliest shortest-path mistakes in GATE DA.',
+        groundRules: [
+          '**Dijkstra’s Greedy Lock-In Strictly Assumes Non-Negative Edge Weights ($w(u, v) \\ge 0$):** When the cheapest unsettled vertex $u$ pops from the min-heap at cost $d[u]$, any rival path leaving the settled set must first step through another frontier vertex costing $\\ge d[u]$ and then add only $\\ge 0$ weights — proving no future detour can ever undercut $d[u]$!',
+          '**Even ONE Negative Edge Can Break Dijkstra — Even With Zero Negative Cycles:** Once a negative edge exists, a more expensive frontier node can later take that negative "cashback" shortcut to beat an already-locked node! Whenever negative edge weights appear, switch to Bellman-Ford ($O(|V| \\cdot |E|)$).',
+          '**Push = Candidate Discovered; Pop = Optimal Cost Confirmed:** Never halt UCS (or $A^*$) the moment goal $G$ is first pushed onto the priority queue — an expensive direct edge may enqueue $G$ early while a cheaper multi-hop path is one pop away. Always stop ONLY when $G$ is **popped**!',
+          '**Adding a Uniform Constant $+c$ to All Edges Can Change Shortest Paths:** Because competing $s$-$t$ paths can contain *different numbers of edges* $k$, adding $+c$ per edge penalizes a $k$-edge route by $+k \\cdot c$, potentially flipping which route wins!',
+        ],
         toyExample: {
           title: 'Two Toll Roads and a Cashback Shortcut',
           scenario:
@@ -806,6 +838,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Connecting all vertices at minimum total cable cost—and why MST is really Single-Linkage Clustering',
         priority: 'sleeping-giant',
         buildsOn: 'Undirected connected graphs, cycles, and greedy priority selection',
+        whyStudy:
+          'Imagine wiring $|V|$ campus buildings with fiber-optic cable so every building can talk to every other building at the **smallest possible total cable cost** — rather than minimizing distance from one single root. That is the **Minimum Spanning Tree (MST)** problem! Even better for Data Science: running **Kruskal’s MST** on pairwise data-point distances is literally identical to **Single-Linkage Hierarchical Clustering** in Machine Learning! Understanding the Cut Property, Cycle Property, and fixed-size $|V| - 1$ tree invariance makes every MST proof and weight-shift MSQ effortless.',
+        groundRules: [
+          '**Every Spanning Tree on $|V|$ Vertices Uses Exactly $|V| - 1$ Edges and Zero Cycles:** Adding any $|V|$-th edge creates a cycle; dropping any edge disconnects the graph. Because *every* candidate spanning tree has the exact same number of edges ($|V| - 1$), adding $+c$ to all weights shifts every tree by the identical constant $(|V| - 1)c$ — preserving MSTs!',
+          '**The Cut Property Guarantees Lightest Crossing Edges Are MST-Safe:** Split the vertices into *any* two non-empty sets $S$ and $V \\setminus S$. The strictly cheapest edge bridging $S$ and $V \\setminus S$ MUST belong to EVERY MST (and when tied, at least one cheapest bridge belongs to some MST). Both Prim’s and Kruskal’s are simply greedy implementations of this single rule!',
+          '**The Cycle Property Bans the Strictly Heaviest Edge on Any Cycle:** Inside any cycle, the single strictly heaviest edge can NEVER belong to an MST — deleting it leaves the cycle connected via cheaper edges.',
+          '**MSTs Depend Only on Relative Edge Weight Order — Distinct Weights Guarantee a Unique MST:** Because Kruskal’s and Prim’s only *compare* individual edge weights (never summing unequal-length paths), any strictly increasing map ($w + c$, $a \\cdot w$ for $a > 0$, or $w^2$ for $w > 0$) leaves the MST untouched!',
+        ],
         toyExample: {
           title: 'Wiring 4 Campus Buildings with Minimum Fiber Cable',
           scenario:
@@ -869,6 +909,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Why $h(n) \\le h^*(n)$ suffices for trees, while $h(u) \\le c(u,v) + h(v)$ is required to never re-open closed graph nodes',
         priority: 'core-pillar',
         buildsOn: 'Uniform Cost Search ($f(n)=g(n)$) and shortest-path triangle inequality',
+        whyStudy:
+          'Uniform Cost Search (Dijkstra) finds optimal paths, yet it expands blindly in every direction like an aimless flood — wasting work exploring states leading straight *away* from the goal. **$A^*$ Search** gives UCS a domain-specific compass $h(n)$ (estimated remaining cost to the goal) and prioritizes frontier states by $f(n) = g(n) + h(n)$. Understanding the exact mathematical rules that keep $A^*$ optimal — **admissibility** for Tree Search vs. **consistency** for Graph Search without re-opening — is one of the highest-yield AI concepts in GATE DA (**2024 Q.23**, **2025 Q.44**, **2026 Q.13**).',
+        groundRules: [
+          '**$A^*$ Scores Every Frontier State by $f(n) = g(n) + h(n)$ and Stops ONLY When $G$ Is Popped:** Here $g(n)$ is exact cost spent from $S$ to $n$, and $h(n)$ is estimated remaining cost from $n$ to $G$ (UCS is $h \\equiv 0$; Greedy Best-First is $f = h$). Just like UCS, never stop when $G$ is first pushed — wait until $G$ pops with the lowest $f$-score!',
+          '**Admissibility ($0 \\le h(n) \\le h^*(n)$) Guarantees Optimality in $A^*$ Tree Search:** Because an admissible heuristic never overestimates true remaining cost $h^*(n)$, every node along an optimal path to $G$ has $f(n) \\le C^*$ and is guaranteed to pop before any suboptimal goal path ($f > C^*$).',
+          '**Consistency ($h(u) \\le c(u, v) + h(v)$ with $h(G) = 0$) Guarantees Non-Decreasing $f$ and Graph-Search Optimality:** Along every step $u \\to v$, consistency guarantees $f(v) = g(u) + c(u, v) + h(v) \\ge g(u) + h(u) = f(u)$. Therefore the *very first pop* of any node $n$ already holds its optimal $g(n)$, so closed nodes NEVER need re-opening!',
+          '**Consistency Strictly Implies Admissibility (Not Vice Versa), and $\\max(h_1, h_2)$ & $|h_1 - h_2|$ Preserve Admissibility:** Summing the edge triangle inequality along an optimal path proves $h(n) \\le h^*(n)$, whereas an admissible heuristic can still break consistency on one edge! Combining admissible heuristics with $\\max(h_1, h_2)$ or $|h_1 - h_2|$ stays $\\le h^*$, while $h_1 + h_2$ can overshoot $h^*$.',
+        ],
         toyExample: {
           title: 'Two GPS Apps: Optimistic vs. Triangle-Consistent',
           scenario:
@@ -1339,6 +1387,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Assuming an optimal opponent who minimizes whatever score you try to maximize',
         priority: 'core-pillar',
         buildsOn: 'Post-order DFS on trees',
+        whyStudy:
+          'In single-agent search ($A^*$), the environment never fights back against your plan. In competitive two-player games like Chess, Tic-Tac-Toe, and Checkers, an intelligent **adversary** actively tries to ruin your best move at every turn! **Minimax** models this exact strategic tug-of-war by assuming your opponent (MIN) always chooses the reply that hurts you (MAX) the most — letting you select the opening move with the highest guaranteed floor. Mastering bottom-up Minimax backups (and checking whether an exam asks for the **root score** or the **optimal root action**, as in **GATE DA 2026 Q.30**) is the bedrock of adversarial AI search.',
+        groundRules: [
+          '**Zero-Sum Means MAX’s Gain Is MIN’s Exact Loss:** Every leaf utility is measured from MAX’s perspective; MAX always maximizes the score while MIN always minimizes that exact same number.',
+          '**Minimax Evaluates Bottom-Up via Post-Order DFS:** Terminal leaves return `Utility(s)`; every MAX internal node returns the `max` of its children’s Minimax values; every MIN internal node returns the `min` of its children’s Minimax values.',
+          '**DFS Execution Keeps Memory Linear $O(bm)$ Despite Exponential $O(b^m)$ Time:** Because Minimax walks one root-to-leaf path at a time and pops frames on return, it never holds the full $b^m$ tree in RAM!',
+          '**Always Separate Root Value ($\\max$) From Optimal Root Action ($\\arg\\max$):** The backed-up score at the root is the guaranteed **Minimax value**; the move index (`1`, `2`, `3`) that attains it is the **optimal root action** — check which one the prompt asks for!',
+        ],
         toyExample: {
           title: 'Choosing Between 3 Doors When an Opponent Picks the Trap Inside',
           scenario:
@@ -1404,14 +1460,22 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Pruning provably irrelevant branches the moment $\\alpha \\ge \\beta$—without ever changing the root decision',
         priority: 'core-pillar',
         buildsOn: 'DFS Minimax evaluation and interval bounds',
+        whyStudy:
+          'Even in a game like Chess (branching factor $b \\approx 35$), looking just 6 half-moves ahead produces $35^6 \\approx 1.8$ billion positions — plain Minimax simply runs out of time! **Alpha-Beta pruning** solves this with zero loss of exactness: the moment a branch proves it cannot beat a deal already secured higher up the tree, we skip all of its remaining siblings instantly. Knowing exact $\\alpha / \\beta$ ownership (**GATE DA 2024 Q.25**) and inclusive cutoff brackets (`<=` and `>=`, **GATE DA 2025 Q.43**) turns Alpha-Beta questions into effortless 2-mark victories.',
+        groundRules: [
+          '**Strict Ownership — MAX Updates Only $\\alpha$; MIN Updates Only $\\beta$:** Along the current root-to-node path, $\\alpha$ (starts at $-\\infty$) tracks the **highest-value** score MAX has guaranteed so far (`alpha = max(alpha, v)`), while $\\beta$ (starts at $+\\infty$) tracks the **lowest-value** score MIN has guaranteed so far (`beta = min(beta, v)`).',
+          '**Bounds Pass Down By Value; Only Scalar $v$ Returns Up:** A parent passes its current $(\\alpha, \\beta)$ down into each child call. A child never mutates a cousin’s or sibling’s bounds — it returns only its backed-up scalar $v$, and the parent updates its own $\\alpha$ or $\\beta$.',
+          '**Cutoffs Trigger Immediately When $\\alpha \\ge \\beta$ (Inclusive Equality!):** At a **MIN** node, prune remaining children the instant $v \\le \\alpha$ (closed interval $(-\\infty, \\alpha]$); at a **MAX** node, prune remaining children the instant $v \\ge \\beta$ (closed interval $[\\beta, \\infty)$). Equality prunes too because the parent above cannot strictly improve!',
+          '**Alpha-Beta Pruning NEVER Alters the Root Minimax Value:** Every skipped branch is mathematically guaranteed not to change optimal play — pruning speeds up search without ever altering the answer.',
+        ],
         toyExample: {
           title: 'Walking Away from a Bad Deal Mid-Inspection',
           scenario:
-            'MAX inspects two MIN branches left-to-right. Branch 1 has leaves $[2, 5]$, giving MIN value $\\min(2,5) = 2$. Now MAX knows $\\alpha = 2$ (MAX can already guarantee at least $2$). MAX enters Branch 2, whose leaves are $[x, 9]$.',
+            'Look at the exact cutoff lines in Python’s Alpha-Beta recursion:\n```python\ndef max_value(state, alpha, beta):\n    if is_terminal(state):\n        return utility(state)\n    v = float("-inf")\n    for child in children(state):\n        v = max(v, min_value(child, alpha, beta))\n        if v >= beta:               # inclusive >= cutoff!\n            return v                # prune remaining children\n        alpha = max(alpha, v)\n    return v\n\ndef min_value(state, alpha, beta):\n    if is_terminal(state):\n        return utility(state)\n    v = float("inf")\n    for child in children(state):\n        v = min(v, max_value(child, alpha, beta))\n        if v <= alpha:              # inclusive <= cutoff!\n            return v                # prune remaining children\n        beta = min(beta, v)\n    return v\n```\nNow trace MAX inspecting two MIN branches left-to-right: Branch 1 has leaves $[2, 5]$ (returning $2$, setting $\\alpha = 2$), and Branch 2 has leaves $[x, 9]$.',
           walkthroughSteps: [
             '1. Branch 2 (MIN) reads its first leaf $x$. So MIN’s final value on Branch 2 can be **at most** $x$ ($v \\le x$).',
             '2. Suppose $x = 1$: then Branch 2 will return $\\le 1 < \\alpha = 2$. MAX would NEVER abandon guaranteed $2$ for $\\le 1$! So reading $9$ is useless—**prune $9$!**',
-            '3. What if $x = 2$ exactly? Branch 2 returns $\\le 2 = \\alpha$. Even if $9$ gave $2$, MAX already has $2$ from Branch 1 and cannot strictly improve! Under standard Russell & Norvig pruning ($v \\le \\alpha$), **equality $x = 2$ ALSO prunes $9$**!',
+            '3. What if $x = 2$ exactly? Branch 2 returns $\\le 2 = \\alpha$. Even if $9$ gave $2$, MAX already has $2$ from Branch 1 and cannot strictly improve! Under standard Russell & Norvig pruning (`if v <= alpha: return v`), **equality $x = 2$ ALSO prunes $9$**!',
             '4. Hence leaf $9$ is pruned for every $x \\in (-\\infty, 2]$ (closed bracket at $2$!).',
           ],
           ahaMoment:
@@ -1468,6 +1532,14 @@ export const MODULE_10_CHAPTERS: ChapterData[] = [
         subtitle: 'Why inspecting the best move first slashes $O(b^m)$ down to $O(b^{m/2})$',
         priority: 'high-yield',
         buildsOn: 'Alpha-Beta pruning cutoffs',
+        whyStudy:
+          'Run Alpha-Beta pruning on the exact same game tree twice — once checking strong moves first, and once checking weak moves first — and you get two totally different speeds: one skips most of the tree, while the other prunes **zero** leaves! Understanding how **move ordering** shrinks the effective branching factor from $b$ down to $\\sqrt{b}$ (allowing an AI to look **twice as deep** within the same CPU budget) explains both classic GATE DA complexity MSQs and why modern game engines train neural policy networks to sort moves before searching.',
+        groundRules: [
+          '**Child Ordering Controls Pruning Efficiency — NEVER the Final Minimax Value:** Because $\\max$ and $\\min$ are commutative, reordering siblings left-to-right never changes the backed-up root score — only how early tight $(\\alpha, \\beta)$ bounds lock in!',
+          '**Worst-Case Move Ordering Produces Zero Pruning ($O(b^m)$):** If MAX tries its weakest branches first and MIN replies with its weakest responses first, $\\alpha \\ge \\beta$ never triggers and Alpha-Beta evaluates every single leaf like plain Minimax.',
+          '**Ideal Move Ordering Cuts Effective Branching From $b$ to $\\sqrt{b}$ ($O(b^{m/2})$):** Inspecting each player’s strongest move first locks in optimal bounds immediately, reducing leaf evaluations to $O((\\sqrt{b})^m) = O(b^{m/2})$ — **doubling** searchable depth from $m$ to $2m$ for the exact same time budget!',
+          '**Auxiliary Space Always Stays Linear $O(bm)$:** Regardless of move ordering, Alpha-Beta runs via depth-first recursion and never stores pruned subtrees in memory, keeping space complexity at $O(bm)$.',
+        ],
         toyExample: {
           title: 'Two Identical Trees, Opposite Leaf Order',
           scenario:

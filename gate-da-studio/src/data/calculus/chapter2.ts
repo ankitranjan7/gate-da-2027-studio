@@ -120,35 +120,43 @@ export const chapter2: ChapterData = {
       subtitle: 'Zooming in from both sides of a point — even if a hole sits right at the point',
       priority: 'core-pillar',
       buildsOn: 'Ch.1 Function input-output tables',
+      whyStudy:
+        'Calculus was invented to answer questions where ordinary plug-in arithmetic crashes — like finding instantaneous speed over zero elapsed time ($\\frac{0}{0}$), checking whether a curve has a sudden jump or missing hole (Continuity in Ch.3), or asking what happens to a Machine Learning model’s error as the number of training samples $n$ grows to infinity ($n \\to \\infty$). **Limits** give us a rock-solid magnifying glass to inspect where a function is heading *right next to* a point, even when plugging that point in directly is illegal.',
+      groundRules: [
+        '**Approaching Completely Ignores Arriving (The Open-Neighborhood Rule):** The limit $\\lim_{x \\to c} f(x)$ ONLY inspects inputs $x$ arbitrarily close to $c$ with $x \\neq c$. (In formal $\\epsilon$–$\\delta$ language: for any tiny target closeness $\\epsilon > 0$ around height $L$, there is a small input window $\\delta > 0$ around $c$, excluding $c$ itself via $0 < |x - c| < \\delta$, that keeps $|f(x) - L| < \\epsilon$.) Whatever sits right AT $x = c$ — a missing dot, a $0/0$ hole, or a misplaced point — is completely invisible to the limit!',
+        '**Two-Sided Agreement Rule (LHL = RHL):** On the real number line $\\mathbb{R}$, there are only two directions to walk toward a number $c$: from slightly smaller numbers ($x \\to c^-$, the **Left-Hand Limit / LHL**) and from slightly larger numbers ($x \\to c^+$, the **Right-Hand Limit / RHL**). The two-sided limit exists if and only if both travelers settle onto the **exact same finite real number** $L \\in \\mathbb{R}$ ($\\in$ means "belongs to").',
+        '**Why Canceling $(x - c)/(x - c)$ Is Legal Inside a Limit:** At $x = 2$, $\\frac{x - 2}{x - 2} = \\frac{0}{0}$ is illegal. Inside $\\lim_{x \\to 2}$, however, Ground Rule 1 guarantees $x \\neq 2$, so $x - 2$ is a tiny **nonzero** number! Dividing a nonzero number by itself equals $1$, which is why factoring and canceling $(x - 2)$ is 100% legal inside a limit.',
+        '**The Pinching (Squeeze) Principle:** If a wild oscillating function $f(x)$ stays trapped between a lower fence $g(x)$ and an upper fence $h(x)$ (meaning $g(x) \\le f(x) \\le h(x)$), and both fences pinch together at the exact same finite height $L$, then $f(x)$ has zero room to wiggle away and MUST land at $L$ too.',
+      ],
       toyExample: {
         title: 'A Broken Speedometer Formula With a Hole at $x = 2$',
         scenario:
-          'Take a look at $f(x) = \\frac{x^2 - 4}{x - 2}$. If you plug $x = 2$ straight in, you hit $\\frac{0}{0}$ (undefined!). Instead of giving up at $x = 2$, let’s walk gently toward $2$ from both the left and the right and see where the values are heading:',
+          'Take a look at $f(x) = \\frac{x^2 - 4}{x - 2}$. If you plug $x = 2$ straight in, you hit $\\frac{4 - 4}{2 - 2} = \\frac{0}{0}$ (undefined!). Instead of giving up at $x = 2$, notice that for any $x \\neq 2$, factoring $x^2 - 4 = (x - 2)(x + 2)$ lets us cancel $(x - 2)$, leaving $f(x) = x + 2$. Let’s walk gently toward $2$ from both the left and the right and see where the values are heading:',
         walkthroughSteps: [
-          '1. **From the Left ($x \\to 2^-$):** $f(1.9) = 3.9,\\; f(1.99) = 3.99,\\; f(1.999) = 3.999 \\to \\mathbf{4}$.',
-          '2. **From the Right ($x \\to 2^+$):** $f(2.1) = 4.1,\\; f(2.01) = 4.01,\\; f(2.001) = 4.001 \\to \\mathbf{4}$.',
-          '3. Now contrast $g(x) = \\frac{|x|}{x}$ near $x = 0$: for any $x < 0$ (even $-0.0001$), $g(x) = -1$; for any $x > 0$ ($+0.0001$), $g(x) = +1$. Left says $-1$, Right says $+1$ — they disagree, so $\\lim_{x\\to 0} \\frac{|x|}{x}$ **does NOT exist**!',
+          '1. **Walk from the Left ($x \\to 2^-$, meaning $x < 2$):** Plug numbers just below $2$: $f(1.9) = 3.9$, $f(1.99) = 3.99$, $f(1.999) = 3.999$. As $x$ creeps up to $2$ from the left, the output heads smoothly to **$\\mathbf{4}$** ($\\text{LHL} = 4$).',
+          '2. **Walk from the Right ($x \\to 2^+$, meaning $x > 2$):** Plug numbers just above $2$: $f(2.1) = 4.1$, $f(2.01) = 4.01$, $f(2.001) = 4.001$. From the right side too, the output heads smoothly to **$\\mathbf{4}$** ($\\text{RHL} = 4$). Since $\\text{LHL} = \\text{RHL} = 4$, the limit equals **$4$** even though $f(2)$ does not exist!',
+          '3. **Now contrast a broken jump $g(x) = \\frac{|x|}{x}$ near $x = 0$:** Recall $|x|$ flips negative numbers positive ($|x| = -x$ for $x < 0$) and leaves positive numbers alone ($|x| = x$ for $x > 0$). So for ANY $x < 0$ (even $-0.0001$), $g(x) = \\frac{-x}{x} = -1$; for ANY $x > 0$ (even $+0.0001$), $g(x) = \\frac{x}{x} = +1$. Left says $-1$, Right says $+1$ — they disagree, so $\\lim_{x \\to 0} \\frac{|x|}{x}$ **does NOT exist**!',
         ],
         ahaMoment:
           'Think of it this way: a limit $\\lim_{x\\to c} f(x)$ **completely ignores** what happens *at* $x = c$. It ONLY asks whether a traveler approaching from the left ($x \\to c^-$) and a traveler approaching from the right ($x \\to c^+$) agree on the exact same finite destination $L$!',
       },
       theoremAndFormula: {
         statement:
-          'The two-sided limit $\\lim_{x \\to c} f(x) = L$ exists (as a finite real number) if and only if both one-sided limits exist, are finite, and equal each other:',
+          'The two-sided limit $\\lim_{x \\to c} f(x) = L$ exists (as a finite real number) if and only if ($\\iff$ means "means the exact same thing as") both one-sided limits exist, are finite, and equal each other:',
         formulaLatex:
           '\\lim_{x \\to c} f(x) = L \\iff \\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L \\in \\mathbb{R}',
         plainEnglishDecoding:
-          'As a rule of thumb, pause and check LHL and RHL separately whenever you spot one of the **4 Sign-Sensitive Triggers**: $|x - c|$, the floor function $\\lfloor x \\rfloor$, an exponential reciprocal $e^{1/(x-c)}$ (which drops to $0$ from the left and explodes to $+\\infty$ from the right!), or a piecewise boundary.',
+          'Read that equation out loud: "Heading toward $c$ gives limit $L$ **means the exact same thing as** arriving from the left ($c^-$) and arriving from the right ($c^+$) both land on the same finite real number $L$ (not $+\\infty$ or $-\\infty$)." As a practical rule of thumb, pause and check LHL and RHL separately whenever you spot one of the **4 Sign-Sensitive Triggers**: $|x - c|$ (flips sign at $c$), the floor function $\\lfloor x \\rfloor$ (jumps at every integer), an exponential reciprocal $e^{1/(x-c)}$ (drops to $0$ from the left and explodes to $+\\infty$ from the right!), or a piecewise boundary.',
         workedMiniExamples: [
           {
             prompt: 'Does $\\lim_{x \\to 0} \\frac{1}{1 + e^{1/x}}$ exist?',
             solution:
-              '• **RHL ($x \\to 0^+$):** $1/x \\to +\\infty \\implies e^{1/x} \\to +\\infty \\implies \\frac{1}{1+\\infty} = 0$.\n• **LHL ($x \\to 0^-$):** $1/x \\to -\\infty \\implies e^{1/x} \\to 0 \\implies \\frac{1}{1+0} = 1$.\nSince $0 \\neq 1$, the two-sided limit **does NOT exist**!',
+              '**Step 1 (Spot the trigger):** $e^{1/x}$ flips completely depending on whether $x$ is tiny positive or tiny negative, so check RHL and LHL separately.\n**Step 2 (Right-Hand Limit, $x \\to 0^+$):** Pick a tiny positive number like $x = +0.01$. Then $1/x = +100 \\to +\\infty$, so $e^{1/x} \\to +\\infty$, and $\\frac{1}{1 + \\infty} = \\mathbf{0}$.\n**Step 3 (Left-Hand Limit, $x \\to 0^-$):** Pick a tiny negative number like $x = -0.01$. Then $1/x = -100 \\to -\\infty$, so $e^{1/x} = \\frac{1}{e^{100}} \\to 0$, and $\\frac{1}{1 + 0} = \\mathbf{1}$.\n**Step 4 (Compare):** Since $\\text{RHL} = 0 \\neq 1 = \\text{LHL}$, the two-sided limit **does NOT exist**!',
           },
           {
             prompt: 'Does $\\lim_{x \\to 0} x \\sin(1/x)$ exist?',
             solution:
-              'Even though $\\sin(1/x)$ oscillates wildly between $-1$ and $+1$, multiplying by $x$ traps it inside $-|x| \\le x\\sin(1/x) \\le +|x|$. Both walls hit $0$, so by **Squeeze Theorem** the limit is **$0$**!',
+              '**Step 1 (Spot the oscillation):** As $x \\to 0$, $1/x \\to \\pm\\infty$, so $\\sin(1/x)$ oscillates wildly back and forth between $-1$ and $+1$ forever.\n**Step 2 (Build the two Squeeze fences):** Because $-1 \\le \\sin(1/x) \\le +1$ always, multiplying by the non-negative distance $|x|$ traps $x\\sin(1/x)$ inside:\n$-|x| \\le x\\sin(1/x) \\le +|x|$.\n**Step 3 (Pinch both fences as $x \\to 0$):** Both the lower fence $-|x|$ and the upper fence $+|x|$ shrink to $0$. By the **Squeeze Theorem**, the trapped function has no choice — $\\lim_{x \\to 0} x\\sin(1/x) = \\mathbf{0}$!',
           },
         ],
       },
@@ -167,35 +175,43 @@ export const chapter2: ChapterData = {
       priority: 'core-pillar',
       buildsOn: 'Step 2.1 Limits & $(A-B)(A+B) = A^2 - B^2$',
       sandboxId: 'limit-xray-lab',
+      whyStudy:
+        'In real calculations — from numerical distance formulas to variance differences and asymptotic runtime analysis — we constantly subtract two huge quantities (like $\\sqrt{t^2 + t} - t$) or divide two vanishing changes ($0/0$). Blindly guessing "$\\infty - \\infty = 0$" or "$0/0 = 1$" is one of the costliest mistakes on exams like **GATE DA 2025 Q.32**. Understanding *why* indeterminate forms are undecided tug-of-wars — and knowing the clean conjugate trick to unmask the winner — turns tricky radical limits into effortless 5-second arithmetic.',
+      groundRules: [
+        '**Infinity Is a Growth Behavior, Not an Ordinary Number:** Writing $\\infty - \\infty$ does NOT mean "the same number minus itself $= 0$." One growing expression can quietly stay $0.5$ ahead of the other forever (like $\\sqrt{t^2 + t}$ staying $0.5$ above $t$), or one can outgrow the other to $+\\infty$!',
+        '**Only 7 Forms Are True Tug-of-Wars (Know the Fake Ones!):** The **7 Indeterminate Forms** are $\\frac{0}{0},\\; \\frac{\\infty}{\\infty},\\; 0 \\cdot \\infty,\\; \\infty - \\infty,\\; 1^{\\infty},\\; 0^0,$ and $\\infty^0$. By contrast, $\\infty + \\infty = +\\infty$, $0^{\\infty} = 0$ (multiplying a tiny fraction by itself endlessly collapses to $0$), and $\\frac{\\text{nonzero}}{0} \\to \\pm\\infty$ are **NOT** indeterminate — their answers are already settled!',
+        '**Multiplying by the Conjugate Erases Square Roots Safely:** Multiplying and dividing by the matching plus-version $\\frac{\\sqrt{A} + \\sqrt{B}}{\\sqrt{A} + \\sqrt{B}} = 1$ never changes the expression’s value, yet triggers $(p - q)(p + q) = p^2 - q^2$ on top — cleanly destroying the square root and converting an $\\infty - \\infty$ clash into a friendly $\\frac{\\infty}{\\infty}$ ratio!',
+        '**The Square-Root Sign Law ($\\sqrt{t^2} = |t|$):** By definition, the principal square root symbol $\\sqrt{\\cdot}$ ALWAYS outputs a **non-negative** number ($\\ge 0$). Therefore $\\sqrt{t^2} = |t|$: it equals $+t$ when $t > 0$ ($t \\to +\\infty$), but equals **$-t$** when $t < 0$ ($t \\to -\\infty$). Forgetting that absolute value flips the sign of every $t \\to -\\infty$ radical limit!',
+      ],
       toyExample: {
         title: 'Plugging $t = 100$ Into GATE DA 2025 Q.32 ($\\sqrt{t^2 + t} - t$)',
         scenario:
           'At first glance, as $t \\to +\\infty$, both $\\sqrt{t^2 + t}$ and $t$ grow huge, so it is tempting to guess "$\\infty - \\infty = 0$". Before trusting that guess, let’s test a real number like $t = 100$ together:',
         walkthroughSteps: [
-          '1. $t^2 + t = 10{,}000 + 100 = 10{,}100$.',
-          '2. What is $(100.5)^2$? Remember $(100 + 0.5)^2 = 10{,}000 + 2(100)(0.5) + 0.25 = 10{,}100.25$!',
-          '3. So $\\sqrt{10{,}100}$ is **almost identically $100.5$** ($100.49875\\dots$)! Subtracting $t = 100$ leaves **$0.5$**, NOT $0$!',
+          '1. **Compute inside the square root at $t = 100$:** $t^2 + t = 100^2 + 100 = 10{,}000 + 100 = 10{,}100$.',
+          '2. **Compare with $(100.5)^2$:** Expand $(100 + 0.5)^2 = 100^2 + 2(100)(0.5) + (0.5)^2 = 10{,}000 + 100 + 0.25 = 10{,}100.25$ — almost identical to $10{,}100$!',
+          '3. **Subtract $t = 100$:** Because $\\sqrt{10{,}100} \\approx 100.49875\\dots$ is almost identically $100.5$, subtracting $t = 100$ leaves **$0.5$**, NOT $0$! Even at $t = 1{,}000{,}000$, the extra $+t$ inside the root keeps pushing the root $0.5$ units above $t$ forever!',
         ],
         ahaMoment:
           'Notice why that happened! Completing the square inside the root reveals the whole secret: $t^2 + at = (t + \\frac{a}{2})^2 - \\frac{a^2}{4}$, so for huge $t$, $\\sqrt{t^2 + at}$ behaves just like $t + \\frac{a}{2}$. Subtracting $t$ leaves **$\\frac{a}{2}$** every time!',
       },
       theoremAndFormula: {
         statement:
-          'The **7 Indeterminate Forms** are $\\frac{0}{0},\\; \\frac{\\infty}{\\infty},\\; 0 \\cdot \\infty,\\; \\infty - \\infty,\\; 1^{\\infty},\\; 0^0,\\; \\infty^0$ (notice $0^\\infty = 0$ is **NOT** indeterminate — a tiny fraction raised to a huge power goes straight to $0$!). For radical $\\infty - \\infty$ forms, multiply & divide by the conjugate:',
+          'The **7 Indeterminate Forms** are $\\frac{0}{0},\\; \\frac{\\infty}{\\infty},\\; 0 \\cdot \\infty,\\; \\infty - \\infty,\\; 1^{\\infty},\\; 0^0,\\; \\infty^0$ (remember $0^\\infty = 0$ is **NOT** indeterminate!). For radical $\\infty - \\infty$ forms with $k > 0$, multiply and divide by the conjugate $\\sqrt{k^2 t^2 + at + b} + kt$:',
         formulaLatex:
           '\\lim_{t \\to +\\infty} \\left(\\sqrt{k^2 t^2 + at + b} - kt\\right) = \\lim_{t \\to +\\infty} \\frac{at + b}{\\sqrt{k^2 t^2 + at + b} + kt} = \\frac{a}{2k} \\quad (k > 0)',
         plainEnglishDecoding:
-          'In plain words, once you rationalize and divide top and bottom by $t$, the numerator settles onto $a$, the denominator settles onto $\\sqrt{k^2} + k = 2k$, and the trailing constant $b$ shrinks to zero and disappears!',
+          'Walk through that last equals sign in slow motion: after rationalizing, divide both top and bottom by $t$ (since $t > 0$, pushing $1/t$ inside the square root divides by $t^2$). The numerator becomes $a + \\frac{b}{t} \\to a$, and the denominator becomes $\\sqrt{k^2 + \\frac{a}{t} + \\frac{b}{t^2}} + k \\to \\sqrt{k^2} + k = 2k$. Every $\\frac{\\text{constant}}{t}$ piece shrinks to $0$, leaving the clean shortcut $\\frac{a}{2k}$ — notice the trailing constant $b$ disappears completely!',
         workedMiniExamples: [
           {
             prompt: 'Evaluate $\\lim_{t \\to +\\infty} (\\sqrt{t^2 + t} - t)$ (GATE DA 2025 Q.32).',
             solution:
-              'Here $k = 1, a = 1, b = 0 \\implies \\frac{a}{2k} = \\frac{1}{2(1)} = 0.5$.',
+              '**Step 1 (Read coefficients):** Match $\\sqrt{k^2 t^2 + at + b} - kt$ with $\\sqrt{1\\cdot t^2 + 1\\cdot t + 0} - 1\\cdot t$, giving $k = 1$, $a = 1$, and $b = 0$.\n**Step 2 (Apply $\\frac{a}{2k}$):** $\\frac{a}{2k} = \\frac{1}{2(1)} = \\mathbf{0.5}$.',
           },
           {
             prompt: 'Watch the minus-infinity trap! Evaluate $\\lim_{t \\to -\\infty} (\\sqrt{t^2 + t} + t)$.',
             solution:
-              'Substitute $u = -t \\to +\\infty$: $\\sqrt{u^2 - u} - u$. Now $k=1, a=-1 \\implies \\frac{-1}{2} = -0.5$! (Never pull $\\sqrt{t^2} = t$ when $t < 0$ — $\\sqrt{t^2} = |t| = -t$!)',
+              '**Step 1 (Flip the variable to $+\\infty$ so signs stay safe!):** Let $u = -t$. As $t \\to -\\infty$, $u \\to +\\infty$, and replacing $t$ with $-u$ turns $\\sqrt{(-u)^2 + (-u)} + (-u)$ into $\\sqrt{u^2 - u} - u$.\n**Step 2 (Read coefficients for positive $u \\to +\\infty$):** Now $k = 1$ and $a = -1$, so $\\frac{a}{2k} = \\frac{-1}{2(1)} = \\mathbf{-0.5}$! (Doing $u = -t$ first guarantees you never accidentally write $\\sqrt{t^2} = t$ when $t < 0$!)',
           },
         ],
       },
@@ -213,35 +229,43 @@ export const chapter2: ChapterData = {
       subtitle: 'Fast $0/0$ and $1^\\infty$ resolution — plus the exact traps where L’Hôpital fails',
       priority: 'core-pillar',
       buildsOn: 'Step 2.2 Indeterminate forms & Ch.1 $\\ln / e^x$',
+      whyStudy:
+        'When you derive the Poisson distribution from Binomial trials in Week 2 ($(1 - \\lambda/n)^n \\to e^{-\\lambda}$), analyze continuous compounding, or compare algorithm runtimes ($\\ln n$ vs. $n^p$ vs. $2^n$), you constantly hit $0/0$, $\\infty/\\infty$, and $1^\\infty$ limits. A tiny toolkit — three local tangent limits near $0$, the one-line $1^\\infty$ formula, the growth-rate ladder, and L’Hôpital’s Rule — solves 95% of GATE limit questions in seconds, while knowing L’Hôpital’s exact limitations protects you from IITM’s favorite MSQ traps.',
+      groundRules: [
+        '**Near Zero, Smooth Curves Copy Their Straight Tangent Line:** Right at $u = 0$, all three curves $\\sin u$, $e^u - 1$, and $\\ln(1 + u)$ pass through $(0, 0)$ with exact slope $1$. That is why dividing any of them by $u$ approaches $1$: for tiny $u$, $\\sin u \\approx u$, $e^u - 1 \\approx u$, and $\\ln(1 + u) \\approx u$!',
+        '**Why $1^\\infty$ Collapses to $e^{\\lim v(u - 1)}$:** Take $\\ln$ of $u^v$ to bring the exponent down: $\\ln(u^v) = v \\cdot \\ln(u)$. Because $u$ is creeping toward $1$, rewrite $u = 1 + (u - 1)$ where $(u - 1)$ is tiny, so Ground Rule 1 gives $\\ln(1 + (u - 1)) \\approx u - 1$! Exponentiating back instantly gives $e^{\\lim v(u - 1)}$.',
+        '**L’Hôpital’s Rule Has Two Strict Gatekeepers (and Works One-Way Only!):** You may differentiate top and bottom separately ONLY when (1) plugging in genuinely produces $\\frac{0}{0}$ or $\\frac{\\infty}{\\infty}$ (NEVER use it when the denominator isn’t $0$ or $\\infty$!), AND (2) $\\lim \\frac{f\'(x)}{g\'(x)}$ actually exists. If $\\lim \\frac{f\'(x)}{g\'(x)}$ oscillates forever, L’Hôpital is simply **inconclusive** — the original limit $\\lim \\frac{f(x)}{g(x)}$ can still exist cleanly!',
+        '**The Asymptotic Growth Ladder Beats Repeated L’Hôpital:** As $x \\to +\\infty$, logs crawl slowest, powers $x^p$ ($p > 0$) beat every log, exponentials $c^x$ ($c > 1$) beat every power, and factorials beat every exponential: $(\\ln x)^a \\ll x^b \\ll c^x \\ll n!$ (where $\\ll$ reads "grows infinitely slower than"). Any slower family divided by a faster family drops straight to $0$ immediately!',
+      ],
       toyExample: {
         title: 'Compound Interest Compounded Every Millisecond ($1^\\infty$)',
         scenario:
-          'Imagine a bank paying $100\\%$ annual interest on ₹1. Paid once a year, ₹1 grows to $(1 + 1)^1 = ₹2$. Paid monthly ($n=12$), it reaches $(1 + \\frac{1}{12})^{12} \\approx ₹2.613$. If you compound $n = 1{,}000{,}000$ times a year, $(1 + \\frac{1}{n})^n$ looks like a $1^{\\infty}$ tug-of-war — does your rupee blow up to $\\infty$ or stay stuck at ₹1?',
+          'Imagine a bank paying $100\\%$ annual interest on ₹1. Paid once a year, ₹1 grows to $(1 + 1)^1 = ₹2$. Paid monthly ($n=12$), it reaches $(1 + \\frac{1}{12})^{12} \\approx ₹2.613$. If you compound $n = 1{,}000{,}000$ times a year, $(1 + \\frac{1}{n})^n$ looks like a $1^{\\infty}$ tug-of-war (the base creeps down to $1$ while the exponent explodes to $\\infty$) — does your rupee blow up to $\\infty$ or stay stuck at ₹1?',
         walkthroughSteps: [
-          '1. Neither! Take $\\ln$: $n \\ln(1 + \\frac{1}{n})$. For tiny $u = \\frac{1}{n}$, $\\ln(1 + u) \\approx u = \\frac{1}{n}$.',
-          '2. Multiply: $n \\times \\frac{1}{n} = 1$. Exponentiate back: $e^1 = e \\approx ₹2.71828$!',
-          '3. If the interest rate is $a$ instead of $1$, $(1 + \\frac{a}{n})^n \\to e^a$ (and for $a = -\\lambda$, $(1 - \\frac{\\lambda}{n})^n \\to e^{-\\lambda}$, which births the Poisson distribution!).',
+          '1. **Bring the exponent down with $\\ln$:** $\\ln\\!\\left((1 + \\frac{1}{n})^n\\right) = n \\cdot \\ln\\!\\left(1 + \\frac{1}{n}\\right)$.',
+          '2. **Use Ground Rule 1 for tiny $u = \\frac{1}{n}$:** Since $\\frac{1}{n} \\to 0$, $\\ln\\!\\left(1 + \\frac{1}{n}\\right) \\approx \\frac{1}{n}$. Multiplying by $n$ gives $n \\times \\frac{1}{n} = 1$.',
+          '3. **Undo $\\ln$ with $e^{(\\cdot)}$:** Exponentiating back gives $e^1 = e \\approx ₹2.71828$! And if the interest rate is any constant $a$ instead of $1$, $(1 + \\frac{a}{n})^n \\to e^a$ (for $a = -\\lambda$, $(1 - \\frac{\\lambda}{n})^n \\to e^{-\\lambda}$, which births the Poisson distribution in Week 2!).',
         ],
         ahaMoment:
-          'Here is the universal shortcut you can carry into every exam: whenever you meet a $1^\\infty$ limit $\\lim u(x)^{v(x)}$ (with $u \\to 1$ and $v \\to \\infty$), you don’t need messy logs — it collapses in one step to **$e^{\\lim v(x) \\cdot (u(x) - 1)}$**!',
+          'Here is the universal shortcut you can carry into every exam: whenever you meet a $1^\\infty$ limit $\\lim u(x)^{v(x)}$ (with base $u \\to 1$ and exponent $v \\to \\pm\\infty$), you don’t need messy logs — it collapses in one step to **$e^{\\lim v(x) \\cdot (u(x) - 1)}$**!',
       },
       theoremAndFormula: {
         statement:
-          'Core standard limits as $u \\to 0$, the universal $1^\\infty$ formula, and **L’Hôpital’s Rule** (valid ONLY when $\\frac{f(x)}{g(x)}$ is $\\frac{0}{0}$ or $\\frac{\\infty}{\\infty}$ AND $\\lim \\frac{f\'(x)}{g\'(x)}$ exists):',
+          'Core standard limits as $u \\to 0$, the universal $1^\\infty$ formula (where $\\exp(A)$ is just a cleaner way to write $e^A$), and **L’Hôpital’s Rule** (valid ONLY when $\\frac{f(x)}{g(x)}$ is $\\frac{0}{0}$ or $\\frac{\\infty}{\\infty}$ AND $\\lim \\frac{f\'(x)}{g\'(x)}$ exists):',
         formulaLatex:
           '\\lim_{u \\to 0} \\frac{\\sin u}{u} = \\lim_{u \\to 0} \\frac{e^u - 1}{u} = \\lim_{u \\to 0} \\frac{\\ln(1+u)}{u} = 1, \\qquad \\lim_{u \\to 1,\\, v \\to \\infty} u^v = \\exp\\!\\Big(\\lim v(u - 1)\\Big)',
         plainEnglishDecoding:
-          'Before reaching for L’Hôpital’s rule, pause for two quick safety checks: **(1) verify it is genuinely $0/0$ or $\\infty/\\infty$** (if the denominator isn’t $0$, just plug in directly!), and **(2) pull out any nonzero multiplying factors first** so you save yourself from messy product-rule derivatives.',
+          'Remember that $\\exp(A)$ simply means $e^A$ — we write $\\exp(\\dots)$ when the exponent is tall so it stays easy to read! Before reaching for L’Hôpital’s rule, pause for two quick safety checks: **(1) verify it is genuinely $0/0$ or $\\infty/\\infty$** (if the denominator isn’t $0$, just plug in directly!), and **(2) pull out any nonzero multiplying factors first** so you save yourself from messy product-rule derivatives.',
         workedMiniExamples: [
           {
             prompt: 'Evaluate $\\lim_{x \\to 0} (\\cos x)^{1/x^2}$.',
             solution:
-              'As $x \\to 0$, $\\cos x \\to 1$ and $1/x^2 \\to \\infty$ ($1^\\infty$ form!). Fire the $e^{\\lim v(u-1)}$ shortcut: exponent $= \\lim_{x\\to 0} \\frac{\\cos x - 1}{x^2} = -\\frac{1}{2}$. Answer $= e^{-1/2}$!',
+              '**Step 1 (Check the form):** As $x \\to 0$, the base $u(x) = \\cos x \\to \\cos(0) = 1$, while the exponent $v(x) = \\frac{1}{x^2} \\to +\\infty$. Genuine **$1^\\infty$ form**!\n**Step 2 (Compute exponent $\\lim v(u - 1)$):** $\\lim_{x \\to 0} \\frac{\\cos x - 1}{x^2}$. Using L’Hôpital once (since it is $\\frac{0}{0}$): $\\lim_{x \\to 0} \\frac{-\\sin x}{2x} = -\\frac{1}{2} \\cdot 1 = -\\frac{1}{2}$.\n**Step 3 (Put on top of $e$):** Answer $= e^{-1/2}$!',
           },
           {
             prompt: 'Evaluate $\\lim_{x \\to \\infty} \\frac{x^{50}}{e^x}$.',
             solution:
-              'Growth hierarchy as $x \\to +\\infty$: $\\ln x \\ll x^p \\ll e^{ax} \\ll x^x$. Any positive exponential crushes any polynomial, so $\\lim = 0$ immediately (no 50 L’Hôpital steps needed!).',
+              '**Step 1 (Check the Growth Ladder):** As $x \\to +\\infty$, polynomials $x^{50}$ sit strictly below exponentials $e^x$ ($\\ln x \\ll x^p \\ll e^{ax} \\ll x^x$).\n**Step 2 (Conclude immediately):** Any slower family divided by a faster family shrinks straight to **$0$** — zero need to apply L’Hôpital $50$ times!',
           },
         ],
       },
@@ -267,35 +291,43 @@ export const chapter2: ChapterData = {
       subtitle: 'How GATE DA 2026 hid a 10-second Central Limit Theorem answer inside a terrifying factorial limit',
       priority: 'high-yield',
       buildsOn: 'Step 2.3 $e^{-n}$ & Symmetry',
+      whyStudy:
+        'GATE DA deliberately tests whether you can connect Calculus with Probability rather than keeping subjects in separate silos. **GATE DA 2026 Q.45** handed candidates the daunting limit $\\lim_{n \\to \\infty} \\sum_{k=0}^{n} \\frac{e^{-n}n^k}{k!}$ — pure Calculus methods stall out or walk straight into the deadly "answer $= 1$" trap! Learning to recognize a probability sum hiding inside a limit turns a 2-mark rank-decider into a calm 10-second visual answer.',
+      groundRules: [
+        '**Never Send One $n \\to \\infty$ While Freezing Another $n$:** In $\\sum_{k=0}^{n} \\frac{e^{-n} n^k}{k!}$, the number $n$ appears BOTH as the upper stopping index ($k = 0$ up to $n$) AND inside the summand ($e^{-n}n^k$). Replacing the upper bound $n$ with $\\infty$ while pretending the inner $n$ stays fixed is strictly illegal — both $n$’s grow together in lockstep!',
+        '**Why Stopping at $k = n$ Slices the Sum Right Down the Middle:** Compare any term to the previous one: $\\frac{n^k / k!}{n^{k-1} / (k-1)!} = \\frac{n}{k}$. That ratio is $> 1$ when $k < n$ (terms grow bigger) and $< 1$ when $k > n$ (terms shrink smaller). So the bulk of the sum peaks right around $k = n$ — cutting off at $k = n$ captures only the left half, NEVER the whole $e^n$!',
+        '**Adding Many Independent Random Pieces Forms a Symmetric Bell Curve (CLT):** A $\\text{Poisson}(n)$ random count $S_n$ behaves identically to the sum of $n$ independent $\\text{Poisson}(1)$ counts (each having average $\\mu = 1$ and variance $\\sigma^2 = 1$). By the **Central Limit Theorem**, as $n \\to \\infty$, standardizing $Z_n = \\frac{S_n - \\text{mean}}{\\text{std dev}} = \\frac{S_n - n}{\\sqrt{n}}$ smooths out into the symmetric Standard Normal bell curve $\\mathcal{N}(0, 1)$ centered at $0$.',
+        '**Exact Half-Area Rule ($\\Phi(0) = 0.5$):** The symbol $\\Phi(z) = P(Z \\le z)$ denotes the total area under the Standard Normal bell curve to the left of $z$. Because the bell curve is mirror-symmetric around $0$ and has total area $1$, the area to the left of $0$ is always exact $\\Phi(0) = \\mathbf{0.5}$!',
+      ],
       toyExample: {
         title: 'Counting the First Half of a Fair Coin-Toss Bell Curve',
         scenario:
           'Before we touch a single factorial, let’s answer a wonderfully simple question: if you draw a symmetric bell curve centered right at mean $\\mu = 100$, what fraction of its total area lies to the left of $100$?',
         walkthroughSteps: [
-          '1. Total area under any probability density is $1$.',
-          '2. Because a bell curve is mirror-symmetric around its mean $\\mu$, exactly **half ($0.5$)** of the probability sits $\\le \\mu$ and **half ($0.5$)** sits $> \\mu$!',
-          '3. Now look at $\\sum_{k=0}^{n} \\frac{e^{-n} n^k}{k!}$: each term $\\frac{e^{-n} n^k}{k!}$ is literally the Poisson($n$) probability of getting $k$ arrivals when the average rate is $\\mu = n$!',
+          '1. **Total probability equals $1$:** The entire area under any probability bell curve adds up to $1$.',
+          '2. **Mirror symmetry splits the area $50/50$:** Because a bell curve is perfectly mirror-symmetric around its mean $\\mu = 100$, exactly **half ($0.5$)** of the probability sits at $\\le \\mu$ and **half ($0.5$)** sits at $> \\mu$!',
+          '3. **Spot the disguise in $\\sum_{k=0}^{n} \\frac{e^{-n} n^k}{k!}$:** Recall that $\\sum_{k=0}^{n}$ means "add the terms for $k = 0, 1, 2, \\dots, n$." Each term $\\frac{e^{-n} n^k}{k!}$ is literally the exact Poisson($n$) probability of seeing $k$ random arrivals when the average arrival count is $\\mu = n$ — so summing from $k = 0$ to $n$ simply asks for $P(\\text{Poisson}(n) \\le n)$!',
         ],
         ahaMoment:
           'See how beautifully Calculus and Probability shake hands here? For large $n$, $\\text{Poisson}(n)$ behaves like the sum of $n$ independent $\\text{Poisson}(1)$ variables, so by the Central Limit Theorem it morphs into a symmetric Normal bell curve centered at $n$ — which means $P(X \\le n)$ glides straight to **$\\mathbf{0.5}$**!',
       },
       theoremAndFormula: {
         statement:
-          'Whenever a limit as $n \\to \\infty$ sums terms involving $\\frac{e^{-n} n^k}{k!}$ (Poisson) or $\\binom{n}{k} p^k (1-p)^{n-k}$ (Binomial) up to $n$ or $np$, rewrite the sum as $P(S_n \\le \\text{threshold})$ where $S_n = \\sum_{i=1}^n Y_i$ has mean $n\\mu$ and variance $n\\sigma^2$:',
+          'Whenever a limit as $n \\to \\infty$ sums terms involving $\\frac{e^{-n} n^k}{k!}$ (Poisson) or $\\binom{n}{k} p^k (1-p)^{n-k}$ (Binomial, where $\\binom{n}{k} = \\frac{n!}{k!(n-k)!}$) up to $n$ or $np$, rewrite the sum as $P(S_n \\le \\text{threshold})$ where $S_n = \\sum_{i=1}^n Y_i$ has mean $n\\mu$ and standard deviation $\\sigma\\sqrt{n}$:',
         formulaLatex:
           '\\lim_{n \\to \\infty} \\sum_{k=0}^{n} \\frac{e^{-n} n^k}{k!} = \\lim_{n \\to \\infty} P\\!\\left(\\frac{S_n - n}{\\sqrt{n}} \\le 0\\right) = \\Phi(0) = \\frac{1}{2}',
         plainEnglishDecoding:
-          'In plain words, $S_n \\sim \\text{Poisson}(n)$ has mean $n$ and standard deviation $\\sqrt{n}$. Summing up to $k = n$ simply asks for $P(S_n \\le \\text{its own mean})$, which standardizes to $Z \\le 0$ on the Standard Normal bell curve — giving $\\Phi(0) = 0.5$!',
+          'Read the middle step out loud: $S_n \\sim \\text{Poisson}(n)$ (where $\\sim$ means "follows the distribution") has mean $n$ and standard deviation $\\sqrt{n}$. To standardize $S_n \\le n$, subtract the mean $n$ from both sides (giving $S_n - n \\le 0$) and divide both sides by $\\sqrt{n}$ (giving $\\frac{S_n - n}{\\sqrt{n}} \\le 0$). As $n \\to \\infty$, the left side becomes a Standard Normal $Z \\sim \\mathcal{N}(0, 1)$, so the probability becomes $P(Z \\le 0) = \\Phi(0) = 0.5$!',
         workedMiniExamples: [
           {
             prompt: 'What would $\\lim_{n \\to \\infty} \\sum_{k=0}^{n + \\sqrt{n}} \\frac{e^{-n} n^k}{k!}$ converge to?',
             solution:
-              'Here the upper cutoff is $n + 1\\cdot\\sqrt{n} = \\mu + 1\\sigma$, which standardizes to $P(Z \\le 1) = \\Phi(1) \\approx 0.8413$!',
+              '**Step 1 (Read the upper cutoff):** Instead of stopping at $n$, the sum now runs up to $n + 1 \\cdot \\sqrt{n}$ (one full standard deviation above the mean $n$!).\n**Step 2 (Standardize):** Subtract the mean $n$ and divide by $\\sqrt{n}$: $\\frac{(n + \\sqrt{n}) - n}{\\sqrt{n}} = +1$.\n**Step 3 (Read the Normal CDF):** As $n \\to \\infty$, this converges to $P(Z \\le 1) = \\Phi(1) \\approx \\mathbf{0.8413}$!',
           },
           {
             prompt: 'Evaluate $\\lim_{n \\to \\infty} \\frac{1}{2^n} \\sum_{k=0}^{\\lfloor n/2 \\rfloor} \\binom{n}{k}$.',
             solution:
-              'Recognize $P(\\text{Binomial}(n, 0.5) \\le n/2)$ — probability of getting $\\le 50\\%$ heads in $n$ fair coin tosses $\\to \\Phi(0) = 0.5$ (also exact by symmetry for odd $n$)!',
+              '**Step 1 (Spot the Binomial distribution):** Rewrite $\\frac{1}{2^n} \\binom{n}{k} = \\binom{n}{k}(0.5)^k(0.5)^{n-k}$, which is the exact probability of getting $k$ Heads in $n$ fair coin tosses ($S_n \\sim \\text{Binomial}(n, 0.5)$ with mean $np = n/2$).\n**Step 2 (Apply CLT at the mean):** Summing up to $\\lfloor n/2 \\rfloor$ asks for $P(S_n \\le \\text{mean})$, which standardizes to $P(Z \\le 0) = \\Phi(0) = \\mathbf{0.5}$! (In fact, by coin-flip symmetry it is *exact* $0.5$ for every odd $n$ too!)',
           },
         ],
       },

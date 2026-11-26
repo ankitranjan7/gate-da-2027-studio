@@ -112,7 +112,15 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         title: 'k-Means Clustering: WCSS Coordinate Descent & Voronoi Convexity',
         subtitle: 'Why assigning to the nearest centroid carves space into convex polygons',
         priority: 'core-pillar',
-        buildsOn: 'Euclidean norm \\(\\|x - \\mu\\|_2^2\\) and convex combinations \\(\\lambda x + (1-\\lambda)y\\)',
+        buildsOn: 'Euclidean norm $\\|x - \\mu\\|_2^2$ and convex combinations $\\lambda x + (1-\\lambda)y$',
+        whyStudy:
+          'In countless real problems—segmenting shoppers by spending behavior, placing $k$ warehouse hubs near stores, or compressing image colors—you are handed raw data with zero class labels. $k$-Means gives a fast, geometric way to discover $k$ compact groups automatically by minimizing total squared distance to cluster centers.',
+        groundRules: [
+          'Lloyd’s $k$-Means algorithm alternates two simple coordinate-descent steps on the Within-Cluster Sum of Squares (WCSS) $J = \\sum_{j=1}^k \\sum_{x \\in C_j} \\|x - \\mu_j\\|_2^2$: (1) hold centroids fixed and assign every point to its nearest centroid, then (2) hold assignments fixed and move each centroid to the arithmetic mean $\\mu_j = \\frac{1}{|C_j|}\\sum_{x \\in C_j} x$ of its cluster.',
+          'Both steps are mathematically guaranteed to decrease (or leave unchanged) the exact same energy $J$—nearest-centroid assignment shrinks each point’s distance, and the arithmetic mean uniquely minimizes squared Euclidean deviation. Since there are only finitely many ways to partition $n$ points into $k$ sets, $k$-Means is guaranteed to halt in finitely many steps.',
+          'Although $k$-Means always converges, WCSS is a non-convex objective over all partitions, so Lloyd’s algorithm guarantees only a local minimum (not the global best), making the final clustering sensitive to random initial centroids.',
+          'At convergence, a point belongs to cluster $C_j$ iff $\\|x - \\mu_j\\|_2^2 \\le \\|x - \\mu_m\\|_2^2$ for all $m \\neq j$. Expanding both sides cancels $\\|x\\|_2^2$, leaving linear half-space inequalities whose intersection is a convex Voronoi cell—so any point on the straight line segment between two members of $C_j$ MUST also lie in $C_j$ (meaning $k$-Means cannot separate non-convex shapes like concentric rings).',
+        ],
         toyExample: {
           title: 'Four 1D Shops Along a Highway ($k = 2$)',
           scenario:
@@ -177,6 +185,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Why picking an actual resident instead of an arithmetic average defeats extreme outliers',
         priority: 'high-yield',
         buildsOn: 'k-Means WCSS & Manhattan ($L_1$) vs Euclidean ($L_2$) distance',
+        whyStudy:
+          'Standard $k$-Means has two practical blind spots: squaring distances lets a single extreme outlier yank the arithmetic mean far away from real data points, and taking vector averages completely breaks down on non-Euclidean data like strings, graphs, or city-grid Manhattan distances. $k$-Medoids (PAM) fixes both by requiring every cluster center to be an actual data point minimizing unsquared dissimilarity.',
+        groundRules: [
+          'Every medoid $m_j$ MUST be an actual element of the dataset ($m_j \\in C_j \\subset \\mathcal{D}$), unlike a $k$-Means centroid or a component-wise median vector that can float in empty space where no real point exists.',
+          'Instead of minimizing squared Euclidean error, $k$-Medoids minimizes the sum of unsquared dissimilarities $\\sum_{j=1}^k \\sum_{x \\in C_j} d(x, m_j)$, where $d(x, y)$ can be Manhattan $L_1$, Euclidean $L_2$, cosine, or any precomputed pairwise dissimilarity table.',
+          'Just as the 1D median resists extreme outliers that wreck the arithmetic mean, using unsquared distances plus the actual-point constraint prevents a single distant outlier from dragging the cluster center away from the dense core.',
+          'Finding the best medoid inside cluster $C_j$ requires checking pairwise distances among members ($O(|C_j|^2)$ per cluster vs. $O(|C_j|)$ for a $k$-Means mean), trading slightly more computation for metric generality and outlier robustness.',
+        ],
         toyExample: {
           title: 'Three Normal Houses and One Mansion ($k = 1$)',
           scenario:
@@ -233,6 +249,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Building a merge tree bottom-up and seeing why Single Linkage is Kruskal’s MST in disguise',
         priority: 'core-pillar',
         buildsOn: 'Pairwise distance matrices & Kruskal’s Minimum Spanning Tree',
+        whyStudy:
+          'What if you do not know how many clusters $k$ exist ahead of time—or you want to inspect nested groupings (like biological species inside families inside orders) and even separate non-convex shapes like concentric rings? Agglomerative hierarchical clustering solves this by growing a full bottom-up merge tree (dendrogram) that you can slice at any level $k$ afterward.',
+        groundRules: [
+          'Agglomerative clustering starts with $n$ single-point clusters and executes exactly $n - 1$ greedy merges, combining the two closest clusters $(A, B)$ at each step until one root cluster contains all $n$ points.',
+          'The linkage rule defines distance between multi-point clusters $A$ and $B$: Single-Linkage takes the closest cross-pair ($\\min d(x,y)$), Complete-Linkage takes the farthest cross-pair ($\\max d(x,y)$), and Average-Linkage averages all $|A| \\cdot |B|$ cross-pairs (dividing by $|A||B|$, never $|A| + |B|$).',
+          'Single-Linkage is mathematically identical to Kruskal’s Minimum Spanning Tree (MST) algorithm: its $n - 1$ merge heights are the exact sorted MST edge weights, and cutting into $k$ clusters deletes the $k - 1$ heaviest MST edges (allowing it to separate concentric rings, though prone to "chaining").',
+          'Complete-Linkage and Average-Linkage do NOT follow Kruskal’s MST once clusters have size $\\ge 2$; you must update the reduced distance matrix after every merge (taking element-wise $\\max$ for Complete-Linkage). All three standard linkages produce monotonic dendrograms with zero height inversions.',
+        ],
         toyExample: {
           title: 'Four 1D Points $\\{0, 2, 7, 10\\}$ Under Two Different Rulers',
           scenario:
@@ -689,6 +713,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Why skipping mean subtraction corrupts PC1 toward the centroid instead of the spread',
         priority: 'core-pillar',
         buildsOn: 'Sample mean $\\bar{x}$ and orthogonal projection matrices ($P^2 = P$)',
+        whyStudy:
+          'Before Principal Component Analysis (PCA) can hunt for the directions where a dataset spreads out the most, the data cloud must sit centered right over the origin. If you skip mean-centering on a cloud floating far away from $(0, 0)$, PCA gets fooled into pointing its first axis straight toward the cloud’s average location instead of its true direction of variation—and the centering matrix $H$ that performs this shift is itself one of GATE DA’s favorite Linear Algebra objects.',
+        groundRules: [
+          'Stacking $n$ data points as rows of $X \\in \\mathbb{R}^{n \\times d}$, left-multiplying by the $n \\times n$ centering matrix $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ subtracts each column’s arithmetic mean from every entry, producing the zero-mean matrix $\\tilde{X} = HX$.',
+          'Because centering an already-centered dataset changes nothing, $H$ is a symmetric orthogonal projection matrix onto the $(n - 1)$-dimensional subspace $\\mathbf{1}^\\perp$: $H^T = H$ and $H^2 = H$ (idempotent—NEVER $H^2 = I_n$!).',
+          'The eigenvalues of $H$ are completely fixed for any $n \\ge 2$: $H\\mathbf{1} = 0$ gives eigenvalue $0$ (multiplicity $1$, so $\\det(H) = 0$ and $H$ is singular), while $Hv = v$ for every zero-sum vector $v \\perp \\mathbf{1}$ gives eigenvalue $1$ (multiplicity $n - 1$).',
+          'Those eigenvalues immediately lock in three instant exam facts: $\\text{rank}(H) = \\text{tr}(H) = n - 1$, $\\max_{\\|x\\|_2 = 1} x^T H x = \\lambda_{\\max}(H) = 1$, and sample covariance writes cleanly as $S = \\frac{1}{n}\\tilde{X}^T\\tilde{X} = \\frac{1}{n}X^T H X$.',
+        ],
         toyExample: {
           title: 'Three Shifted Points $(10, 10), (11, 11), (12, 12)$',
           scenario:
@@ -736,7 +768,15 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         title: 'Covariance Eigenvectors, Maximum Projected Variance & Orthogonality',
         subtitle: 'Why PC1 maximizes variance and why every pair of principal components sits at 90°',
         priority: 'core-pillar',
-        buildsOn: 'Rayleigh quotient \\(\\max_{\\|u\\|=1} u^T S u\\) & Spectral Theorem for real symmetric matrices',
+        buildsOn: 'Rayleigh quotient $\\max_{\\|u\\|=1} u^T S u$ & Spectral Theorem for real symmetric matrices',
+        whyStudy:
+          'High-dimensional datasets—like $100$-sensor readings or thousands of image pixels—often contain heavily correlated columns where most real information lives along just a few tilted directions. PCA discovers a brand-new set of perpendicular coordinate axes ranked from highest variance to lowest so you can discard redundant noise while preserving maximum signal.',
+        groundRules: [
+          'Projecting centered data points $\\tilde{x}^{(1)}, \\dots, \\tilde{x}^{(n)}$ onto any unit direction $u$ ($\\|u\\|_2 = 1$) gives projected empirical variance $\\frac{1}{n}\\sum_{i=1}^n (u^T \\tilde{x}^{(i)})^2 = u^T S u$, where $S = \\frac{1}{n}\\tilde{X}^T\\tilde{X}$ is the symmetric positive semi-definite sample covariance matrix.',
+          'By the Rayleigh Quotient Theorem, maximizing $u^T S u$ over all unit vectors $u$ hits its exact ceiling at the largest eigenvalue $\\lambda_1$ of $S$, attained precisely when $u = v_1$ (the top unit eigenvector of $S$).',
+          'Because $S$ is real symmetric ($S^T = S$), the Spectral Theorem guarantees an orthonormal eigenbasis $v_1, \\dots, v_d$ ($v_i^T v_j = 0$ for $i \\neq j$). Hence every pair of distinct principal components stands at exactly $90^\\circ$, and the projected scores $z_k = \\tilde{X}v_k$ are pairwise uncorrelated with variance $\\lambda_k$.',
+          'Raw PCA operates on the covariance matrix $S$, so it is translation-invariant (after centering) but NOT scale-invariant: changing one feature’s units from meters to millimeters inflates its variance by $10^6\\times$ and hijacks PC1 unless you standardize features first.',
+        ],
         toyExample: {
           title: 'Four Centered 2D Points Along a Diagonal Ellipse',
           scenario:
@@ -791,6 +831,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Measuring how much signal stays and how much squared error you drop when compressing d → k',
         priority: 'high-yield',
         buildsOn: 'Matrix trace $\\text{tr}(S) = \\sum \\lambda_j$ and Singular Value Decomposition $\\tilde{X} = U\\Sigma V^T$',
+        whyStudy:
+          'When you compress a $100$-dimensional dataset down to $k$ principal components, you immediately face two engineering questions: "How much of the original information did I keep?" and "How much error did I introduce by throwing away the other $d - k$ dimensions?" Eigenvalue accounting answers both in two seconds—and connects PCA directly to Singular Value Decomposition (SVD).',
+        groundRules: [
+          'Total variance across all $d$ features equals the sum of all covariance eigenvalues, which by trace invariance equals the sum of the diagonal entries of $S$: $\\sum_{j=1}^d \\lambda_j = \\text{tr}(S)$—so you never need to compute tail eigenvalues just to know the total variance.',
+          'By Pythagoras’ theorem across perpendicular principal axes, total variance splits cleanly into two parts: Retained Variance $= \\sum_{i=1}^k \\lambda_i$ (inside the top-$k$ subspace) plus Mean Squared Reconstruction Error $= \\sum_{j=k+1}^d \\lambda_j$ (every discarded eigenvalue summed, with NO square root).',
+          'Because the sum of retained variance and reconstruction MSE is locked at the constant $\\text{tr}(S)$, maximizing retained variance is mathematically identical to minimizing mean squared reconstruction error over all $k$-dimensional linear subspaces.',
+          'Taking the thin SVD of the centered matrix $\\tilde{X} = U\\Sigma V^T$ hands you PCA directly without ever forming $\\tilde{X}^T\\tilde{X}$: the columns of $V$ are the exact principal directions, and the covariance eigenvalues are $\\lambda_j = \\sigma_j^2 / n$.',
+        ],
         toyExample: {
           title: 'Compressing a 3D Cloud With Eigenvalues $(7, 2, 1)$ Down to $k=1$ or $k=2$',
           scenario:
@@ -1215,6 +1263,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Turning exponential $2^n - 1$ joint tables into compact local conditional tables',
         priority: 'core-pillar',
         buildsOn: 'Product rule of probability & Directed Acyclic Graphs (DAGs)',
+        whyStudy:
+          'To reason probabilistically about $30$ binary medical symptoms and diseases using a raw joint probability table, you would need $2^{30} - 1 > 1\\text{ billion}$ numbers—completely impossible to estimate or store. Bayesian Networks solve this by encoding direct cause-and-effect links in a Directed Acyclic Graph (DAG), slashing billions of parameters down to tiny local Conditional Probability Tables (CPTs).',
+        groundRules: [
+          'A Bayesian Network is a Directed Acyclic Graph (DAG) whose structure guarantees a topological ordering (parents always precede children) and factorizes the full joint distribution into local parent-conditioned terms: $P(X_1, \\dots, X_n) = \\prod_{i=1}^n P(X_i \\mid \\text{Pa}(X_i))$.',
+          'Under the Local Markov Property, once you condition on a node’s direct parents $\\text{Pa}(X_i)$, $X_i$ becomes conditionally independent of all its non-descendants (ancestors, siblings, cousins)—but NOT independent of its children or descendants.',
+          'Each row of node $X_i$’s CPT is a valid probability distribution over the $|D_i|$ states of $X_i$ that sums to $1$, so each parent configuration needs only $|D_i| - 1$ independent numbers. Summing across all nodes yields $\\sum_{i=1}^n (|D_i| - 1)\\prod_{Y \\in \\text{Pa}(X_i)} |D_Y|$ (which simplifies to $\\sum_{i=1}^n 2^{|\\text{Pa}(X_i)|}$ when all variables are binary).',
+          'To evaluate any complete joint assignment $P(x_1, \\dots, x_n)$, simply look up each node’s conditional probability given its parents’ assigned values and multiply the $n$ numbers straight across.',
+        ],
         toyExample: {
           title: 'Five Binary Variables in a Chain vs. a Full Joint Table',
           scenario:
@@ -1269,6 +1325,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Why observing a middle node blocks chains & forks—but UNLOCKS colliders and their descendants',
         priority: 'core-pillar',
         buildsOn: 'Conditional independence $X \\perp Y \\mid Z$ and undirected trails in a DAG',
+        whyStudy:
+          'When an AI agent receives new evidence (like an alarm ringing or a lab test turning positive), how can it instantly tell which unrelated variables can be safely ignored and which independent causes suddenly become coupled? D-separation lets you read conditional independence straight off the arrows of a Bayesian Network in seconds—without ever doing giant probability summations.',
+        groundRules: [
+          'Two nodes $X$ and $Y$ are d-separated given observed evidence $Z$ (guaranteeing $X \\perp Y \\mid Z$) if and only if EVERY undirected path between $X$ and $Y$ is blocked by at least one triple; if even a single path stays open (active), information can flow between $X$ and $Y$.',
+          'Every three-node step along a path is one of three triples: a Chain ($A \\to B \\to C$), a Fork ($A \\leftarrow B \\to C$), or a Collider / V-structure ($A \\to B \\leftarrow C$).',
+          'Chains and Forks start OPEN and snap BLOCKED the moment the middle node $B$ is in evidence $Z$. Colliders work in exact REVERSE: $A \\to B \\leftarrow C$ starts BLOCKED (parents are marginally independent) and swings OPEN ("explaining away") the instant either $B$ OR any downstream descendant of $B$ is observed in $Z$!',
+          'A node’s Markov Blanket $\\text{MB}(X) = \\text{Parents}(X) \\cup \\text{Children}(X) \\cup \\text{Co-parents of Children}(X)$ completely insulates $X$ from the rest of the network—co-parents must be included precisely because observing a child opens the collider path to its other parents.',
+        ],
         toyExample: {
           title: 'Burglary ($U$) and Earthquake ($V$) Triggering an Alarm ($W$)',
           scenario:
@@ -1326,6 +1390,14 @@ export const MODULE_15_CHAPTERS: ChapterData[] = [
         subtitle: 'Pushing sums inside products for exact posteriors vs. Rejection, Likelihood Weighting & Gibbs MCMC',
         priority: 'high-yield',
         buildsOn: 'DAG factorization & Markov Blankets',
+        whyStudy:
+          'Building a Bayesian Network is only half the job—the real payoff is answering queries like "Given the grass is wet, what is the exact probability it rained?" Naive enumeration over all $2^n$ joint states blows up exponentially, so we use Variable Elimination to compute exact answers by smart algebraic factoring, and switch to Monte Carlo sampling (Rejection, Likelihood Weighting, or Gibbs) when a dense network is too large for exact elimination.',
+        groundRules: [
+          'Variable Elimination (VE) is a 100% EXACT deterministic algorithm (zero randomness!): it applies the distributive law to push each sum over a hidden variable $h$ inward so you multiply only the small subset of CPT factors mentioning $h$, then normalizes the query vector once at the very end.',
+          'VE’s worst-case cost depends heavily on the chosen elimination ordering (induced treewidth): a bad ordering creates huge intermediate factor tables, yet the final numerical posterior is always exact.',
+          'Rejection Sampling and Likelihood Weighting are approximate Monte Carlo methods: Rejection Sampling draws from the prior and discards every sample disagreeing with evidence $E$ (terrible when $E$ is rare), while Likelihood Weighting clamps $E = e$ so zero samples are wasted and weights each draw by $\\prod_{E_k \\in E} P(e_k \\mid \\text{pa}(E_k))$.',
+          'Gibbs Sampling is an approximate Markov Chain Monte Carlo (MCMC) algorithm: it clamps evidence $E = e$, then repeatedly resamples each hidden variable $X_i$ one at a time strictly from its local Markov Blanket conditional $P(X_i \\mid \\text{MB}(X_i))$, converging to the true posterior as sample count grows.',
+        ],
         toyExample: {
           title: 'Eliminating a Hidden Variable in $R \\to W \\leftarrow S$',
           scenario:

@@ -110,6 +110,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Counting disk block I/Os from a 12-student toy table before touching formulas',
         priority: 'high-yield',
         buildsOn: 'Module 9 Binary Search & Module 12 Relational Tables',
+        whyStudy:
+          'A real database table holds millions of rows stored on slow disk blocks—scanning every block sequentially to find one student record takes seconds instead of milliseconds. Understanding how rows pack into disk blocks and how **Primary, Clustering, and Secondary indexes** shrink $100{,}000$ block scans down to $2$–$3$ reads is the foundation of every database storage engine.',
+        groundRules: [
+          '**Disk I/O transfers whole blocks ($B$ bytes), never single bytes:** Fetching one $128\\text{ B}$ row still pulls an entire $4096\\text{ B}$ disk block into RAM, so database lookup cost is measured in **block reads**, not CPU steps.',
+          '**Unspanned storage obeys “floor for capacity, ceiling for block count”:** Because a record is never split across two blocks, one block fits $bfr = \\lfloor B / R \\rfloor$ full records (floor), and $N$ records require $b = \\lceil N / bfr \\rceil$ blocks (ceiling—even $1$ leftover row needs its own block).',
+          '**A file on disk can be physically sorted in at most ONE order:** Therefore, a table can have at most **one** sparse index—either a **Primary Index** (on a unique ordering key, $E = b$ anchor entries) or a **Clustering Index** (on a non-unique ordering field, $E = d$ distinct value entries).',
+          '**Any non-ordering column requires a DENSE Secondary Index:** Because rows are scattered randomly across blocks for a non-ordering column (like `SSN` on a file sorted by `EmpID`), the index must store $E = N$ entries (one per record) so no row gets missed.',
+        ],
         toyExample: {
           title: 'Finding Student #11 Inside 6 Disk Blocks',
           scenario:
@@ -177,6 +185,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Why kicking record pointers out of internal nodes boosts B+ Tree fanout dramatically',
         priority: 'core-pillar',
         buildsOn: 'Step 1.1 Block-packing floor/ceiling arithmetic',
+        whyStudy:
+          'A Binary Search Tree branches only $2$ ways per node—so indexing $100$ million rows takes $\\log_2(10^8) \\approx 27$ separate disk reads! Database engines invented **B-Trees and B+ Trees** to pack each tree node into one full disk block ($4\\text{ KB}$), boosting branching fanout from $2$ to $\\sim 200$ so even $100$ million rows are reached in just $3$–$4$ disk I/Os.',
+        groundRules: [
+          '**One tree node equals one disk block ($B$ bytes):** Maximizing the child-pointer fanout ($p$) packed inside a single block directly crushes tree height ($\\approx \\log_p N$) and minimizes disk reads.',
+          '**Every internal node of order $p$ holds $p$ child pointers and $(p - 1)$ routing keys:** Just as $p - 1$ signposts divide a number line into $p$ sub-intervals, there is always $1$ more child pointer than key.',
+          '**B+ Tree internal (non-leaf) nodes NEVER carry data record pointers ($P_{\\text{rec}}$):** Unlike a B-Tree (which stores $P_{\\text{rec}}$ beside every key at every level), a B+ Tree pushes ALL record pointers down to horizontally linked leaf nodes—so non-leaf capacity solves $p\\,P_{\\text{node}} + (p - 1)K \\le B$ (always cross out $P_{\\text{rec}}$!).',
+          '**The half-full occupancy rule exempts the root:** Every non-root internal node must hold at least $\\lceil p / 2 \\rceil$ child pointers (keeping the tree balanced), whereas the root may hold as few as $2$ children (or $1$ key when it is a leaf).',
+        ],
         sandboxId: 'btree-olap-lab',
         toyExample: {
           title: 'Packing a Tiny 64-Byte Node: B-Tree vs B+ Tree',
@@ -245,6 +261,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Copy-up at leaves vs Push-up inside the tree, and why Hash indexes fail range queries',
         priority: 'high-yield',
         buildsOn: 'Step 1.2 B+ Tree node structure',
+        whyStudy:
+          'Indexes must stay balanced as new rows constantly overflow fixed-size disk blocks, and real SQL queries mix exact lookups (`=`), joins, and range filters (`>`, `<`, `BETWEEN`). Understanding how B+ Trees split overflowing nodes without breaking sequential leaf scans—and knowing why Hash indexes crush equality lookups yet fail ranges—lets you trace insertions and pick the right index for any query.',
+        groundRules: [
+          '**Every data key MUST remain at the B+ Tree leaf level (Leaf Split = COPY UP):** Because all leaves form a sorted linked list for range scans, splitting an overflowing leaf keeps ALL keys in the two leaves and **copies** the separator key up to the parent.',
+          '**Internal nodes are pure routing signposts (Internal Split = PUSH UP):** When an internal node overflows, its exact median key **moves up** into the parent without leaving a duplicate behind—saving bytes and maximizing fanout.',
+          '**B+ Trees preserve sorted key order, accelerating BOTH equality (`=`) and range (`>`, `<`, `BETWEEN`, `ORDER BY`):** One root-to-leaf lookup finds the range boundary, then horizontal leaf links sweep every matching record without re-descending the tree.',
+          '**Hash indexes scramble key order, accelerating ONLY exact equality (`=`) and equijoins:** Hashing maps adjacent values like `3.41` and `3.50` into unrelated random buckets in $O(1)$ expected time, making Hash indexes useless for range predicates.',
+        ],
         toyExample: {
           title: 'Overflowing a 2-Key Leaf vs a 2-Key Internal Node',
           scenario:
@@ -268,7 +292,7 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
           workedMiniExamples: [
             {
               prompt:
-                '(GATE DA 2024 Q.55 Pattern) Query: `SELECT * FROM Movie M, Genre G WHERE M.GenreID = G.ID AND G.Name = "Comedy" AND M.Rating > 3.4`. Which indexes help?',
+                '(GATE DA 2024 Q.55 Pattern) Which indexes help speed up this query?\n```sql\nSELECT *\nFROM Movie M, Genre G\nWHERE M.GenreID = G.ID\n  AND G.Name = "Comedy"\n  AND M.Rating > 3.4;\n```',
               solution:
                 '1) `G.Name = "Comedy"` is an **equality** filter: **either** a B+ Tree or a Hash index on `Genre.Name` speeds it up. 2) `M.Rating > 3.4` is a **range** filter: **only** a B+ Tree index on `Movie.Rating` helps (a Hash index on `Rating` is useless!). 3) `M.GenreID = G.ID` is an equijoin: B+ Tree or Hash index on `M.GenreID` / `G.ID` speeds up the join.',
             },
@@ -498,7 +522,7 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         year: 2024,
         marks: 2,
         type: 'MSQ',
-        stem: 'Consider tables `Movie(ID, Title, GenreID, CustomerRating)` and `Genre(ID, Name)` and the query:\n`SELECT M.Title FROM Movie M JOIN Genre G ON M.GenreID = G.ID WHERE G.Name = "Comedy" AND M.CustomerRating > 3.4;`\nWhich of the following index configurations will **help speed up** execution of this query? *(Select all that apply.)*',
+        stem: 'Consider tables `Movie(ID, Title, GenreID, CustomerRating)` and `Genre(ID, Name)` and the query:\n```sql\nSELECT M.Title\nFROM Movie M\nJOIN Genre G\n  ON M.GenreID = G.ID\nWHERE G.Name = "Comedy"\n  AND M.CustomerRating > 3.4;\n```\nWhich of the following index configurations will **help speed up** execution of this query? *(Select all that apply.)*',
         options: [
           {
             id: 'A',
@@ -716,6 +740,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Why "+1 for ALL" turns tricky OLAP lattice and CUBE questions into 5-second products',
         priority: 'core-pillar',
         buildsOn: 'Module 12 3NF/BCNF Normalization & SQL GROUP BY',
+        whyStudy:
+          'Transactional databases (OLTP) normalize tables into 3NF/BCNF to keep individual inserts and updates anomaly-free, yet summarizing 5 years of revenue across $10$ normalized tables forces massive multi-way joins that choke analytical dashboards. **Data Warehouses (OLAP)** intentionally reshape data into **Star/Snowflake schemas** and pre-aggregated **Data Cubes** so analysts and ML pipelines slice billion-row histories in milliseconds.',
+        groundRules: [
+          '**Star Schema intentionally denormalizes Dimension tables for 1-hop OLAP read speed:** Storing `City`, `State`, and `Country` inside one flat Dimension table introduces controlled 3NF redundancy—safe in read-only historical warehouses—and eliminates the multi-hop joins required by a normalized **Snowflake Schema**.',
+          '**Fact measures obey strict additivity rules:** **Additive** measures (`Revenue`, `Units`) sum across all dimensions; **Semi-additive** measures (`AccountBalance`, `Inventory`) sum across stores/accounts but NEVER across time; **Non-additive** measures (`UnitPrice`, `Margin%`) cannot be summed directly.',
+          '**Every dimension carries one extra hidden state called `ALL` (completely rolled up):** Whether counting rows returned by `GROUP BY CUBE(D1, ..., Dk)` ($|D_i|$ values plus `NULL`/`ALL`) or counting cuboids across $L_i$-level concept hierarchies ($L_i$ named levels plus `ALL`), total combinations multiply as $\\prod (x_i + 1)$.',
+          '**`CUBE` computes all $2^k$ subset groupings; `ROLLUP` computes only $k + 1$ left-to-right prefixes:** Remembering that `CUBE` covers every subset while `ROLLUP` steps strictly down a prefix chain prevents off-by-one counting mistakes.',
+        ],
         toyExample: {
           title: 'Counting Summaries of a 2-Dimension Retail Fact Table',
           scenario:
@@ -785,6 +817,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Navigating granularity and cube dimensionality visually',
         priority: 'high-yield',
         buildsOn: 'Step 2.1 Concept hierarchies & multidimensional cubes',
+        whyStudy:
+          'Once business data sits inside a multidimensional cube—such as retail sales indexed by `(Product Type, Month, Country)`—analysts need standardized operations to zoom from country totals down into individual states, isolate a single month, or carve out a target region. Every Pandas `groupby`, BI dashboard drill click, and SQL `CUBE` filter executes one of five canonical **OLAP operations**.',
+        groundRules: [
+          '**Roll-up zooms OUT to coarser summaries:** Roll-up aggregates data either by climbing **up** a concept hierarchy (`State` $\\to$ `Country`, `Month` $\\to$ `Quarter`) or by dropping a dimension completely (rolling it into `ALL`).',
+          '**Drill-down zooms IN to finer detail:** Drill-down disaggregates data either by stepping **down** a concept hierarchy (`Country` $\\to$ `State`) or by adding a new dimension—crucially, stepping down a hierarchy keeps the dimension count unchanged!',
+          '**Slice locks EXACTLY ONE dimension to a single value:** Selecting `Month = "Jan"` cuts a thin cross-section out of the cube, always reducing dimensionality by $1$ (e.g., 3D $\\to$ 2D).',
+          '**Dice filters TWO OR MORE dimensions; Pivot only rotates display axes:** Filtering multiple dimensions simultaneously carves out a smaller sub-cube (**Dice**), whereas swapping rows and columns for readability without changing granularity or data values is a **Pivot**.',
+        ],
         sandboxId: 'btree-olap-lab',
         toyExample: {
           title: 'Steering a 3D Cube: `(Product Type, Month, Country)`',
@@ -855,6 +895,14 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         subtitle: 'Why unscaled features break k-NN/SVM/PCA—and why fitting a scaler before splitting ruins evaluation',
         priority: 'core-pillar',
         buildsOn: 'Module 2 Sample Mean & Standard Deviation',
+        whyStudy:
+          'Raw warehouse tables mix columns in wildly different physical units—`Age` spans $[18, 70]$ while `Income` spans $[10^4, 10^8]$. Feed raw numbers into $k$-NN, SVM, Ridge Regression, or PCA and `Income` completely dominates every Euclidean distance, gradient step, and variance direction! **Feature scaling** puts all attributes on comparable numerical footing—as long as you dodge outlier compression and train-test data leakage.',
+        groundRules: [
+          '**Each scaler depends strictly on its own summary statistics:** **Z-Score** ($z = (v - \\mu_A) / \\sigma_A$) uses ONLY mean $\\mu_A$ and standard deviation $\\sigma_A$ (ignoring $\\min/\\max$); **Min-Max** uses ONLY $\\min_A$ and $\\max_A$; **Decimal Scaling** divides by $10^j$ using the smallest integer $j$ so $\\max|v\'| < 1$.',
+          '**Min-Max crushes normal points under extreme outliers; Z-Score stays unbounded:** Pinning a single billionaire to $1.0$ inside $[0, 1]$ squashes every regular applicant near $0.0$, whereas Z-Score keeps normal spacing far cleaner.',
+          '**Always fit scaling parameters strictly on `X_train` AFTER splitting:** Computing $\\mu, \\sigma$ or $\\min, \\max$ across the entire dataset before `train_test_split` leaks future test-set statistics into training (**Data Leakage**)—always call `.fit(X_train)` and then `.transform(X_test)`.',
+          '**Model geometry determines whether scaling matters:** Distance ($k$-NN, $k$-Means), margin (SVM), norm-penalized (Ridge/Lasso), gradient-based (MLP/Logistic), and variance (PCA) models require scaling; axis-aligned **Decision Trees** split on single-feature thresholds ($x_j \\le t$) and are invariant to strictly monotonic scaling.',
+        ],
         toyExample: {
           title: 'Why Income Crushes Age in Euclidean Distance',
           scenario:
@@ -1093,7 +1141,7 @@ export const MODULE_13_CHAPTERS: ChapterData[] = [
         year: 2025,
         marks: 2,
         type: 'MCQ',
-        stem: 'Suppose relation `Sales(D1, D2, Amount)` has $3$ distinct values for `D1` and $2$ distinct values for `D2`, and every `(D1, D2)` combination appears in the table. How many tuples are returned by `SELECT D1, D2, SUM(Amount) FROM Sales GROUP BY CUBE(D1, D2);`?',
+        stem: 'Suppose relation `Sales(D1, D2, Amount)` has $3$ distinct values for `D1` and $2$ distinct values for `D2`, and every `(D1, D2)` combination appears in the table. How many tuples are returned by:\n```sql\nSELECT D1, D2, SUM(Amount)\nFROM Sales\nGROUP BY CUBE(D1, D2);\n```',
         options: [
           {
             id: 'A',

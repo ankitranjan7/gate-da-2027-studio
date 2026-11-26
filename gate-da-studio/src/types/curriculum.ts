@@ -98,9 +98,9 @@ export interface ConceptBlock {
   priority: PriorityTier
   buildsOn: string
   /** Step 0a: Why are we studying this? Real problem & core intuition BEFORE any formula/code */
-  whyStudy?: string
+  whyStudy: string
   /** Step 0b: Ground-truth rules of the environment/system (how Python/Math/SQL actually works under the hood) */
-  groundRules?: string[]
+  groundRules: string[]
   /** Step 1: Concrete ground-floor toy example BEFORE symbols/theorems */
   toyExample: {
     title: string

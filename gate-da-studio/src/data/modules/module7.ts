@@ -118,15 +118,23 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         title: 'Orthogonality, Orthonormal Bases & Rotation Matrices',
         subtitle: 'Transformations that rotate or reflect space while freezing every length and angle',
         priority: 'core-pillar',
-        buildsOn: 'Dot products, Euclidean norm \\|x\\|_2, and matrix transposes',
+        buildsOn: 'Dot products, Euclidean norm $\\|x\\|_2$, and matrix transposes',
+        whyStudy:
+          'When you switch coordinate axes in **PCA**, rotate a 3D camera in computer vision, or decompose a huge matrix via **QR** and **SVD**, you desperately want a coordinate change that **never distorts distances, never blows up floating-point rounding errors, and is effortless to invert**. Ordinary matrices warp space and cost $O(n^3)$ work to invert, whereas **orthogonal matrices** ($Q^T Q = I_n$) act like pure rigid motions — rotations and mirror flips — whose inverse is simply their transpose $Q^T$! In GATE DA, this geometry directly powers rotation-power questions like **GATE DA 2026 Q.21** ($M^{2026}$) and norm-preservation MSQs like **GATE DA 2025 Q.52**.',
+        groundRules: [
+          '**Orthonormal Columns Give Free Inversion ($Q^T Q = I_n \\implies Q^{-1} = Q^T$):** When a square $n \\times n$ matrix $Q$ has columns $q_1, \\dots, q_n$ of unit length ($q_i^T q_i = 1$) that all meet at $90^\\circ$ ($q_i^T q_j = 0$ for $i \\neq j$), the product $Q^T Q$ (whose $(i,j)$ entry is $q_i^T q_j$) equals the identity matrix $I_n$ — so flipping $Q$ on its side completely undoes $Q$!',
+          '**Preserving All Lengths $\\iff$ Orthogonal ($\\|Ax\\|_2 = \\|x\\|_2\\;\\forall x \\iff A^T A = I_n$):** Squaring both sides turns $\\|Ax\\|_2^2 = \\|x\\|_2^2$ into $x^T A^T A x = x^T I_n x$ for every $x \\in \\mathbb{R}^n$, which forces $A^T A = I_n$. Consequently every real orthogonal matrix is automatically invertible ($\\text{rank} = n$) with $|\\det(Q)| = 1$ ($+1$ for pure rotations, $-1$ for reflections).',
+          '**2D Rotations Add Their Angles ($R(\\theta)^k = R(k\\theta)$):** Multiplying a vector by $R(\\theta) = \\begin{bmatrix} \\cos\\theta & -\\sin\\theta \\\\ \\sin\\theta & \\cos\\theta \\end{bmatrix}$ spins it counter-clockwise by $\\theta$. Repeating that spin $k$ times simply spins it by $k\\theta$, so you NEVER multiply rotation matrices — you add angles modulo $2\\pi$!',
+          '**Rigid Motion Does NOT Force Real Eigenvalues:** A $90^\\circ$ rotation in $\\mathbb{R}^2$ preserves every single vector’s length, yet spins EVERY non-zero arrow off its original line — meaning it has ZERO real eigenvectors (its eigenvalues are the complex conjugates $+i$ and $-i$, both having modulus $|\\lambda| = 1$).',
+        ],
         toyExample: {
           title: 'Spinning a 3-4-5 Right Triangle by 90° Without Stretching It',
           scenario:
-            'Take vector $x = [3, 4]^T$ of length $\\|x\\|_2 = \\sqrt{3^2 + 4^2} = 5$. Multiply it by the $90^\\circ$ counter-clockwise rotation matrix $Q = \\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix}$.',
+            'Take column vector $x = [3, 4]^T$ of Euclidean length $\\|x\\|_2 = \\sqrt{3^2 + 4^2} = 5$. Multiply it by the $90^\\circ$ counter-clockwise rotation matrix $Q = \\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix}$.',
           walkthroughSteps: [
             '1. **Compute $Qx$:** $Qx = \\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix} \\begin{bmatrix} 3 \\\\ 4 \\end{bmatrix} = \\begin{bmatrix} -4 \\\\ 3 \\end{bmatrix}$.',
             '2. **Check Length:** $\\|Qx\\|_2 = \\sqrt{(-4)^2 + 3^2} = 5 = \\|x\\|_2$. Nothing stretched or shrank!',
-            '3. **Check Angle with $x$:** $x^T (Qx) = 3(-4) + 4(3) = 0$ — it rotated cleanly by $90^\\circ$.',
+            '3. **Check Angle with $x$:** Take the dot product $x^T (Qx) = 3(-4) + 4(3) = 0$ — it rotated cleanly by $90^\\circ$.',
             '4. **Inspect Columns of $Q$:** $q_1 = [0, 1]^T$ and $q_2 = [-1, 0]^T$ each have unit length ($\\|q_i\\|_2 = 1$) and are perpendicular ($q_1^T q_2 = 0$), so $Q^T Q = I_2$ and $Q^{-1} = Q^T$!',
           ],
           ahaMoment:
@@ -134,21 +142,21 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'A real square matrix $Q \\in \\mathbb{R}^{n\\times n}$ is **orthogonal** if its columns form an orthonormal set, equivalently $Q^T Q = Q Q^T = I_n \\iff Q^{-1} = Q^T$. Orthogonal maps preserve all inner products $(Qx)^T(Qy) = x^T y$ and Euclidean norms $\\|Qx\\|_2 = \\|x\\|_2$, and satisfy $\\det(Q) = \\pm 1$. In $\\mathbb{R}^2$, counter-clockwise rotation by $\\theta$ is $R(\\theta)$, which forms a commutative group under angle addition.',
+            'A real square matrix $Q \\in \\mathbb{R}^{n\\times n}$ is **orthogonal** if its columns form an orthonormal set, equivalently $Q^T Q = Q Q^T = I_n \\iff Q^{-1} = Q^T$. Orthogonal maps preserve all inner products $(Qx)^T(Qy) = x^T y$ and Euclidean norms $\\|Qx\\|_2 = \\|x\\|_2$, and satisfy $\\det(Q) = \\pm 1$. In $\\mathbb{R}^2$, counter-clockwise rotation by $\\theta$ is $R(\\theta)$, which obeys angle addition $R(\\theta_1)R(\\theta_2) = R(\\theta_1 + \\theta_2)$.',
           formulaLatex:
             'Q^T Q = I_n \\iff \\|Qx\\|_2 = \\|x\\|_2\\;\\forall x \\in \\mathbb{R}^n, \\qquad R(\\theta)^k = \\begin{bmatrix} \\cos(k\\theta) & -\\sin(k\\theta) \\\\ \\sin(k\\theta) & \\cos(k\\theta) \\end{bmatrix}',
           plainEnglishDecoding:
-            'Here is your exam shortcut: whenever you need the inverse of an orthogonal matrix, skip Gaussian elimination completely and just take its transpose! And whenever a $2\\times 2$ rotation matrix $R(\\theta)$ is raised to a scary power like $2026$, just multiply the angle $\\theta$ by $2026$ and wrap around $2\\pi$.',
+            'Here is your exam shortcut: whenever you need the inverse of a square orthogonal matrix $Q$, skip Gaussian elimination completely and just take its transpose $Q^T$! And whenever a $2\\times 2$ rotation matrix $R(\\theta)$ is raised to a scary power like $2026$, just multiply the angle $\\theta$ by $2026$ and wrap around full circles of $2\\pi$.',
           workedMiniExamples: [
             {
               prompt: 'Check if $Q = \\frac{1}{\\sqrt{2}}\\begin{bmatrix} 1 & 1 \\\\ 1 & -1 \\end{bmatrix}$ is orthogonal and find $Q^{-1}$.',
               solution:
-                'Column dot products: $q_1^T q_1 = \\frac{1}{2}(1+1) = 1$, $q_2^T q_2 = \\frac{1}{2}(1+1) = 1$, $q_1^T q_2 = \\frac{1}{2}(1-1) = 0$. Hence $Q^T Q = I_2$, so $Q$ is orthogonal and $Q^{-1} = Q^T = Q$ (a reflection across $22.5^\\circ$, with $\\det Q = -1$).',
+                'Compute column dot products: $q_1^T q_1 = \\frac{1}{2}(1+1) = 1$, $q_2^T q_2 = \\frac{1}{2}(1+1) = 1$, and $q_1^T q_2 = \\frac{1}{2}(1-1) = 0$. Hence $Q^T Q = I_2$, so $Q$ is orthogonal and $Q^{-1} = Q^T = Q$ (a mirror reflection across $22.5^\\circ$, with $\\det Q = -1$).',
             },
             {
               prompt: 'Simplify $M^{2026}$ when $M = R(2\\pi/5)$ (GATE DA 2026 · Q.21).',
               solution:
-                'Since $M^5 = R(5 \\cdot 2\\pi/5) = R(2\\pi) = I_2$ and $2026 = 5 \\times 405 + 1$, we get $M^{2026} = (M^5)^{405} M = I_2^{405} M = M$.',
+                'Five spins complete one full circle: $M^5 = R(5 \\cdot 2\\pi/5) = R(2\\pi) = I_2$. Divide the exponent by $5$: $2026 = 5 \\times 405 + 1$, so $M^{2026} = (M^5)^{405} M^1 = I_2^{405} M = M$.',
             },
           ],
         },
@@ -188,7 +196,15 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         title: 'Orthogonal Projections onto Lines & Subspaces',
         subtitle: 'Finding the closest point in a subspace by forcing the error vector to be perpendicular',
         priority: 'core-pillar',
-        buildsOn: 'Dot product, column space \\text{Col}(A), and null space \\text{Null}(A^T)',
+        buildsOn: 'Dot product, column space $\\text{Col}(A)$, and null space $\\text{Null}(A^T)$',
+        whyStudy:
+          'In real-world Data Science, noisy observations $y$ almost NEVER fall cleanly onto your linear model’s column space $\\text{Col}(X)$, so $Xw = y$ has **zero exact solutions**. What is the single best approximation $\\hat{y} = X\\hat{w}$ inside $\\text{Col}(X)$? It is the **orthogonal projection** of $y$ straight down onto $\\text{Col}(X)$ — which is literally **Ordinary Least Squares (OLS) linear regression**! That same $90^\\circ$ shadow principle also builds the data-centering matrix $M = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ and explains **GATE DA 2024 Q.49**, **2025 Q.50**, and **2026 Q.52** at a glance.',
+        groundRules: [
+          '**Shortest Distance Means $90^\\circ$ Error ($A^T(b - A\\hat{x}) = \\mathbf{0}$):** To find the point $p = A\\hat{x}$ in subspace $U = \\text{Col}(A)$ closest to $b$, the leftover error vector $e = b - A\\hat{x}$ MUST stand at $90^\\circ$ to every column of $A$! Writing that perpendicularity condition as $A^T(b - A\\hat{x}) = \\mathbf{0}$ immediately produces the **Normal Equations** $A^T A\\hat{x} = A^T b$ — zero calculus needed!',
+          '**Closed-Form Projection Matrix ($P = A(A^T A)^{-1}A^T$ or $P = Q Q^T$):** Solving $\\hat{x} = (A^T A)^{-1}A^T b$ and multiplying by $A$ gives the projection matrix $P = A(A^T A)^{-1}A^T$. Better yet, if your subspace basis columns are already orthonormal ($Q^T Q = I_k$), the messy inverse $(Q^T Q)^{-1}$ vanishes into $I_k$, leaving $P = Q Q^T$!',
+          '**Both $P^2 = P$ AND $P^T = P$ Are Required:** Projecting a point that already lies on $U$ changes nothing ($P^2 = P$, idempotent), and making the drop perpendicular requires symmetry ($P^T = P$). If $P^2 = P$ holds without $P^T = P$, the shadow is slanted (*oblique*), NOT orthogonal.',
+          '**Complete Spectral Fingerprint of Any Orthogonal Projection:** Every vector inside $U$ is fixed ($Pu = u \\implies \\lambda = 1$, repeated $d = \\dim U$ times) and every vector in $U^\\perp$ is flattened ($Pw = \\mathbf{0} \\implies \\lambda = 0$, repeated $m - d$ times). Hence $\\text{rank}(P) = \\text{tr}(P) = d$, $\\dim(\\text{Null}(P)) = m - d$, and $P$ is singular whenever $d < m$.',
+        ],
         sandboxId: 'projection-eigen-lab',
         toyExample: {
           title: 'Dropping a Perpendicular Shadow from $[3, 1]^T$ onto the Line $y = x$',
@@ -196,8 +212,8 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             'Suppose our target vector is $b = [3, 1]^T$, and we are restricted to walk only along the line spanned by $a = [1, 1]^T$. What point $p = \\alpha a$ on that line is closest to $b$?',
           walkthroughSteps: [
             '1. **Geometric Rule:** The shortest distance from a point $b$ to a line hits at a $90^\\circ$ angle! So the residual error $e = b - \\alpha a$ must be perpendicular to $a$: $a^T (b - \\alpha a) = 0$.',
-            '2. **Solve for $\\alpha$:** $a^T b - \\alpha (a^T a) = 0 \\implies \\alpha = \\frac{a^T b}{a^T a} = \\frac{1(3) + 1(1)}{1^2 + 1^2} = \\frac{4}{2} = 2$.',
-            '3. **Projection & Error:** $p = 2[1, 1]^T = [2, 2]^T$, and $e = b - p = [3, 1]^T - [2, 2]^T = [1, -1]^T$.',
+            '2. **Solve for $\\alpha$:** Expand the dot product: $a^T b - \\alpha (a^T a) = 0 \\implies \\alpha = \\frac{a^T b}{a^T a} = \\frac{1(3) + 1(1)}{1^2 + 1^2} = \\frac{4}{2} = 2$.',
+            '3. **Projection & Error:** The closest point is $p = 2[1, 1]^T = [2, 2]^T$, and the leftover error is $e = b - p = [3, 1]^T - [2, 2]^T = [1, -1]^T$.',
             '4. **Verify Orthogonality:** $a^T e = 1(1) + 1(-1) = 0$, and Pythagoras checks out: $\\|p\\|_2^2 + \\|e\\|_2^2 = 8 + 2 = 10 = \\|b\\|_2^2$!',
           ],
           ahaMoment:
@@ -205,11 +221,11 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'Given a matrix $A \\in \\mathbb{R}^{m\\times n}$ with linearly independent columns spanning subspace $U = \\text{Col}(A)$, the closest point $p = A\\hat{x} \\in U$ to $b \\in \\mathbb{R}^m$ satisfies the **normal equations** $A^T(b - A\\hat{x}) = 0 \\iff A^T A \\hat{x} = A^T b$. The **orthogonal projection matrix** onto $U$ is $P = A(A^T A)^{-1}A^T$ (simplifying to $P = Q Q^T$ when $Q$ has orthonormal columns spanning $U$). Every orthogonal projection matrix satisfies $P^T = P$ and $P^2 = P$, has eigenvalues strictly in $\\{0, 1\\}$, and satisfies $\\text{rank}(P) = \\text{tr}(P) = \\dim(U)$ and $\\text{nullity}(P) = m - \\dim(U)$.',
+            'Given a matrix $A \\in \\mathbb{R}^{m\\times n}$ with linearly independent columns spanning subspace $U = \\text{Col}(A)$, the closest point $p = A\\hat{x} \\in U$ to $b \\in \\mathbb{R}^m$ satisfies the **normal equations** $A^T(b - A\\hat{x}) = \\mathbf{0} \\iff A^T A \\hat{x} = A^T b$. The **orthogonal projection matrix** onto $U$ is $P = A(A^T A)^{-1}A^T$ (simplifying to $P = Q Q^T$ when $Q$ has orthonormal columns spanning $U$). Every orthogonal projection matrix satisfies $P^T = P$ and $P^2 = P$, has eigenvalues strictly in $\\{0, 1\\}$, and satisfies $\\text{rank}(P) = \\text{tr}(P) = \\dim(U)$ and $\\text{nullity}(P) = m - \\dim(U)$.',
           formulaLatex:
             'P = A(A^T A)^{-1} A^T = Q Q^T, \\qquad P^T = P = P^2, \\qquad \\text{tr}(P) = \\text{rank}(P) = \\dim(U)',
           plainEnglishDecoding:
-            'Picture what $P$ does to every direction in space: vectors already inside $U$ stay right where they are ($Pu = u$, eigenvalue $1$), while vectors perpendicular to $U$ get flattened to zero ($Pw = 0$, eigenvalue $0$). Subtracting the 1D projection onto $\\text{span}(\\mathbf{1})$ from $I_n$ hands you the **centering matrix** $M = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$, which projects cleanly onto the $(n-1)$-dimensional zero-sum hyperplane $\\mathbf{1}^\\perp$!',
+            'Picture what $P$ does to every direction in space: vectors already inside $U$ stay right where they are ($Pu = u$, eigenvalue $1$), while vectors perpendicular to $U$ get flattened to zero ($Pw = \\mathbf{0}$, eigenvalue $0$). Subtracting the 1D projection onto $\\text{span}(\\mathbf{1})$ from $I_n$ hands you the **centering matrix** $M = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$, which projects cleanly onto the $(n-1)$-dimensional zero-sum hyperplane $\\mathbf{1}^\\perp$!',
           workedMiniExamples: [
             {
               prompt: 'Apply the centering matrix $M = I_3 - \\frac{1}{3}\\mathbf{1}\\mathbf{1}^T$ to $x = [2, 5, 8]^T$ and find $\\text{tr}(M)$.',
@@ -219,7 +235,7 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             {
               prompt: 'If $x_1, \\dots, x_5 \\in \\mathbb{R}^{10}$ are orthonormal and $A = \\sum_{i=1}^5 x_i x_i^T$, find $\\text{rank}(A)$ and $\\dim(\\text{Null}(A))$ (GATE DA 2025 · Q.50).',
               solution:
-                'Writing $Q = [x_1\\;\\cdots\\;x_5] \\in \\mathbb{R}^{10\\times 5}$, $A = Q Q^T$ is the orthogonal projection onto the $5$-D subspace $\\text{span}(x_1,\\dots,x_5)$. Thus $\\text{rank}(A) = 5$ and $\\dim(\\text{Null}(A)) = 10 - 5 = 5$.',
+                'Stack them as columns of $Q = [x_1\\;\\cdots\\;x_5] \\in \\mathbb{R}^{10\\times 5}$. By block multiplication, $A = \\sum_{i=1}^5 x_i x_i^T = Q Q^T$, which is the orthogonal projection onto the $5$-D subspace $\\text{span}(x_1,\\dots,x_5)$. Thus $\\text{rank}(A) = 5$ and $\\dim(\\text{Null}(A)) = 10 - 5 = 5$.',
             },
           ],
         },
@@ -240,7 +256,7 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             myth: 'Any square matrix satisfying $P^2 = P$ is an orthogonal projection.',
             reality:
               'False! $P^2 = P$ only defines a general (possibly oblique) projection. For an *orthogonal* projection, you ALSO need symmetry: $P^T = P$.',
-            counterExample: '$P = \\begin{bmatrix} 1 & 1 \\\\ 0 & 0 \\end{bmatrix}$ satisfies $P^2 = P$, yet $P^T \\neq P$ and its eigenvalues/singular values do not match ($\sigma_1 = \\sqrt{2} > 1$).',
+            counterExample: '$P = \\begin{bmatrix} 1 & 1 \\\\ 0 & 0 \\end{bmatrix}$ satisfies $P^2 = P$, yet $P^T \\neq P$ and its eigenvalues/singular values do not match ($\\sigma_1 = \\sqrt{2} > 1$).',
           },
         ],
         forwardBridges: [
@@ -268,15 +284,23 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Peeling off projections step-by-step to turn any independent basis into an orthonormal one',
         priority: 'high-yield',
         buildsOn: 'Orthogonal projections onto 1D lines and upper triangular back-substitution',
+        whyStudy:
+          'We just saw that projections become effortless ($P = Q Q^T$) when your basis vectors are orthonormal — yet real feature columns in a data matrix $A$ are almost always tilted and correlated! Worse still, solving least squares by explicitly multiplying $A^T A$ squares the condition number and destroys numerical accuracy on real computers. **Gram-Schmidt orthogonalization** and **$A = QR$ factorization** solve both problems at once: they straighten any tilted independent columns into clean $90^\\circ$ unit axes $Q$, turning least-squares fitting into fast, rock-solid triangular back-substitution $R\\hat{x} = Q^T b$ (used inside `NumPy` and `scikit-learn`!).',
+        groundRules: [
+          '**Peel Off All Prior Shadows, Then Normalize:** To orthogonalize independent columns $a_1, a_2, \\dots, a_n$ one by one, subtract $a_k$’s shadow along every ALREADY-unitized direction $q_1, \\dots, q_{k-1}$ via $u_k = a_k - \\sum_{j=1}^{k-1}(q_j^T a_k)q_j$. Because $q_j$ has unit length ($q_j^T q_j = 1$), the dot product $q_j^T a_k$ directly gives the shadow length; then divide by $\\|u_k\\|_2$ to get $q_k$!',
+          '**Span Preservation Forces $R$ to Be Upper Triangular:** Because step $k$ builds $q_k$ using ONLY $a_1, \\dots, a_k$, reversing the formula writes each $a_k$ using ONLY $q_1, \\dots, q_k$ ($a_k = R_{1k}q_1 + \\dots + R_{kk}q_k$). That means every entry below the main diagonal of $R$ is strictly $0$, and every diagonal entry $R_{kk} = \\|u_k\\|_2 > 0$!',
+          '**Works on Tall Rectangular Matrices Too ($m \\ge n$):** You do NOT need $A$ to be square! Any tall $m \\times n$ matrix with linearly independent columns has a unique thin factorization $A = QR$ with $Q \\in \\mathbb{R}^{m\\times n}$ ($Q^T Q = I_n$) and upper-triangular $R \\in \\mathbb{R}^{n\\times n}$ ($R_{kk} > 0$). (Caution: when $m > n$, $Q^T Q = I_n$, whereas $Q Q^T \\neq I_m$ is the projection onto $\\text{Col}(A)$!)',
+          '**Normal Equations Collapse Under $A = QR$:** Plugging $A = QR$ into $A^T A\\hat{x} = A^T b$ gives $R^T (Q^T Q) R\\hat{x} = R^T Q^T b \\implies R^T R\\hat{x} = R^T Q^T b$. Cancelling invertible $R^T$ leaves $R\\hat{x} = Q^T b$ — solved cleanly in $O(n^2)$ back-substitution without ever forming $A^T A$!',
+        ],
         toyExample: {
           title: 'Straightening Two Tilted Vectors into Perpendicular Unit Axes',
           scenario:
             'Start with two linearly independent columns $a_1 = [3, 0]^T$ and $a_2 = [2, 4]^T$ forming $A = \\begin{bmatrix} 3 & 2 \\\\ 0 & 4 \\end{bmatrix}$. Convert them into orthonormal $q_1, q_2$ and recover $A = QR$.',
           walkthroughSteps: [
-            '1. **Normalize $a_1$:** $r_{11} = \\|a_1\\|_2 = 3$, so $q_1 = \\frac{a_1}{3} = [1, 0]^T$.',
-            '2. **Subtract $a_2$’s shadow along $q_1$:** $r_{12} = q_1^T a_2 = 1(2) + 0(4) = 2$. Peel it off: $u_2 = a_2 - r_{12} q_1 = [2, 4]^T - 2[1, 0]^T = [0, 4]^T$.',
-            '3. **Normalize $u_2$:** $r_{22} = \\|u_2\\|_2 = 4$, so $q_2 = \\frac{u_2}{4} = [0, 1]^T$. Notice $q_1^T q_2 = 0$!',
-            '4. **Pack into $A = QR$:** $Q = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$ and $R = \\begin{bmatrix} r_{11} & r_{12} \\\\ 0 & r_{22} \\end{bmatrix} = \\begin{bmatrix} 3 & 2 \\\\ 0 & 4 \\end{bmatrix}$.',
+            '1. **Normalize $a_1$:** Compute its length $R_{11} = \\|a_1\\|_2 = \\sqrt{3^2 + 0^2} = 3$, and divide to get unit vector $q_1 = \\frac{a_1}{3} = [1, 0]^T$.',
+            '2. **Subtract $a_2$’s shadow along $q_1$:** Compute overlap $R_{12} = q_1^T a_2 = 1(2) + 0(4) = 2$. Peel that shadow off: $u_2 = a_2 - R_{12} q_1 = [2, 4]^T - 2[1, 0]^T = [0, 4]^T$.',
+            '3. **Normalize $u_2$:** Compute $R_{22} = \\|u_2\\|_2 = 4$, and divide to get $q_2 = \\frac{u_2}{4} = [0, 1]^T$. Check: $q_1^T q_2 = 0$!',
+            '4. **Pack into $A = QR$:** $Q = [q_1\\; q_2] = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$ and $R = \\begin{bmatrix} R_{11} & R_{12} \\\\ 0 & R_{22} \\end{bmatrix} = \\begin{bmatrix} 3 & 2 \\\\ 0 & 4 \\end{bmatrix}$.',
           ],
           ahaMoment:
             'Notice how gentle Gram-Schmidt is: it never alters the span! Because each fresh unit vector $q_k$ is built purely from $a_1, \\dots, a_k$, writing $a_k$ back in terms of $q_1, \\dots, q_k$ automatically gives an upper-triangular matrix $R$ with strictly positive numbers down its diagonal.',
@@ -287,17 +311,17 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
           formulaLatex:
             'u_k = a_k - \\sum_{j=1}^{k-1}(q_j^T a_k) q_j, \\quad q_k = \\frac{u_k}{\\|u_k\\|_2}, \\qquad A = QR \\implies R\\hat{x} = Q^T b',
           plainEnglishDecoding:
-            'Think of $A = QR$ as a tidy partnership: $Q$ gives you the clean perpendicular unit axes, while $R$ acts as the recipe book telling you how much of each $q_j$ goes into building column $a_k$ ($R_{jk} = q_j^T a_k$). Since $R$ is upper triangular, solving $R\\hat{x} = Q^T b$ is just quick back-substitution and avoids squaring numerical errors inside $A^T A$!',
+            'Think of $A = QR$ as a tidy partnership: $Q$ gives you the clean perpendicular unit axes, while $R$ acts as the recipe book telling you how much of each $q_j$ goes into building column $a_k$ ($R_{jk} = q_j^T a_k$ for $j < k$, and $R_{kk} = \\|u_k\\|_2$). Since $R$ is upper triangular, solving $R\\hat{x} = Q^T b$ is just quick back-substitution and avoids squaring numerical errors inside $A^T A$!',
           workedMiniExamples: [
             {
               prompt: 'Find the thin $QR$ factorization of $A = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$.',
               solution:
-                '$R_{11} = \\|a_1\\|_2 = 1 \\implies q_1 = [1,0,0]^T$. Then $R_{12} = q_1^T a_2 = 1$, $u_2 = a_2 - 1\\cdot q_1 = [0,1,0]^T$, $R_{22} = 1$, $q_2 = [0,1,0]^T$. Thus $Q = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$ and $R = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}$.',
+                'Column 1: $R_{11} = \\|a_1\\|_2 = 1 \\implies q_1 = [1,0,0]^T$. Column 2: shadow $R_{12} = q_1^T a_2 = 1$, residual $u_2 = a_2 - 1\\cdot q_1 = [0,1,0]^T$, length $R_{22} = \\|u_2\\|_2 = 1$, and $q_2 = [0,1,0]^T$. Thus $Q = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$ and $R = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}$.',
             },
             {
               prompt: 'Using $A = QR$ above, find the least-squares solution $\\hat{x}$ to $Ax \\approx b = [2, 3, 5]^T$.',
               solution:
-                'Compute $Q^T b = [2, 3]^T$. Solve $R\\hat{x} = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}\\begin{bmatrix} \\hat{x}_1 \\\\ \\hat{x}_2 \\end{bmatrix} = \\begin{bmatrix} 2 \\\\ 3 \\end{bmatrix} \\implies \\hat{x}_2 = 3,\\; \\hat{x}_1 = -1$.',
+                'Compute $Q^T b = \\begin{bmatrix} 1 & 0 & 0 \\\\ 0 & 1 & 0 \\end{bmatrix}\\begin{bmatrix} 2 \\\\ 3 \\\\ 5 \\end{bmatrix} = \\begin{bmatrix} 2 \\\\ 3 \\end{bmatrix}$. Solve $R\\hat{x} = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}\\begin{bmatrix} \\hat{x}_1 \\\\ \\hat{x}_2 \\end{bmatrix} = \\begin{bmatrix} 2 \\\\ 3 \\end{bmatrix}$ from bottom up: $\\hat{x}_2 = 3$, then $\\hat{x}_1 + 3 = 2 \\implies \\hat{x}_1 = -1$.',
             },
           ],
         },
@@ -734,14 +758,22 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Why trace and determinant give you the sum and product of eigenvalues without solving a single root',
         priority: 'core-pillar',
         buildsOn: 'Row reduction, matrix multiplication, and linear dependence',
+        whyStudy:
+          'Imagine wanting to know how a $100 \\times 100$ covariance matrix in **PCA** stretches total data variance, whether a coordinate change in multivariate probability stretches area via its **Jacobian**, or whether a giant polynomial matrix $M^2 + 12M$ is invertible — WITHOUT solving a degree-100 polynomial! **Trace** ($\\text{tr}(A)$) and **Determinant** ($\\det(A)$) act like two instant X-ray gauges: they tell you the exact **sum** and **product** of all eigenvalues straight from the raw entries of $A$. Mastering these two invariants cracks **GATE DA 2024 Q.13 & Q.35** and **GATE DA 2026 Q.46** in seconds.',
+        groundRules: [
+          '**Determinant = Signed Volume Scaling ($\\det(A) = \\prod_{i=1}^n \\lambda_i$):** Think of $\\det(A)$ as the factor by which $A$ stretches the volume of a unit box. If ANY row (or column) is a linear combination of the others, $A$ flattens space to $0$ volume — so $\\det(A) = 0 \\iff A$ is singular $\\iff 0$ is an eigenvalue!',
+          '**Trace = Sum of Diagonal Entries = Sum of All Eigenvalues ($\\text{tr}(A) = \\sum_{i=1}^n A_{ii} = \\sum_{i=1}^n \\lambda_i$):** Even when eigenvalues are ugly complex numbers, adding the main diagonal entries of $A$ ALWAYS gives their exact sum! Better yet, trace obeys **cyclic invariance**: $\\text{tr}(AB) = \\text{tr}(BA)$ (so $\\text{tr}(u v^T) = v^T u$ instantaneously).',
+          '**Keep Linearity and Multiplicativity Strictly Separate:** **Trace is linear** ($\\text{tr}(A + B) = \\text{tr}(A) + \\text{tr}(B)$ and $\\text{tr}(cA) = c\\,\\text{tr}(A)$), NOT multiplicative! **Determinant is multiplicative** ($\\det(AB) = \\det(A)\\det(B)$, letting you factor $\\det(M^2 + 12M) = \\det(M)\\det(M + 12I)$), NOT linear — and scaling an $n\\times n$ matrix multiplies volume in all $n$ directions: $\\det(cA) = c^n \\det(A)$!',
+          '**Instant $2 \\times 2$ Characteristic Equation:** For ANY $2 \\times 2$ matrix $A$, the eigenvalues satisfy $\\lambda^2 - \\text{tr}(A)\\lambda + \\det(A) = 0$. Its discriminant $\\Delta = \\text{tr}(A)^2 - 4\\det(A)$ immediately classifies the eigenvalues: $\\Delta > 0$ (distinct real), $\\Delta = 0$ (repeated real), $\\Delta < 0$ (complex conjugate pair).',
+        ],
         toyExample: {
           title: 'Squashing a 3D Matrix to Zero Before Ever Squaring It',
           scenario:
             'Suppose a $3\\times 3$ matrix $M$ satisfies Row 3 $=$ Row 1 $+$ Row 2 (for instance, $M = \\begin{bmatrix} 1 & 2 & 3 \\\\ 4 & 5 & 6 \\\\ 5 & 7 & 9 \\end{bmatrix}$). Someone asks you for $\\det(M^2 + 12M)$!',
           walkthroughSteps: [
             '1. **Don’t Square $M$!** Computing $M^2 + 12M$ and expanding a $3\\times 3$ determinant takes 5 minutes and begs for arithmetic slips.',
-            '2. **Factor Inside $\\det$:** Notice $M^2 + 12M = M(M + 12I_3)$, and $\\det(AB) = \\det(A)\\det(B)$.',
-            '3. **Spot the Zero Factor:** Because Row 3 $=$ Row 1 $+$ Row 2, the rows of $M$ are linearly dependent — the 3D parallelepiped collapses flat, so $\\det(M) = 0$!',
+            '2. **Factor Inside $\\det$:** Notice $M^2 + 12M = M(M + 12I_3)$, and by multiplicativity $\\det(AB) = \\det(A)\\det(B)$.',
+            '3. **Spot the Zero Factor:** Because Row 3 $=$ Row 1 $+$ Row 2, the rows of $M$ are linearly dependent — the 3D volume collapses flat, so $\\det(M) = 0$!',
             '4. **Instant Finish:** $\\det(M^2 + 12M) = \\det(M)\\det(M + 12I_3) = 0 \\times \\det(M + 12I_3) = 0$ in 5 seconds!',
           ],
           ahaMoment:
@@ -749,21 +781,21 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'For any square matrix $A \\in \\mathbb{R}^{n\\times n}$ with eigenvalues $\\lambda_1, \\dots, \\lambda_n$ (counted with algebraic multiplicity over $\\mathbb{C}$), the **trace** equals the sum of eigenvalues and the **determinant** equals their product. Determinants are multiplicative ($\\det(AB) = \\det(A)\\det(B)$), invariant under transpose ($\\det(A^T) = \\det(A)$), and scale as $\\det(cA) = c^n \\det(A)$. Trace is linear and **cyclically invariant** ($\\text{tr}(AB) = \\text{tr}(BA)$ whenever both products are square).',
+            'For any square matrix $A \\in \\mathbb{R}^{n\\times n}$ with eigenvalues $\\lambda_1, \\dots, \\lambda_n$ (counted with algebraic multiplicity over $\\mathbb{C}$, the complex numbers), the **trace** equals the sum of eigenvalues and the **determinant** equals their product. Determinants are multiplicative ($\\det(AB) = \\det(A)\\det(B)$), invariant under transpose ($\\det(A^T) = \\det(A)$), and scale as $\\det(cA) = c^n \\det(A)$. Trace is linear and **cyclically invariant** ($\\text{tr}(AB) = \\text{tr}(BA)$ whenever both products are square).',
           formulaLatex:
             '\\text{tr}(A) = \\sum_{i=1}^n A_{ii} = \\sum_{i=1}^n \\lambda_i, \\qquad \\det(A) = \\prod_{i=1}^n \\lambda_i, \\qquad \\lambda^2 - \\text{tr}(A)\\lambda + \\det(A) = 0\\;(2\\times 2)',
           plainEnglishDecoding:
-            'Here is a habit that saves minutes on every paper: for any $2\\times 2$ matrix, skip expanding $\\det(\\lambda I - A)$ altogether — simply read $\\text{tr}(A)$ and $\\det(A)$ off the four entries and drop them straight into $\\lambda^2 - \\text{tr}(A)\\lambda + \\det(A) = 0$! And whenever you spot an outer product $u v^T$, cyclic trace immediately flips it to the dot product $\\text{tr}(u v^T) = v^T u$.',
+            'Here is a habit that saves minutes on every paper: for any $2\\times 2$ matrix, skip expanding $\\det(\\lambda I - A)$ altogether — simply read $\\text{tr}(A)$ (sum of diagonal) and $\\det(A)$ ($ad - bc$) off the four entries and drop them straight into $\\lambda^2 - \\text{tr}(A)\\lambda + \\det(A) = 0$! And whenever you spot an outer product $u v^T$, cyclic trace immediately flips it to the dot product $\\text{tr}(u v^T) = v^T u$.',
           workedMiniExamples: [
             {
               prompt: 'Classify the eigenvalues of $M = \\begin{bmatrix} 2 & -1 \\\\ 3 & 1 \\end{bmatrix}$ (GATE DA 2024 · Q.13).',
               solution:
-                '$\\text{tr}(M) = 2 + 1 = 3$ and $\\det(M) = 2(1) - (-1)(3) = 5$. Characteristic quadratic: $\\lambda^2 - 3\\lambda + 5 = 0$. Discriminant $\\Delta = (-3)^2 - 4(1)(5) = -11 < 0 \\implies$ complex conjugate pair $\\frac{3 \\pm i\\sqrt{11}}{2}$.',
+                'Read trace and determinant: $\\text{tr}(M) = 2 + 1 = 3$ and $\\det(M) = 2(1) - (-1)(3) = 2 + 3 = 5$. Characteristic quadratic: $\\lambda^2 - 3\\lambda + 5 = 0$. Discriminant $\\Delta = (-3)^2 - 4(1)(5) = 9 - 20 = -11 < 0 \\implies$ complex conjugate pair $\\frac{3 \\pm i\\sqrt{11}}{2}$.',
             },
             {
               prompt: 'Compute $\\text{tr}(A)$ if $A = u v^T$ where $u = [1, 2, 3]^T$ and $v = [4, -1, 2]^T$.',
               solution:
-                'By cyclic invariance, $\\text{tr}(u v^T) = \\text{tr}(v^T u) = v^T u = 4(1) + (-1)(2) + 2(3) = 8$ without ever building the $3\\times 3$ matrix!',
+                'By cyclic invariance, $\\text{tr}(u v^T) = \\text{tr}(v^T u) = v^T u = 4(1) + (-1)(2) + 2(3) = 4 - 2 + 6 = 8$ without ever building the $3\\times 3$ matrix!',
             },
           ],
         },
@@ -804,15 +836,23 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Read eigenvalues of $A = cI + uv^T$, row-sum matrices, and block rotations by inspection',
         priority: 'core-pillar',
         buildsOn: 'Null spaces, homogeneous systems $Ax = 0$, and trace = sum of eigenvalues',
+        whyStudy:
+          'A square matrix $A$ usually twists AND stretches vectors in tangled ways — making it hard to see what happens when you apply $A$ repeatedly (like Google PageRank, Markov chains $P^k$, or finding the directions of maximum spread in **PCA**). **Eigenvectors** ($v \\neq \\mathbf{0}$) are the magic "straight-line" directions that $A$ NEVER twists: it only scales them by a pure number $\\lambda$ (**eigenvalue**)! Once you see a matrix along its own natural stretching axes, scary matrix polynomials $p(A)$ and giant $100 \\times 100$ rank-1 updates $I_n + xx^T$ collapse to 1-line arithmetic — directly unlocking **GATE DA 2025 Q.13 & Q.28** and **GATE DA 2026 Q.46**.',
+        groundRules: [
+          '**Defining Equation ($Av = \\lambda v$ with $v \\neq \\mathbf{0}$):** An eigenvector $v$ MUST be non-zero (otherwise $A\\mathbf{0} = \\lambda\\mathbf{0}$ would make every number an eigenvalue!). Rewriting as $(A - \\lambda I_n)v = \\mathbf{0}$ shows that $\\lambda$ is an eigenvalue $\\iff (A - \\lambda I_n)$ is singular $\\iff \\det(A - \\lambda I_n) = 0$.',
+          '**Polynomial Mapping Preserves Eigenvectors ($Av = \\lambda v \\implies p(A)v = p(\\lambda)v$):** Applying $A$ twice simply multiplies by $\\lambda$ twice ($A^2 v = A(\\lambda v) = \\lambda^2 v$). Extending to any polynomial $p(t)$ keeps the exact same eigenvector $v$ and replaces $\\lambda$ with $p(\\lambda)$ — and if every row of $A$ sums to $c$, then $A\\mathbf{1} = c\\mathbf{1}$ gives you eigenvector $\\mathbf{1}$ with $\\lambda = c$ immediately!',
+          '**Rank-1 Update Spectrum ($cI_n + u v^T$):** Adding an outer product $u v^T$ to $cI_n$ vanishes on the entire $(n-1)$-dimensional hyperplane $v^\\perp$ (every $w$ with $v^T w = 0$ satisfies $(cI_n + uv^T)w = cw$), locking in $(n-1)$ eigenvalues equal to $c$; the final $n$-th eigenvalue is $c + v^T u$ (confirmed via $\\text{tr}(cI_n + uv^T) = nc + v^T u$)!',
+          '**Diagonalizability Rule ($\\text{GM}(\\lambda) = \\text{AM}(\\lambda)$):** Distinct eigenvalues ALWAYS produce linearly independent eigenvectors (NOT necessarily orthogonal unless $A$ is symmetric!). A matrix $A$ can be diagonalized as $A = P\\Lambda P^{-1}$ iff EVERY eigenvalue’s **geometric multiplicity** ($\\text{GM} = \\dim \\text{Null}(A - \\lambda I)$, count of independent eigenvectors) matches its **algebraic multiplicity** ($\\text{AM}$, root repetition count).',
+        ],
         sandboxId: 'rotation-svd-lab',
         toyExample: {
           title: 'Finding All 100 Eigenvalues of $A = I_{100} + x x^T$ ($\\|x\\|_2 = 1$) in One Glance',
           scenario:
             'Suppose $x \\in \\mathbb{R}^{100}$ is a unit vector ($x^T x = 1$) and $A = I_{100} + x x^T$. How can you know every single eigenvalue, the rank, and the determinant without touching a $100\\times 100$ determinant?',
           walkthroughSteps: [
-            '1. **Feed $x$ into $A$:** $Ax = (I + x x^T)x = x + x(x^T x) = x + 1\\cdot x = 2x$. So $x$ is an eigenvector with $\\lambda_1 = 2$!',
-            '2. **Feed ANY $v \\perp x$ into $A$:** Since $x^T v = 0$, $Av = v + x(x^T v) = v + 0 = 1\\cdot v$.',
-            '3. **Count the Perpendicular Directions:** The orthogonal complement $x^\\perp$ has dimension $100 - 1 = 99$, giving $99$ independent eigenvectors all with $\\lambda = 1$!',
+            '1. **Feed $x$ into $A$:** $Ax = (I_{100} + x x^T)x = x + x(x^T x) = x + 1\\cdot x = 2x$. So $x$ is an eigenvector with $\\lambda_1 = 2$!',
+            '2. **Feed ANY $v \\perp x$ into $A$:** Since $x^T v = 0$, $Av = (I_{100} + x x^T)v = v + x(x^T v) = v + \\mathbf{0} = 1\\cdot v$.',
+            '3. **Count the Perpendicular Directions:** The orthogonal complement $x^\\perp$ in $\\mathbb{R}^{100}$ has dimension $100 - 1 = 99$, giving $99$ independent eigenvectors all with $\\lambda = 1$!',
             '4. **Instant Readout:** All $100$ eigenvalues are $\\{2, 1, 1, \\dots, 1\\}$ (all non-zero!), so $\\text{rank}(A) = 100$, $A$ is invertible, and $\\det(A) = 2 \\cdot 1^{99} = 2$!',
           ],
           ahaMoment:
@@ -820,21 +860,21 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'If $Av = \\lambda v$ ($v \\neq 0$), then for any polynomial $p(t) = \\sum_{k=0}^d c_k t^k$, we have $p(A)v = p(\\lambda)v$ (and $A^{-1}v = \\lambda^{-1}v$ if $A$ is invertible). In particular, if $A$ has constant row sum $r$, then $A\\mathbf{1} = r\\mathbf{1}$ so $r$ is an eigenvalue; consequently $p(A)\\mathbf{1} = p(r)\\mathbf{1}$. A matrix $A \\in \\mathbb{R}^{n\\times n}$ is **diagonalizable** ($A = P\\Lambda P^{-1}$) over $\\mathbb{C}$ iff for every eigenvalue $\\lambda$, its geometric multiplicity $\\dim(\\text{Null}(A - \\lambda I))$ equals its algebraic multiplicity.',
+            'If $Av = \\lambda v$ ($v \\neq \\mathbf{0}$), then for any polynomial $p(t) = \\sum_{k=0}^d c_k t^k$, we have $p(A)v = p(\\lambda)v$ (and $A^{-1}v = \\lambda^{-1}v$ if $A$ is invertible). In particular, if $A$ has constant row sum $r$, then $A\\mathbf{1} = r\\mathbf{1}$ so $r$ is an eigenvalue; consequently $p(A)\\mathbf{1} = p(r)\\mathbf{1}$. A matrix $A \\in \\mathbb{R}^{n\\times n}$ is **diagonalizable** ($A = P\\Lambda P^{-1}$) over $\\mathbb{C}$ iff for every eigenvalue $\\lambda$, its geometric multiplicity $\\dim(\\text{Null}(A - \\lambda I))$ equals its algebraic multiplicity.',
           formulaLatex:
             'Av = \\lambda v \\implies p(A)v = p(\\lambda)v, \\qquad \\text{eig}(cI_n + uv^T) = \\{c + v^T u,\\; \\underbrace{c, \\dots, c}_{n-1\\text{ times}}\\}',
           plainEnglishDecoding:
-            'Think of polynomials as keeping the exact same eigenvectors while calmly transforming every eigenvalue via $\\lambda \\mapsto p(\\lambda)$. So the moment you hear $A\\mathbf{1} = \\mathbf{1}$ ($\\lambda = 1$) and $B = A^3 - 2A^2 + A$, you plug $1$ into the polynomial to get $B\\mathbf{1} = (1^3 - 2(1)^2 + 1)\\mathbf{1} = \\mathbf{0}$, immediately proving $B$ is singular ($Bx = 0$ has infinitely many solutions, GATE DA 2025 · Q.13)!',
+            'Think of polynomials as keeping the exact same eigenvectors while calmly transforming every eigenvalue via $\\lambda \\mapsto p(\\lambda)$. So the moment you hear $A\\mathbf{1} = \\mathbf{1}$ ($\\lambda = 1$) and $B = A^3 - 2A^2 + A$, you plug $1$ into the polynomial to get $B\\mathbf{1} = (1^3 - 2(1)^2 + 1)\\mathbf{1} = \\mathbf{0}$, immediately proving $B$ is singular ($Bx = \\mathbf{0}$ has infinitely many solutions, **GATE DA 2025 · Q.13**)!',
           workedMiniExamples: [
             {
               prompt: 'For block-rotation $M(t) = \\begin{bmatrix} 1 & 0 & 0 \\\\ 0 & \\cos t & -\\sin t \\\\ 0 & \\sin t & \\cos t \\end{bmatrix}$, find $t \\in [-\\pi, \\pi]$ where eigenvalues sum to $1 + \\sqrt{2}$ (GATE DA 2026 · Q.46).',
               solution:
-                'Sum of eigenvalues equals the trace: $\\text{tr}(M(t)) = 1 + 2\\cos t$. Setting $1 + 2\\cos t = 1 + \\sqrt{2}$ gives $\\cos t = \\frac{\\sqrt{2}}{2} = \\frac{1}{\\sqrt{2}}$, so $t \\in \\{\\frac{\\pi}{4}, -\\frac{\\pi}{4}\\}$.',
+                'Sum of eigenvalues equals the trace: $\\text{tr}(M(t)) = 1 + \\cos t + \\cos t = 1 + 2\\cos t$. Setting $1 + 2\\cos t = 1 + \\sqrt{2}$ gives $\\cos t = \\frac{\\sqrt{2}}{2} = \\frac{1}{\\sqrt{2}}$, which holds on $[-\\pi, \\pi]$ at $t \\in \\{\\frac{\\pi}{4}, -\\frac{\\pi}{4}\\}$.',
             },
             {
               prompt: 'Show why $B = \\begin{bmatrix} 2 & 1 \\\\ 0 & 2 \\end{bmatrix}$ is NOT diagonalizable.',
               solution:
-                'Algebraic multiplicity of $\\lambda = 2$ is $2$, yet $B - 2I = \\begin{bmatrix} 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$ has rank $1$, so geometric multiplicity is $2 - 1 = 1 < 2$.',
+                'Because $B$ is upper triangular, its eigenvalues sit on the diagonal: $\\lambda = 2$ with algebraic multiplicity $\\text{AM} = 2$. Yet $B - 2I_2 = \\begin{bmatrix} 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$ has rank $1$, so by Rank-Nullity its geometric multiplicity is $\\text{GM} = \\dim \\text{Null}(B - 2I_2) = 2 - 1 = 1 < 2$. Not enough independent eigenvectors!',
             },
           ],
         },
@@ -869,14 +909,22 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Every square matrix obeys its own characteristic polynomial, collapsing $A^n$ and $A^{-1}$ into low powers',
         priority: 'high-yield',
         buildsOn: 'Characteristic polynomial $p(\\lambda) = \\det(\\lambda I - A)$ and rank inequalities',
+        whyStudy:
+          'Suppose you need to compute $A^{10}$, evaluate a matrix exponential $e^{At}$ in dynamical systems, or find $A^{-1}$ for a matrix that is NOT even diagonalizable! Multiplying $A$ by itself ten times is painfully slow and error-prone. The **Cayley-Hamilton Theorem** hands you an extraordinary shortcut: every $n \\times n$ matrix satisfies its own degree-$n$ characteristic polynomial $p(A) = 0$ — whether it is diagonalizable or not! That means any scary power $A^k$ (and even $A^{-1}$) always collapses down into a simple mix of $I_n, A, \\dots, A^{n-1}$.',
+        groundRules: [
+          '**Every Square Matrix Obeys Its Own Characteristic Equation ($p(A) = 0$):** If $p(\\lambda) = \\det(\\lambda I_n - A) = \\lambda^n + c_{n-1}\\lambda^{n-1} + \\dots + c_1\\lambda + c_0$, replacing every $\\lambda^k$ with $A^k$ and the constant term $c_0$ with $c_0 I_n$ ALWAYS gives the $n\\times n$ zero matrix $0$! (Never forget to multiply the constant $c_0$ by $I_n$!)',
+          '**Strict Degree Cap ($A^n$ Never Escapes $\\{I, A, \\dots, A^{n-1}\\}$):** Rearranging $p(A) = 0$ expresses $A^n$ as a linear combination of lower powers $I_n, A, \\dots, A^{n-1}$. For ANY $2\\times 2$ matrix, memorize the golden reduction: $A^2 = \\text{tr}(A)A - \\det(A)I_2$!',
+          '**Free Polynomial Formula for $A^{-1}$:** Whenever $\\det(A) \\neq 0$, the constant term $c_0 = (-1)^n \\det(A)$ is non-zero — move $c_0 I_n$ to the right side and factor out one $A$ on the left to read off $A^{-1}$ directly as a degree-$(n-1)$ polynomial in $A$!',
+          '**Matrix Zero-Divisor Warning ($A^2 = 0 \\not\\implies A = 0$):** Unlike real numbers where $a^2 = 0$ forces $a = 0$, a non-zero **nilpotent** matrix like $\\begin{bmatrix} 0 & 1 \\\\ 0 & 0 \\end{bmatrix}$ can square to $0$! Similarly, never cancel $A$ in $A^3 = A$ unless you know $A$ is invertible — use the rank sandwich $\\text{rank}(A^3) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$ instead.',
+        ],
         toyExample: {
           title: 'Collapsing $A^3$ of a $2\\times 2$ Matrix Using Its Own Quadratic Equation',
           scenario:
             'Let $A = \\begin{bmatrix} 2 & 1 \\\\ 1 & 2 \\end{bmatrix}$. Compute $A^3$ without multiplying $A \\cdot A \\cdot A$ directly.',
           walkthroughSteps: [
-            '1. **Characteristic Polynomial:** $\\text{tr}(A) = 4$ and $\\det(A) = 4 - 1 = 3$, so $p(\\lambda) = \\lambda^2 - 4\\lambda + 3$.',
+            '1. **Characteristic Polynomial:** $\\text{tr}(A) = 2 + 2 = 4$ and $\\det(A) = 2(2) - 1(1) = 3$, so $p(\\lambda) = \\lambda^2 - 4\\lambda + 3$.',
             '2. **Plug $A$ into $p(\\lambda) = 0$:** Cayley-Hamilton guarantees $A^2 - 4A + 3I_2 = 0 \\implies A^2 = 4A - 3I_2$.',
-            '3. **Step Up to $A^3$:** Multiply by $A$: $A^3 = 4A^2 - 3A = 4(4A - 3I_2) - 3A = 13A - 12I_2$.',
+            '3. **Step Up to $A^3$:** Multiply both sides by $A$: $A^3 = 4A^2 - 3A = 4(4A - 3I_2) - 3A = 16A - 12I_2 - 3A = 13A - 12I_2$.',
             '4. **Evaluate Once:** $A^3 = 13\\begin{bmatrix} 2 & 1 \\\\ 1 & 2 \\end{bmatrix} - \\begin{bmatrix} 12 & 0 \\\\ 0 & 12 \\end{bmatrix} = \\begin{bmatrix} 14 & 13 \\\\ 13 & 14 \\end{bmatrix}$!',
           ],
           ahaMoment:
@@ -893,7 +941,7 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             {
               prompt: 'Use Cayley-Hamilton to find $A^{-1}$ for $A = \\begin{bmatrix} 3 & 1 \\\\ 2 & 2 \\end{bmatrix}$.',
               solution:
-                '$\\text{tr}(A) = 5, \\det(A) = 4 \\implies A^2 - 5A + 4I_2 = 0 \\implies A(5I_2 - A) = 4I_2 \\implies A^{-1} = \\frac{1}{4}(5I_2 - A) = \\frac{1}{4}\\begin{bmatrix} 2 & -1 \\\\ -2 & 3 \\end{bmatrix}$.',
+                'Compute $\\text{tr}(A) = 3 + 2 = 5$ and $\\det(A) = 6 - 2 = 4$. Cayley-Hamilton gives $A^2 - 5A + 4I_2 = 0 \\implies 5A - A^2 = 4I_2 \\implies A(5I_2 - A) = 4I_2$. Dividing by $4$ yields $A^{-1} = \\frac{1}{4}(5I_2 - A) = \\frac{1}{4}\\begin{bmatrix} 2 & -1 \\\\ -2 & 3 \\end{bmatrix}$.',
             },
             {
               prompt: 'Prove $\\text{rank}(A) = \\text{rank}(A^2)$ whenever $A^3 = A$ (GATE DA 2025 · Q.37).',
@@ -922,7 +970,7 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             targetWeek: 3,
             topic: 'Long-Run Powers of Transition Matrices $P^k$',
             whyItMatters:
-              'Decomposing $P^k$ along eigenvectors shows why the $\\lambda_1 = 1$ stationary mode survives as $k \\to \\infty$ while all $|\lambda_i| < 1$ modes decay exponentially.',
+              'Decomposing $P^k$ along eigenvectors shows why the $\\lambda_1 = 1$ stationary mode survives as $k \\to \\infty$ while all $|\\lambda_i| < 1$ modes decay exponentially.',
           },
         ],
       },
@@ -1342,36 +1390,44 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Turning cross-product bowls $x^T A x$ into pure sums of squares along orthogonal axes',
         priority: 'core-pillar',
         buildsOn: 'Symmetric matrices $A^T = A$, orthogonal matrices $Q$, and determinants',
+        whyStudy:
+          'When you train a Machine Learning model by minimizing a loss function $L(w)$ (like OLS, Ridge, or Logistic Regression), how do you know whether a flat spot $\\nabla L(w) = \\mathbf{0}$ is a **unique global bottom of a bowl** (convex!) rather than a treacherous **saddle point**? You inspect the second-derivative **Hessian matrix** $H = \\nabla^2 L(w)$ via its quadratic form $x^T H x$! Similarly, every **covariance matrix** $\\Sigma$ in PCA and every **Gram matrix** $X^T X$ in regression is symmetric and positive (semi)definite. Mastering the **Spectral Theorem** and **Positive Definiteness** reveals the geometry of every ML loss landscape and nails **GATE DA 2025 Q.38**.',
+        groundRules: [
+          '**The Spectral Theorem Miracle ($A = A^T \\implies A = Q \\Lambda Q^T$):** Every real **symmetric** matrix ($A_{ij} = A_{ji}$) ALWAYS has **100% real eigenvalues** (never complex!) and a full set of **mutually perpendicular unit eigenvectors** $Q$ ($Q^T Q = I_n$). Rotating coordinates by $y = Q^T x$ deletes every cross-term $x_i x_j$ from $x^T A x$, leaving pure squares $\\sum_{i=1}^n \\lambda_i y_i^2$!',
+          '**Three Equivalent Tests for Positive Definite ($A \\succ 0$):** For a symmetric matrix $A = A^T$, being an upward soup bowl ($x^T A x > 0$ for every $x \\neq \\mathbf{0}$) is 100% equivalent to: **(a)** every eigenvalue $\\lambda_i > 0$, AND **(b)** every top-left leading principal minor $\\Delta_k = \\det(A_{1:k,1:k}) > 0$ (Sylvester’s criterion). Note: for **PSD ($A \\succeq 0$, $\\lambda_i \\ge 0$)**, leading minors $\\Delta_k \\ge 0$ alone are NOT enough — you need ALL principal minors $\\ge 0$!',
+          '**$A^T A$ Is ALWAYS Symmetric PSD (and PD $\\iff$ Independent Columns):** For ANY rectangular matrix $X$, the Gram matrix $X^T X$ satisfies $v^T(X^T X)v = (Xv)^T(Xv) = \\|Xv\\|_2^2 \\ge 0$ automatically! It hits $0$ ONLY when $Xv = \\mathbf{0}$ — so $X^T X$ is strictly PD (hence invertible with $\\det > 0$) $\\iff$ the columns of $X$ are linearly independent!',
+          '**Symmetrize Before Judging Any Quadratic Form:** Because $x^T C x$ is a single number, it equals its own transpose $x^T C^T x$, so $x^T C x = x^T \\left(\\frac{C + C^T}{2}\\right) x$. NEVER run Sylvester’s leading-minor test on a non-symmetric matrix $C$ — always symmetrize to $S = \\frac{1}{2}(C + C^T)$ first!',
+        ],
         toyExample: {
           title: 'Proving $2x_1^2 + 2x_1 x_2 + 2x_2^2$ Is a Strict Upward Bowl',
           scenario:
-            'Consider the quadratic function $q(x) = 2x_1^2 + 2x_1 x_2 + 2x_2^2 = x^T A x$ where $A = \\begin{bmatrix} 2 & 1 \\\\ 1 & 2 \\end{bmatrix}$. Is $q(x) > 0$ for every non-zero $x \\in \\mathbb{R}^2$?',
+            'Consider the quadratic function $q(x) = 2x_1^2 + 2x_1 x_2 + 2x_2^2 = x^T A x$ where $A = \\begin{bmatrix} 2 & 1 \\\\ 1 & 2 \\end{bmatrix}$ (notice the cross-term $2x_1 x_2$ splits evenly as $1$ and $1$ off the diagonal so $A$ is symmetric!). Is $q(x) > 0$ for every non-zero $x \\in \\mathbb{R}^2$?',
           walkthroughSteps: [
-            '1. **Complete the Square (Algebraic View):** $2x_1^2 + 2x_1 x_2 + 2x_2^2 = (x_1 + x_2)^2 + x_1^2 + x_2^2$. Since squares are $\\ge 0$ and can only all vanish at $x_1 = x_2 = 0$, $q(x) > 0$ for all $x \\neq 0$!',
-            '2. **Check Eigenvalues:** $\\text{tr}(A) = 4$ and $\\det(A) = 3 \\implies \\lambda_1 = 3 > 0,\\; \\lambda_2 = 1 > 0$.',
+            '1. **Complete the Square (Algebraic View):** $2x_1^2 + 2x_1 x_2 + 2x_2^2 = (x_1 + x_2)^2 + x_1^2 + x_2^2$. Since real squares are always $\\ge 0$ and can all vanish only at $x_1 = x_2 = 0$, $q(x) > 0$ for every $x \\neq \\mathbf{0}$!',
+            '2. **Check Eigenvalues:** $\\text{tr}(A) = 4$ and $\\det(A) = 4 - 1 = 3 \\implies \\lambda^2 - 4\\lambda + 3 = 0 \\implies \\lambda_1 = 3 > 0,\\; \\lambda_2 = 1 > 0$.',
             '3. **Check Leading Principal Minors (Sylvester’s Criterion):** Top-left $1\\times 1$ minor $\\Delta_1 = 2 > 0$, and full $2\\times 2$ minor $\\Delta_2 = \\det(A) = 3 > 0$.',
-            '4. **Orthogonal Diagonalization:** Along eigenvectors $q_1 = \\frac{1}{\\sqrt{2}}[1, 1]^T$ and $q_2 = \\frac{1}{\\sqrt{2}}[1, -1]^T$, $q(x) = 3y_1^2 + 1y_2^2$ — a tilted elliptical bowl with zero cross-terms!',
+            '4. **Orthogonal Diagonalization:** Along orthonormal eigenvectors $q_1 = \\frac{1}{\\sqrt{2}}[1, 1]^T$ and $q_2 = \\frac{1}{\\sqrt{2}}[1, -1]^T$, $q(x) = 3y_1^2 + 1y_2^2$ — a tilted elliptical bowl with zero cross-terms!',
           ],
           ahaMoment:
             'Picture a **Positive Definite (PD, $A \\succ 0$)** symmetric matrix as a clean upward-curving soup bowl $x^T A x$ that rises in every direction — and you can confirm it in 5 seconds by checking that all eigenvalues satisfy $\\lambda_i > 0$ OR all leading principal minors satisfy $\\Delta_k > 0$!',
         },
         theoremAndFormula: {
           statement:
-            '**Spectral Theorem:** Every real symmetric matrix $A = A^T \\in \\mathbb{R}^{n\\times n}$ has **all real eigenvalues** and an orthonormal eigenbasis $Q$, factoring as $A = Q \\Lambda Q^T$. A symmetric matrix $A$ is **Positive Definite ($A \\succ 0$)** iff $x^T A x > 0\\;\\forall x \\neq 0 \\iff$ all $\\lambda_i(A) > 0 \\iff$ all leading principal minors $\\Delta_1, \\dots, \\Delta_n > 0$ (Sylvester’s criterion). It is **Positive Semidefinite ($A \\succeq 0$)** iff $x^T A x \\ge 0\\;\\forall x \\iff$ all $\\lambda_i(A) \\ge 0 \\iff$ $A = B^T B$ for some matrix $B$. In particular, any Gram matrix $G = X^T X$ is always PSD, and is PD (hence invertible) iff $X$ has linearly independent columns!',
+            '**Spectral Theorem:** Every real symmetric matrix $A = A^T \\in \\mathbb{R}^{n\\times n}$ has **all real eigenvalues** and an orthonormal eigenbasis $Q$, factoring as $A = Q \\Lambda Q^T$. A symmetric matrix $A$ is **Positive Definite ($A \\succ 0$)** iff $x^T A x > 0\\;\\forall x \\neq \\mathbf{0} \\iff$ all $\\lambda_i(A) > 0 \\iff$ all leading principal minors $\\Delta_1, \\dots, \\Delta_n > 0$ (Sylvester’s criterion). It is **Positive Semidefinite ($A \\succeq 0$)** iff $x^T A x \\ge 0\\;\\forall x \\iff$ all $\\lambda_i(A) \\ge 0 \\iff$ $A = B^T B$ for some matrix $B$. In particular, any Gram matrix $G = X^T X$ is always PSD, and is PD (hence invertible) iff $X$ has linearly independent columns!',
           formulaLatex:
             'A = A^T = Q \\Lambda Q^T, \\qquad A \\succ 0 \\iff \\lambda_i(A) > 0\\;\\forall i \\iff \\Delta_k > 0\\;\\forall k, \\qquad v^T(X^T X)v = \\|Xv\\|_2^2 \\ge 0',
           plainEnglishDecoding:
-            'Whenever an exam hands you a Gram matrix $A_{ij} = x_i^T x_j$ ($A = X^T X$) and asks if it is invertible, leave determinants aside! Simply ask whether the columns of $X$ are linearly independent: because $v^T (X^T X) v = \\|Xv\\|_2^2 = 0 \\iff Xv = 0$, linearly independent vectors automatically make $X^T X$ strictly positive definite and invertible (GATE DA 2025 · Q.38)!',
+            'Whenever an exam hands you a Gram matrix $A_{ij} = x_i^T x_j$ ($A = X^T X$) and asks if it is invertible, leave determinants aside! Simply ask whether the columns of $X$ are linearly independent: because $v^T (X^T X) v = \\|Xv\\|_2^2 = 0 \\iff Xv = \\mathbf{0}$, linearly independent vectors automatically make $X^T X$ strictly positive definite and invertible (**GATE DA 2025 · Q.38**)!',
           workedMiniExamples: [
             {
               prompt: 'Given linearly independent vectors $x_1, \\dots, x_n \\in \\mathbb{R}^n$, prove the Gram matrix $A_{ij} = x_i^T x_j$ is invertible (GATE DA 2025 · Q.38).',
               solution:
-                'Notice $A = X^T X$ where $X = [x_1\\;\\cdots\\;x_n]$. For any $v \\neq 0$, $Xv \\neq 0$ by linear independence, so $v^T A v = \\|Xv\\|_2^2 > 0$. Thus $A \\succ 0$ (all eigenvalues $> 0$), so $\\det(A) > 0$ and $A$ is invertible.',
+                'Notice $A = X^T X$ where $X = [x_1\\;\\cdots\\;x_n]$. For any $v \\neq \\mathbf{0}$, $Xv \\neq \\mathbf{0}$ by linear independence, so $v^T A v = \\|Xv\\|_2^2 > 0$. Thus $A \\succ 0$ (all eigenvalues $> 0$), forcing $\\det(A) > 0$ and making $A$ invertible.',
             },
             {
               prompt: 'Classify the definiteness of $A = \\begin{bmatrix} 1 & 2 \\\\ 2 & 1 \\end{bmatrix}$.',
               solution:
-                'Leading minors: $\\Delta_1 = 1 > 0$, $\\Delta_2 = 1 - 4 = -3 < 0$. Eigenvalues are $3$ and $-1$ (opposite signs), so $A$ is **indefinite** (a saddle).',
+                'Leading minors: $\\Delta_1 = 1 > 0$, $\\Delta_2 = 1(1) - 2(2) = -3 < 0$. Eigenvalues solve $\\lambda^2 - 2\\lambda - 3 = 0 \\implies \\lambda = 3$ and $-1$ (opposite signs!), so $A$ is **indefinite** (a saddle surface, rising along $[1,1]^T$ and falling along $[1,-1]^T$).',
             },
           ],
         },
@@ -1418,36 +1474,44 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Bounding $x^T A x / x^T x$ cleanly between $\\lambda_{\\min}$ and $\\lambda_{\\max}$ without Lagrange multipliers',
         priority: 'high-yield',
         buildsOn: 'Spectral Theorem $A = Q \\Lambda Q^T$ and orthonormal eigenbases',
+        whyStudy:
+          'When **Principal Component Analysis (PCA)** looks for the single best direction $u$ (with unit length $\\|u\\|_2 = 1$) that captures the maximum spread (variance) of a $100$-dimensional dataset, it solves the optimization problem $\\max_{\\|u\\|_2 = 1} u^T \\Sigma u$. Setting up $100$-variable Lagrange multipliers by hand would be a nightmare — yet the **Rayleigh Quotient** solves it in **one single step**: for any symmetric matrix $A$, the maximum of $x^T A x$ over the unit sphere is ALWAYS simply its largest eigenvalue $\\lambda_{\\max}(A)$! That single insight unlocks **GATE DA 2025 Q.60** and **GATE DA 2026 Q.65** in 10 seconds flat.',
+        groundRules: [
+          '**Why $R_A(x) = \\frac{x^T A x}{x^T x}$ Is Scale-Invariant:** Scaling $x$ to $cx$ ($c \\neq 0$) multiplies both numerator and denominator by $c^2$, which cancels cleanly — so optimizing $\\frac{x^T A x}{x^T x}$ over all non-zero $x$ is 100% identical to optimizing $x^T A x$ on the unit sphere $x^T x = \\|x\\|_2^2 = 1$!',
+          '**Change of Coordinates Turns $x^T A x$ Into a Weighted Average of Eigenvalues:** Because $A = A^T = Q \\Lambda Q^T$ has an orthogonal $Q$, substituting $y = Q^T x$ preserves length ($\\sum y_i^2 = \\|y\\|_2^2 = \\|x\\|_2^2 = 1$) and rewrites $x^T A x = \\sum_{i=1}^n \\lambda_i y_i^2$. Since the weights $y_i^2 \\ge 0$ sum to $1$, a weighted average of numbers can NEVER beat the largest number $\\lambda_{\\max}$ or drop below the smallest number $\\lambda_{\\min}$!',
+          '**Where the Extremes Are Achieved:** Putting $100\\%$ of the weight onto the top eigen-direction ($x = q_1$) achieves exact $\\lambda_{\\max}(A)$, and putting $100\\%$ onto the bottom eigen-direction ($x = q_n$) achieves exact $\\lambda_{\\min}(A)$. (If $\\lambda_{\\max}$ is repeated, EVERY unit vector inside that eigenspace achieves the maximum!)',
+          '**Symmetry Gate (Non-Symmetric Trap):** The bound $\\max_{\\|x\\|_2=1} x^T A x = \\lambda_{\\max}(A)$ ONLY works for **symmetric** matrices $A = A^T$! If an exam slips in a non-symmetric matrix $A$, symmetrize it to $S = \\frac{1}{2}(A + A^T)$ first and take $\\lambda_{\\max}(S)$!',
+        ],
         toyExample: {
           title: 'A Weighted Average of Eigenvalues on the Unit Circle',
           scenario:
-            'Let $A = \\begin{bmatrix} 5 & 0 \\\\ 0 & 2 \\end{bmatrix}$ and restrict $x = [x_1, x_2]^T$ to the unit circle $x_1^2 + x_2^2 = 1$. What are the maximum and minimum possible values of $x^T A x$?',
+            'Let $A = \\begin{bmatrix} 5 & 0 \\\\ 0 & 2 \\end{bmatrix}$ and restrict $x = [x_1, x_2]^T$ to the unit circle $x^T x = x_1^2 + x_2^2 = 1$. What are the maximum and minimum possible values of $x^T A x$?',
           walkthroughSteps: [
             '1. **Expand $x^T A x$:** $x^T A x = 5x_1^2 + 2x_2^2$.',
-            '2. **Recognize the Weighted Average:** Since $x_1^2 \\ge 0$, $x_2^2 \\ge 0$, and $x_1^2 + x_2^2 = 1$, $5x_1^2 + 2x_2^2$ is literally a convex combination of $5$ and $2$!',
-            '3. **Pin Down the Bounds:** It can never exceed $5(1) + 2(0) = 5$ (attained at $x = [\\pm 1, 0]^T$) and never drop below $5(0) + 2(1) = 2$ (attained at $x = [0, \\pm 1]^T$).',
-            '4. **Generalize via $A = Q\\Lambda Q^T$:** For ANY symmetric $A$, changing coordinates $y = Q^T x$ preserves $\\|y\\|_2 = \\|x\\|_2 = 1$ and turns $x^T A x$ into $\\sum \\lambda_i y_i^2$, trapped between $\\lambda_{\\min}$ and $\\lambda_{\\max}$!',
+            '2. **Recognize the Weighted Average:** Since $x_1^2 \\ge 0$, $x_2^2 \\ge 0$, and $x_1^2 + x_2^2 = 1$, $5x_1^2 + 2x_2^2$ is literally a weighted average of $5$ and $2$!',
+            '3. **Pin Down the Bounds:** A weighted average of $5$ and $2$ can never exceed $5(1) + 2(0) = 5$ (attained at $x = [\\pm 1, 0]^T$) and never drop below $5(0) + 2(1) = 2$ (attained at $x = [0, \\pm 1]^T$).',
+            '4. **Generalize via $A = Q\\Lambda Q^T$:** For ANY symmetric $A$, changing coordinates $y = Q^T x$ preserves $\\|y\\|_2 = \\|x\\|_2 = 1$ and turns $x^T A x$ into $\\sum \\lambda_i y_i^2$, trapped strictly between $\\lambda_{\\min}$ and $\\lambda_{\\max}$!',
           ],
           ahaMoment:
             'Take a deep breath and appreciate that shortcut: maximizing $x^T A x$ over the unit sphere $\\|x\\|_2 = 1$ requires ZERO calculus or Lagrange multipliers — for symmetric $A$, the answer is ALWAYS simply $\\lambda_{\\max}(A)$!',
         },
         theoremAndFormula: {
           statement:
-            'For any real symmetric matrix $A = A^T \\in \\mathbb{R}^{n\\times n}$ with eigenvalues $\\lambda_{\\min} = \\lambda_n \\le \\dots \\le \\lambda_1 = \\lambda_{\\max}$, the **Rayleigh quotient** $R_A(x) = \\frac{x^T A x}{x^T x}$ ($x \\neq 0$) is tightly bounded by the extreme eigenvalues, attaining its global maximum at the top eigenvector $q_1$ and global minimum at $q_n$.',
+            'For any real symmetric matrix $A = A^T \\in \\mathbb{R}^{n\\times n}$ with eigenvalues ordered $\\lambda_{\\min} = \\lambda_n \\le \\dots \\le \\lambda_1 = \\lambda_{\\max}$, the **Rayleigh quotient** $R_A(x) = \\frac{x^T A x}{x^T x}$ ($x \\neq \\mathbf{0}$) is tightly bounded by the extreme eigenvalues, attaining its global maximum at any unit top eigenvector $q_1$ and global minimum at any unit bottom eigenvector $q_n$.',
           formulaLatex:
             '\\lambda_{\\min}(A) \\le \\frac{x^T A x}{x^T x} \\le \\lambda_{\\max}(A), \\qquad \\max_{x^T x = 1} x^T A x = \\lambda_{\\max}(A)',
           plainEnglishDecoding:
-            'Whenever you spot $\\max_{x^T x = 1} x^T A x$ (as in GATE DA 2026 · Q.65) or maximum projected variance $\\max_{\\|u\\|_2=1} u^T \\Sigma u$ (as in GATE DA 2025 · Q.60), smile and go straight for the single largest eigenvalue of that symmetric matrix!',
+            'Whenever you spot $\\max_{x^T x = 1} x^T A x$ (as in **GATE DA 2026 · Q.65**) or maximum projected variance $\\max_{\\|u\\|_2=1} u^T \\Sigma u$ (as in **GATE DA 2025 · Q.60**), smile and go straight for the single largest eigenvalue of that symmetric matrix!',
           workedMiniExamples: [
             {
               prompt: 'Compute $\\max_{x^T x = 1} x^T A x$ for the centering projection matrix $A = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ ($n \\ge 2$) (GATE DA 2026 · Q.65).',
               solution:
-                'Since $A$ is symmetric and idempotent ($A^2 = A$) with rank $n - 1 \\ge 1$, its eigenvalues are $1$ (multiplicity $n-1$) and $0$ (multiplicity $1$). By Rayleigh’s theorem, $\\max_{x^T x = 1} x^T A x = \\lambda_{\\max}(A) = 1$.',
+                'Since $A$ is symmetric ($A^T = A$) and idempotent ($A^2 = A$) with rank $n - 1 \\ge 1$, its eigenvalues are $1$ (multiplicity $n-1$) and $0$ (multiplicity $1$). By Rayleigh’s theorem, $\\max_{x^T x = 1} x^T A x = \\lambda_{\\max}(A) = 1$.',
             },
             {
               prompt: 'In $\\mathbb{R}^{100}$, centered data has sample covariance eigenvalues $\\lambda_i = 100^{2-i}$ for $i = 1, \\dots, 100$. Find the maximum projected variance along a unit vector $u$ (GATE DA 2025 · Q.60).',
               solution:
-                'Projected variance is $u^T \\Sigma u$. Maximized over $\\|u\\|_2 = 1$, this equals $\\lambda_1 = 100^{2-1} = 100$. (The $100$-dimensionality is pure camouflage!)',
+                'Projected variance along unit vector $u$ is $u^T \\Sigma u$. Maximized over $\\|u\\|_2 = 1$, Rayleigh’s theorem gives $\\lambda_1 = 100^{2-1} = 100$. (The $100$-dimensionality is pure camouflage!)',
             },
           ],
         },
@@ -1482,15 +1546,23 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         subtitle: 'Decomposing ANY rectangular or singular matrix into orthogonal rotations and non-negative stretches',
         priority: 'core-pillar',
         buildsOn: 'Orthogonal matrices $U, V$ and Spectral Theorem applied to $A^T A$',
+        whyStudy:
+          'Eigendecomposition ($A = Q\\Lambda Q^T$) is wonderful, yet it has one huge limitation in real Data Science: it ONLY works on **square** (and for orthogonal $Q$, symmetric!) matrices! Real data tables — $10{,}000$ users by $500$ movies in Netflix recommendations, or $5000$ documents by $20{,}000$ words in NLP — are wildly **rectangular** and often **rank-deficient**! The **Singular Value Decomposition ($A = U\\Sigma V^T$)** is the crown jewel of Linear Algebra because it works on **EVERY single matrix in existence** — giving you optimal image compression, numerically rock-solid PCA, the **Moore-Penrose pseudoinverse** $A^+$ for under/over-determined ML systems, and 5-second solutions to **GATE DA 2024 Q.61** and **GATE DA 2025 Q.50**.',
+        groundRules: [
+          '**Universal 3-Move Factorization ($A = U \\Sigma V^T$):** EVERY $m \\times n$ real matrix $A$ (tall, wide, or singular!) breaks into three elementary moves: **(1)** $V^T$ ($n\\times n$ orthogonal) rotates input space $\\mathbb{R}^n$, **(2)** $\\Sigma$ ($m\\times n$ diagonal) stretches axes by **non-negative singular values** $\\sigma_1 \\ge \\dots \\ge \\sigma_r > 0$ (and zeroes out the rest), and **(3)** $U$ ($m\\times m$ orthogonal) rotates into output space $\\mathbb{R}^m$. The number of strictly positive $\\sigma_i$ equals $\\text{rank}(A) = r$!',
+          '**Built Directly from Symmetric PSD $A^T A$ ($\\sigma_i(A) = \\sqrt{\\lambda_i(A^T A)} \\ge 0$):** Because $A^T A = V(\\Sigma^T \\Sigma)V^T$ is ALWAYS symmetric PSD, its eigenvalues are real and $\\ge 0$: the columns of $V$ are the eigenvectors of $A^T A$, the columns of $U$ are the eigenvectors of $A A^T$, and $\\sigma_i = \\sqrt{\\lambda_i(A^T A)}$ is ALWAYS $\\ge 0$ (NEVER negative!).',
+          '**Singular Values vs. Eigenvalues Rule:** For a **symmetric** matrix $A = A^T$, $\\sigma_i(A) = |\\lambda_i(A)|$ (absolute values!). They match identically ($\\sigma_i = \\lambda_i$) if and only if $A$ is **symmetric PSD** (all $\\lambda_i \\ge 0$, like orthogonal projections or $uu^T$). And for ANY rank-1 outer product $uv^T$, normalizing $u$ and $v$ immediately reveals $\\sigma_1 = \\|u\\|_2 \\|v\\|_2$ with all other $\\sigma_{i \\ge 2} = 0$!',
+          '**Pseudoinverse $A^+ = V\\Sigma^+ U^T$ Inverts Only Non-Zero Stretches:** To build $\\Sigma^+$ ($n \\times m$), transpose the shape of $\\Sigma$ and replace every non-zero $\\sigma_i$ with $1/\\sigma_i$ (keeping every $0$ as $0$). Then $\\hat{x} = A^+ b$ ALWAYS exists and returns the unique minimum-norm least-squares solution even when $A$ is rectangular or singular!',
+        ],
         sandboxId: 'rotation-svd-lab',
         toyExample: {
           title: 'Finding All 5 Singular Values of a $5\\times 5$ Outer Product $M = u u^T$ in 5 Seconds',
           scenario:
             'Let $u = [1, 2, 3, 4, 5]^T \\in \\mathbb{R}^5$ and define the $5\\times 5$ matrix $M = u u^T$. What is the sum of its five singular values $\\sum_{i=1}^5 \\sigma_i$?',
           walkthroughSteps: [
-            '1. **Normalize $u$:** Let $\\|u\\|_2 = \\sqrt{1^2 + 2^2 + 3^2 + 4^2 + 5^2} = \\sqrt{55}$, and set unit vector $\\hat{u} = \\frac{u}{\\sqrt{55}}$.',
-            '2. **Spot the Rank-1 SVD Immediately:** $M = u u^T = (\\|u\\|_2 \\hat{u})(\\|u\\|_2 \\hat{u})^T = 55 \\, \\hat{u} \\hat{u}^T$!',
-            '3. **Read Off $\\Sigma$:** Extending $\\hat{u}$ to an orthonormal basis $U = V$ of $\\mathbb{R}^5$ gives $M = U \\text{diag}(55, 0, 0, 0, 0) V^T$.',
+            '1. **Normalize $u$:** Compute Euclidean length $\\|u\\|_2 = \\sqrt{1^2 + 2^2 + 3^2 + 4^2 + 5^2} = \\sqrt{55}$, and define unit vector $\\hat{u} = \\frac{u}{\\sqrt{55}}$ (so $\\|\\hat{u}\\|_2 = 1$).',
+            '2. **Spot the Rank-1 SVD Immediately:** Factor out $\\|u\\|_2$ twice: $M = u u^T = (\\|u\\|_2 \\hat{u})(\\|u\\|_2 \\hat{u})^T = 55 \\, \\hat{u} \\hat{u}^T$!',
+            '3. **Read Off $\\Sigma$:** Extending $\\hat{u}$ to an orthonormal basis $U = V$ of $\\mathbb{R}^5$ displays the exact SVD: $M = U \\text{diag}(55, 0, 0, 0, 0) V^T$.',
             '4. **Sum the Singular Values:** $\\sigma_1 = 55$ and $\\sigma_2 = \\sigma_3 = \\sigma_4 = \\sigma_5 = 0$, so $\\sum_{i=1}^5 \\sigma_i = 55$!',
           ],
           ahaMoment:
@@ -1498,7 +1570,7 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
         },
         theoremAndFormula: {
           statement:
-            'Every real matrix $A \\in \\mathbb{R}^{m\\times n}$ of rank $r$ factors as $A = U \\Sigma V^T$, where $U \\in \\mathbb{R}^{m\\times m}$ and $V \\in \\mathbb{R}^{n\\times n}$ are orthogonal, and $\\Sigma \\in \\mathbb{R}^{m\\times n}$ is diagonal with **non-negative singular values** $\\sigma_1 \\ge \\dots \\ge \\sigma_r > 0$ (and $\\sigma_{r+1} = \\dots = 0$). Here $\\sigma_i(A) = \\sqrt{\\lambda_i(A^T A)} = \\sqrt{\\lambda_i(A A^T)}$, $\\|A\\|_2 = \\sigma_1$, and $\\|A\\|_F^2 = \\text{tr}(A^T A) = \\sum_{i=1}^r \\sigma_i^2$. For symmetric PSD matrices, $\\sigma_i(A) = \\lambda_i(A)$; for general symmetric matrices, $\\sigma_i(A) = |\\lambda_i(A)|$. The **Moore-Penrose pseudoinverse** $A^+ = V \\Sigma^+ U^T$ (inverting only the non-zero $\\sigma_i \\mapsto 1/\\sigma_i$) gives the unique minimum-norm least-squares solution $\\hat{x} = A^+ b$.',
+            'Every real matrix $A \\in \\mathbb{R}^{m\\times n}$ of rank $r$ factors as $A = U \\Sigma V^T$, where $U \\in \\mathbb{R}^{m\\times m}$ and $V \\in \\mathbb{R}^{n\\times n}$ are orthogonal, and $\\Sigma \\in \\mathbb{R}^{m\\times n}$ is diagonal with **non-negative singular values** $\\sigma_1 \\ge \\dots \\ge \\sigma_r > 0$ (and $\\sigma_{r+1} = \\dots = 0$). Here $\\sigma_i(A) = \\sqrt{\\lambda_i(A^T A)} = \\sqrt{\\lambda_i(A A^T)}$, spectral norm $\\|A\\|_2 = \\sigma_1$, and Frobenius norm squared $\\|A\\|_F^2 = \\text{tr}(A^T A) = \\sum_{i=1}^r \\sigma_i^2$. For symmetric PSD matrices, $\\sigma_i(A) = \\lambda_i(A)$; for general symmetric matrices, $\\sigma_i(A) = |\\lambda_i(A)|$. The **Moore-Penrose pseudoinverse** $A^+ = V \\Sigma^+ U^T$ (inverting only the non-zero $\\sigma_i \\mapsto 1/\\sigma_i$) gives the unique minimum-norm least-squares solution $\\hat{x} = A^+ b$.',
           formulaLatex:
             'A = U \\Sigma V^T = \\sum_{i=1}^r \\sigma_i u_i v_i^T, \\qquad \\sigma_i(u v^T) = \\begin{cases} \\|u\\|_2 \\|v\\|_2 & i = 1 \\\\ 0 & i \\ge 2 \\end{cases}, \\qquad A^+ = V \\Sigma^+ U^T',
           plainEnglishDecoding:
@@ -1507,12 +1579,12 @@ export const MODULE_7_CHAPTERS: ChapterData[] = [
             {
               prompt: 'Find the singular values of $A = u v^T$ where $u = [3, 4]^T$ and $v = [1, 2, 2]^T$.',
               solution:
-                '$\\|u\\|_2 = \\sqrt{9+16} = 5$ and $\\|v\\|_2 = \\sqrt{1+4+4} = 3$. Since $A \\in \\mathbb{R}^{2\\times 3}$ has rank $1$, its singular values are $\\sigma_1 = 5 \\times 3 = 15$ and $\\sigma_2 = 0$.',
+                'Compute lengths: $\\|u\\|_2 = \\sqrt{3^2 + 4^2} = 5$ and $\\|v\\|_2 = \\sqrt{1^2 + 2^2 + 2^2} = \\sqrt{9} = 3$. Since $A \\in \\mathbb{R}^{2\\times 3}$ has rank $1$ (at most $\\min(2,3) = 2$ singular values), its singular values are $\\sigma_1 = 5 \\times 3 = 15$ and $\\sigma_2 = 0$.',
             },
             {
               prompt: 'Compare eigenvalues and singular values of the rank-5 orthogonal projection $P = \\sum_{i=1}^5 x_i x_i^T \\in \\mathbb{R}^{10\\times 10}$ (GATE DA 2025 · Q.50).',
               solution:
-                '$P$ is symmetric PSD ($\\lambda_i \\ge 0$) with eigenvalues $1$ ($\times 5$) and $0$ ($\times 5$). Because all $\\lambda_i \\ge 0$, $\\sigma_i(P) = |\\lambda_i(P)| = \\lambda_i(P)$ — eigenvalues and singular values are identical!',
+                '$P$ is symmetric PSD ($\\lambda_i \\ge 0$) with eigenvalues $1$ ($\\times 5$) and $0$ ($\\times 5$). Because every $\\lambda_i \\ge 0$, $\\sigma_i(P) = |\\lambda_i(P)| = \\lambda_i(P)$ — eigenvalues and singular values are identical!',
             },
           ],
         },

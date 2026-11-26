@@ -828,35 +828,45 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         subtitle: 'Why a 15-call recursion tree only ever holds 5 frames on the call stack at once',
         priority: 'core-pillar',
         buildsOn: 'Python function frames and local variables (Module 8 Ch.1)',
+        whyStudy:
+          'Many real-world problems naturally contain smaller copies of themselves — folders nested inside folders, binary trees, divide-and-conquer sorting, and graph DFS. Writing them recursively takes five clean lines of Python instead of a tangled manual loop — *until* your code suddenly crashes with `RecursionError` or freezes in exponential time because you mixed up **how many total calls run** (which governs **time**) with **how many calls sit alive in memory at once** (which governs **RAM / stack space**). Once you see how Python’s call stack actually pushes and pops frames under the hood, tricky GATE DA recursion tracing problems (like **GATE DA 2026 Q.39**, **2025 Q.63**, **2024 Q.41**, and **2026 Q.58**) turn into calm, mechanical table-building.',
+        groundRules: [
+          '**The CPU Call Stack Works Strictly LIFO (Last-In, First-Out):** Every time a function is called — even when it calls itself — Python pushes a brand-new **stack frame** (holding that call’s own private local variables and return address) onto the top of the call stack. The caller freezes in place until the child executes `return`, which pops the child frame off and frees its memory.',
+          '**Left Branches Finish and Pop Completely Before Right Branches Begin:** In `return mystery(n - 1) + mystery(n - 2)`, Python does **not** run both calls at the same time. It finishes the *entire* `mystery(n - 1)` subtree down to its base cases, pops all of those frames off the stack, remembers the returned number, and *only then* begins pushing frames for `mystery(n - 2)`. That is why peak memory equals tree **height**, never total calls!',
+          '**Every Single Activation Counts Itself (`+ 1`) Plus Its Children:** Even a base-case call like `mystery(0)` pushes and pops one real stack frame (`C(0) = 1`), and any recursive parent pushes its own frame *before* calling its children (`C(n) = 1 + sum C(child)`). Leaving off that `+ 1` for the parent is the #1 exam mistake.',
+          '**Base-Case Boundaries (`<= 0` vs. `<= 1`) Shift Total Calls Exponentially:** Recursion stops *only* when the `if` base condition triggers. Changing `if n <= 1` to `if n <= 0` forces every `n = 1` call to branch into two extra child calls (`mystery(0)` and `mystery(-1)`), making the recursion tree explode much faster.',
+        ],
         toyExample: {
           title: 'Tracing `mystery(4)` Like a Call-Center Manager',
           scenario:
-            'Consider `def mystery(n): if n <= 0: return 1; return mystery(n-1) + mystery(n-2)`. How many **total calls** happen during `mystery(4)`, and how many frames are **stacked simultaneously** at peak?',
+            'Look closely at this recursive function (tested in **GATE DA 2026 Q.39**):\n```python\ndef mystery(n):\n    if n <= 0:\n        return 1\n    return mystery(n - 1) + mystery(n - 2)\n```\nHow many **total calls** (runtime stack activations) occur during `mystery(4)`, and how many stack frames are **alive simultaneously** at peak?',
           walkthroughSteps: [
-            '1. **Notice the Base Boundary:** Base case is `n <= 0` (so `n = 1` STILL calls `mystery(0)` and `mystery(-1)`!).',
-            '2. **Count Bottom-Up (`C(n) = 1 + C(n-1) + C(n-2)`):** `C(k) = 1` for $k \\le 0$. Then `C(1) = 1 + 1 + 1 = 3`, `C(2) = 1 + 3 + 1 = 5`, `C(3) = 1 + 5 + 3 = 9`, and `C(4) = 1 + 9 + 5 = 15`!',
-            '3. **Check Peak Stack Depth:** Python finishes the entire `mystery(n-1)` left branch and **pops** those frames before starting `mystery(n-2)`. The deepest chain is `4 -> 3 -> 2 -> 1 -> 0` = **5 frames**!',
+            '1. **Check the Exact Base Boundary First:** The stopping rule is `n <= 0` (NOT `n <= 1`!). That means `mystery(0)` and `mystery(-1)` stop immediately (`1` activation each), whereas `mystery(1)` STILL branches into both `mystery(0)` and `mystery(-1)`!',
+            '2. **Count Total Activations Bottom-Up (`C(n) = 1 + C(n - 1) + C(n - 2)`):** Start from the base cases `C(-1) = 1` and `C(0) = 1`. Now build one row at a time — never forgetting the `+ 1` for the parent frame itself:\n   - `C(1) = 1 + C(0) + C(-1) = 1 + 1 + 1 = 3`\n   - `C(2) = 1 + C(1) + C(0) = 1 + 3 + 1 = 5`\n   - `C(3) = 1 + C(2) + C(1) = 1 + 5 + 3 = 9`\n   - `C(4) = 1 + C(3) + C(2) = 1 + 9 + 5 = 15` total activations!',
+            '3. **Now Check Peak Simultaneous Stack Depth:** Remember Ground Rule 2! Python dives all the way down the left spine `mystery(4) -> mystery(3) -> mystery(2) -> mystery(1) -> mystery(0)` (that is **5 frames** stacked simultaneously). When `mystery(0)` returns `1`, its frame pops off *before* `mystery(-1)` is pushed! So at no instant are more than **5 frames** ever on the stack.',
           ],
           ahaMoment:
-            'Keep these two quantities cleanly separated in your mind: **total activations** counts *every node* in the recursion tree ($15$, matching **GATE DA 2026 Q.39** = time $\\Theta(\\phi^n)$), while **peak stack depth** counts only the *single deepest chain* alive at once ($5$, space $\\Theta(n)$)!',
+            'Keep these two quantities cleanly separated in your mind: **total activations** counts *every node* in the recursion tree ($15$, matching **GATE DA 2026 Q.39**, growing exponentially in time as $\\Theta(\\phi^n)$ where $\\phi = \\frac{1+\\sqrt{5}}{2} \\approx 1.618$), while **peak stack depth** counts only the *single deepest chain* alive at once ($5$, using only linear space $\\Theta(n)$)!',
         },
         theoremAndFormula: {
           statement:
-            'For any recursive function making $k$ recursive calls on sub-inputs $n_1, \\dots, n_k$, **total activations** $C(n)$ adds across all branches (tree size), while **max stack depth** $D(n)$ takes the maximum across branches (tree height):',
+            'For any recursive function making $k$ recursive calls on sub-inputs $n_1, \\dots, n_k$, **total activations** $C(n)$ adds across all branches (tree size $\\implies$ time), while **max stack depth** $D(n)$ takes the maximum across branches (tree height $\\implies$ stack space):',
           formulaLatex:
             'C(n) = 1 + \\sum_{i=1}^k C(n_i), \\qquad D(n) = 1 + \\max_{1 \\le i \\le k} D(n_i)',
           plainEnglishDecoding:
-            'Here is a handy cross-check for any full binary call tree (where every non-base call branches into $2$ recursive calls): if you count $L$ base-case leaf calls, total activations MUST equal $C = 2L - 1$. In `mystery(4)` above, $L = 8$ leaves immediately confirms $2(8) - 1 = 15$ total calls!',
+            'Here is a handy cross-check for any full binary call tree (where every non-base call splits into exactly $2$ recursive calls): if you count $L$ base-case leaf calls, total activations MUST equal $C = 2L - 1$. In `mystery(4)` above, counting $L = 8$ leaf calls (`n <= 0`) immediately double-checks $2(8) - 1 = 15$ total calls!',
           workedMiniExamples: [
             {
-              prompt: 'Trace `f(15, 10)` where `if a == 0: return b; if a % 2 == 1: return 2 * f((a-1)//2, b); return f(a//2, b)` (GATE DA 2025 Q.63 pattern).',
+              prompt:
+                'Trace `f(15, 10)` on this binary-halving recursion (**GATE DA 2025 Q.63** pattern). What value does it return, and what is its peak stack depth?\n```python\ndef f(a, b):\n    if a == 0:\n        return b\n    if a % 2 == 1:\n        return 2 * f((a - 1) // 2, b)\n    return f(a // 2, b)\n```',
               solution:
-                'Since $15 = 1111_2$ is odd at every step ($15 \\to 7 \\to 3 \\to 1 \\to 0$), the odd branch runs 4 times before hitting `a == 0`: `2 * 2 * 2 * 2 * 10 = 160`. Peak stack depth is $5$ frames.',
+                'Notice what `(a - 1) // 2` and `a // 2` do: they peel off the rightmost binary bit of `a` at every step! Since $15 = 1111_2$ has four `1` bits (`15 -> 7 -> 3 -> 1 -> 0`), the odd branch (`a % 2 == 1`) triggers 4 times before hitting `a == 0`:\n- `f(15, 10) = 2 * f(7, 10) = 4 * f(3, 10) = 8 * f(1, 10) = 16 * f(0, 10) = 16 * 10 = 160`.\n- There is only 1 recursive call per frame, so total activations = peak stack depth = **5 frames** (`15, 7, 3, 1, 0`).',
             },
             {
-              prompt: 'What does `fun(D, s1, s2)` do if it swaps `D[s1], D[s2]` when `s1 < s2` and recurses `fun(D, s1+1, s2-1)` (GATE DA 2024 Q.41)?',
+              prompt:
+                'What does the in-place recursive function `fun(D, s1, s2)` below do to list `D` (**GATE DA 2024 Q.41** pattern)?\n```python\ndef fun(D, s1, s2):\n    if s1 < s2:\n        D[s1], D[s2] = D[s2], D[s1]\n        fun(D, s1 + 1, s2 - 1)\n```',
               solution:
-                'It swaps symmetric outer pairs `(s1, s2)` inward until `s1 >= s2`, performing **in-place subarray reversal** in $\\lfloor (s_2-s_1+1)/2 \\rfloor$ swaps and $O(s_2-s_1)$ stack space.',
+                'At each call, `fun` swaps the outermost pair `D[s1]` and `D[s2]` in-place, then moves both pointers inward (`s1 + 1` and `s2 - 1`) until they meet or cross (`s1 >= s2`). That performs **in-place reversal** of the subarray `D[s1..s2]` in $\\lfloor (s_2 - s_1 + 1) / 2 \\rfloor$ swaps (where $\\lfloor x \\rfloor$ rounds down to the nearest integer) and $O(s_2 - s_1)$ call-stack frames.',
             },
           ],
         },
@@ -865,10 +875,10 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
           {
             myth: 'If a recursive function makes $15$ total calls, its call stack needs space for $15$ frames.',
             reality: 'Call-stack frames are popped on `return` before sibling recursive calls begin! Peak stack memory is tree **height** ($5$), not tree **size** ($15$).',
-            counterExample: '`mystery(4)` has 15 total activations (`C(4)=15`) but maximum stack depth 5.',
+            counterExample: '`mystery(4)` has 15 total activations (`C(4) = 15`) but maximum stack depth 5.',
           },
           {
-            myth: 'In `f(n-1) + f(n-2)`, base cases `n <= 1` and `n <= 0` give the same call count minus 1.',
+            myth: 'In `f(n - 1) + f(n - 2)`, base cases `n <= 1` and `n <= 0` give the same call count minus 1.',
             reality: 'They differ exponentially! With `n <= 1` returning directly, `C(4) = 9`; with `n <= 0`, `n = 1` branches twice, giving `C(4) = 15` (a 67% jump!). Always verify the exact `if` base condition.',
             counterExample: '`C(1) = 1` when base is `n <= 1`, vs `C(1) = 3` when base is `n <= 0`.',
           },
@@ -890,16 +900,24 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         subtitle: 'Turning divide-and-conquer and subtract-and-conquer equations into tight $\\Theta$ bounds in seconds',
         priority: 'core-pillar',
         buildsOn: 'Geometric series (Module 1) and recursion call trees (Step 2.1)',
+        whyStudy:
+          'Imagine you write two recursive algorithms for 1 million customer records — one halves the array with 1 recursive call (`Binary Search`), while another halves the array with 2 recursive calls plus a linear merge (`Mergesort`). Guessing runtime from tiny test cases can mislead you, and unrolling 20 levels of algebra by hand is slow and error-prone. Computer scientists use **recurrence relations** and the **Master Theorem** so you can inspect a 4-line recursive function and lock down its exact tight complexity ($\\Theta(\\log n)$, $\\Theta(n \\log n)$, or $\\Theta(n^2)$) in seconds — tested repeatedly in **GATE DA 2024 Q.40**, **2025 Q.12**, and **2026 Q.15 & Q.31**.',
+        groundRules: [
+          '**Every Recurrence Splits Cost Into Recursive Calls Plus Local Work:** Writing $T(n) = a\\,T(n/b) + f(n)$ literally says: *"To solve size $n$, launch $a$ recursive subproblems each of size $n/b$, plus spend $f(n)$ work splitting and combining at the current level."* Here $a \\ge 1$ is the branching factor and $b > 1$ is the shrinking divisor.',
+          '**Total Runtime Equals the Sum of Work Across All Levels of the Recursion Tree:** Level $i$ ($i = 0$ at the root) contains $a^i$ nodes of size $n / b^i$. The tree bottoms out when $n / b^i = 1$, i.e., at depth $i = \\log_b n$ — creating $a^{\\log_b n} = n^{\\log_b a}$ total leaves!',
+          '**Master Theorem Is a Polynomial Tug-of-War Between Root Work $f(n)$ and Leaf Count $n^{\\log_b a}$:** If the leaf count $n^{\\log_b a}$ beats $f(n)$ by a polynomial factor $n^{\\epsilon}$ ($\\epsilon > 0$), leaves win (Case 1). If $f(n)$ beats $n^{\\log_b a}$ by $n^{\\epsilon}$ (and shrinks geometrically per level), the root wins (Case 3). If they tie up to $\\log^k n$ factors, every level contributes evenly, multiplying by one extra $\\log n$ (Case 2).',
+          '**Master Theorem ONLY Handles Fixed Division (`n / b`) — Never `n - 1` or Sub-Logarithmic Gaps:** Whenever size shrinks by subtraction ($T(n) = T(n-1) + f(n)$) or $f(n)$ falls in a gap like $n / \\log n$ (smaller than $n$, yet not smaller by any $n^{\\epsilon}$!), Master Theorem does not apply — simply draw 3 levels of the recursion tree and sum directly!',
+        ],
         toyExample: {
           title: 'Binary Search vs. Mergesort on 16 Items',
           scenario:
-            'Compare searching a sorted 16-item list by halving (`T(n) = T(n/2) + 1`) against sorting it by splitting into two halves and merging (`T(n) = 2T(n/2) + n`).',
+            'Compare searching a sorted 16-item list by throwing away half each step ($T(n) = T(n/2) + 1$) against sorting it by splitting into two halves and merging all $n$ elements ($T(n) = 2T(n/2) + n$).',
           walkthroughSteps: [
-            '1. **Binary Search (`1` branch of size `n/2`):** Levels are `16 -> 8 -> 4 -> 2 -> 1`, doing $1$ comparison per level $\\implies 4 + 1 = \\lfloor \\log_2 16 \\rfloor + 1 = 5$ comparisons ($\\Theta(\\log n)$).',
-            '2. **Mergesort (`2` branches of size `n/2`):** Level 0 does $16$; Level 1 does $8+8=16$; Level 2 does $4\\times 4 = 16$; Level 3 does $8\\times 2 = 16$. Every single level sums to $n = 16$ across $\\log_2 n = 4$ levels $\\implies \\Theta(n \\log n)$!',
+            '1. **Binary Search (`a = 1` branch of size `n / 2`):** The call chain shrinks `16 -> 8 -> 4 -> 2 -> 1`, doing $1$ comparison at each of the $4 + 1 = 5$ levels. In general, $\\lfloor \\log_2 n \\rfloor + 1 = \\Theta(\\log n)$ comparisons! (Watershed $n^{\\log_2 1} = n^0 = 1$ ties $f(n) = 1 \\implies$ Case 2 gives $\\Theta(\\log n)$.)',
+            '2. **Mergesort (`a = 2` branches of size `n / 2`):** Count work level by level on $n = 16$:\n   - Level 0: $1$ call of size $16 \\implies$ work $= 16$.\n   - Level 1: $2$ calls of size $8 \\implies$ work $= 8 + 8 = 16$.\n   - Level 2: $4$ calls of size $4 \\implies$ work $= 4 \\times 4 = 16$.\n   - Level 3: $8$ calls of size $2 \\implies$ work $= 8 \\times 2 = 16$.\n   Every single level does exactly $n = 16$ work across $\\log_2 n = 4$ levels $\\implies \\Theta(n \\log n)$! (Watershed $n^{\\log_2 2} = n$ ties $f(n) = n \\implies$ Case 2 gives $\\Theta(n \\log n)$.)',
           ],
           ahaMoment:
-            'Picture every divide-and-conquer recurrence as a friendly **tug-of-war between root work $f(n)$ and leaf count $n^{\\log_b a}$**: if leaves grow faster, leaves win; if root work dominates, root wins; and if both sides tie across every level, you simply multiply by $\\log n$!',
+            'Picture every divide-and-conquer recurrence as a friendly **tug-of-war between root work $f(n)$ and leaf count $n^{\\log_b a}$**: if leaves grow polynomially faster, leaves win; if root work dominates, root wins; and if both sides tie across every level, you simply multiply by $\\log n$!',
         },
         theoremAndFormula: {
           statement:
@@ -907,17 +925,17 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
           formulaLatex:
             'T(n) = a\\,T\\!\\left(\\frac{n}{b}\\right) + f(n) \\quad \\text{vs.} \\quad n^{\\log_b a}, \\qquad F_{\\text{bsearch}}(n) = F_{\\text{bsearch}}\\!\\left(\\left\\lfloor \\frac{n}{2} \\right\\rfloor\\right) + 1',
           plainEnglishDecoding:
-            'Keep an eye out for **non-Master** recurrences too: $T(n) = T(n-1) + n$ telescopes cleanly to $\\sum_{k=1}^n k = \\Theta(n^2)$ (just like triangular back-substitution in GATE 2025 Q.12), while $T(n) = 2T(n-1) + 1$ doubles every step into $\\Theta(2^n)$. For binary search on $n$ elements with an absent target, worst-case 3-way comparisons equal $\\lfloor \\log_2 n \\rfloor + 1$ (so $n = 1000$ gives $9 + 1 = 10$, GATE 2026 Q.31).',
+            'Keep an eye out for **non-Master** recurrences too: $T(n) = T(n-1) + n$ telescopes cleanly into $1 + 2 + \\dots + n = \\frac{n(n+1)}{2} = \\Theta(n^2)$ (just like triangular back-substitution in **GATE DA 2025 Q.12**), while $T(n) = 2T(n-1) + 1$ doubles the work at every step into $\\Theta(2^n)$. For binary search on $n$ elements with an absent target, worst-case 3-way comparisons equal $\\lfloor \\log_2 n \\rfloor + 1$ (where $\\lfloor x \\rfloor$ rounds down, so $n = 1000$ gives $9 + 1 = 10$, **GATE DA 2026 Q.31**).',
           workedMiniExamples: [
             {
               prompt: 'Solve $T(n) = 4 T(n/2) + n^2 \\log n$.',
               solution:
-                'Watershed is $n^{\\log_2 4} = n^2$. Since $f(n) = n^2 \\log^1 n$ matches Case 2 with $k=1$, $T(n) = \\Theta(n^2 \\log^2 n)$.',
+                'Here $a = 4$ and $b = 2$, so the leaf-count watershed is $n^{\\log_2 4} = n^2$. Comparing $f(n) = n^2 \\log^1 n$ against $n^2$ shows an exact match for **Case 2** with $k = 1$, so we multiply by one extra $\\log n$: $T(n) = \\Theta(n^2 \\log^2 n)$.',
             },
             {
-              prompt: 'What is the worst-case number of comparisons in recursive binary search on $n=1000$ distinct elements when the key is absent (GATE 2026 Q.31)?',
+              prompt: 'What is the worst-case number of comparisons in recursive binary search on $n = 1000$ distinct elements when the key is absent (**GATE DA 2026 Q.31**)?',
               solution:
-                'Recurrence $F(n) = F(\\lfloor n/2 \\rfloor) + 1$ with $F(0)=0, F(1)=1$ (or `mid` check plus recurse on at most $\\lfloor n/2 \\rfloor$: $1000 \\to 500 \\to 250 \\to 125 \\to 62 \\to 31 \\to 15 \\to 7 \\to 3 \\to 1 \\to 0$) performs $\\lfloor \\log_2 1000 \\rfloor + 1 = 9 + 1 = 10$ comparisons.',
+                'Each 3-way comparison checks `mid` and recurses on the larger remaining half of size at most $\\lfloor n / 2 \\rfloor$, obeying $F(n) = F(\\lfloor n / 2 \\rfloor) + 1$ with $F(0) = 0$. Tracing worst-case sizes: $1000 \\to 500 \\to 250 \\to 125 \\to 62 \\to 31 \\to 15 \\to 7 \\to 3 \\to 1 \\to 0$ gives **10** comparisons — matching $\\lfloor \\log_2 1000 \\rfloor + 1 = 9 + 1 = 10$ (since $2^9 = 512 \\le 1000 < 1024 = 2^{10}$).',
             },
           ],
         },
@@ -950,14 +968,22 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         subtitle: 'Comparing tricky functions like $n^{\\log \\log n}$ vs $(\\log n)^{\\log n}$ using logs and limits',
         priority: 'high-yield',
         buildsOn: 'Logarithms and limits from Module 1',
+        whyStudy:
+          'Measuring an algorithm in raw milliseconds depends heavily on your CPU clock speed, RAM cache, and whether you coded in C or Python. On tiny inputs, a clumsy $O(n^2)$ algorithm on a fast server can temporarily beat a sleek $O(n \\log n)$ algorithm on a laptop — until $n$ hits 10 million and the server grinds to a halt! **Asymptotic notation** strips away hardware speed and constant factors so we can compare the pure mathematical growth curves of algorithms as $n \\to \\infty$, letting us choose scalable data structures, graph algorithms, and ML solvers with total confidence.',
+        groundRules: [
+          '**Asymptotic Bounds Only Care About the Tail ($n \\ge n_0$) Up to Positive Constants:** Saying $f(n) = O(g(n))$ means there exist constants $c > 0$ and $n_0$ such that $0 \\le f(n) \\le c \\cdot g(n)$ for *every* $n \\ge n_0$. Any finite head of small inputs and any constant multiplier (like $1000$ vs. $0.01$) disappears.',
+          '**The Five Symbols Mirror Five Everyday Number Comparisons for Huge $n$:** Read Big-$O$ as $\\le$ (upper ceiling), Big-$\\Omega$ as $\\ge$ (lower floor), Big-$\\Theta$ as $=$ (tight match: both $O$ and $\\Omega$ hold), little-$o$ as strictly $<$ ($\\lim f/g = 0$), and little-$\\omega$ as strictly $>$ ($\\lim f/g = \\infty$).',
+          '**Sums Collapse to Their Fastest Term, While Constants Inside Exponents Change the Growth Class:** In a sum like $5n^2 + 900n\\log n + 10^6$, only the leading term $n^2$ survives ($\\Theta(n^2)$). By contrast, doubling an exponent multiplies the base itself ($2^{2n} = (2^2)^n = 4^n$), jumping to a strictly faster class than $2^n$!',
+          '**Taking $\\log$ Unpacks Stacked Exponents, But $\\log f = \\Theta(\\log g)$ Does NOT Imply $f = \\Theta(g)$:** If $\\log_2 f(n) - \\log_2 g(n) \\to +\\infty$, then $f(n)/g(n) = 2^{\\log_2 f - \\log_2 g} \\to \\infty$ proves $f = \\omega(g)$ cleanly. Never assume equal-order logs mean equal-order originals — a constant factor inside $\\log$ becomes a power or exponential gap once you exponentiate!',
+        ],
         toyExample: {
           title: 'The Tortoise ($1000n$) vs. the Hare ($0.01n^2$)',
           scenario:
             'Algorithm A runs in $1000n$ steps and Algorithm B runs in $0.01n^2$ steps. At $n = 100$, A takes $100{,}000$ steps while B takes only $100$. Does that make B asymptotically faster?',
           walkthroughSteps: [
-            '1. **Find the Crossover:** $1000n = 0.01n^2 \\implies n = 100{,}000$.',
-            '2. **Beyond $n_0 = 100{,}000$:** For every $n > 100{,}000$, $1000n < 0.01n^2$, and the ratio $\\frac{1000n}{0.01n^2} = \\frac{10^5}{n} \\to 0$ as $n \\to \\infty$.',
-            '3. **Conclusion:** $1000n = o(0.01n^2)$ and $1000n = O(n^2)$ — constant factors vanish in the long run!',
+            '1. **Find the Crossover Point:** Set $1000n = 0.01n^2$. Dividing both sides by $n > 0$ gives $1000 = 0.01n \\implies n = 100{,}000$.',
+            '2. **Look Beyond $n_0 = 100{,}000$:** For every $n > 100{,}000$, $1000n < 0.01n^2$, and their ratio $\\frac{1000n}{0.01n^2} = \\frac{10^5}{n} \\to 0$ as $n \\to \\infty$.',
+            '3. **Verdict:** Algorithm A is strictly faster asymptotically: $1000n = o(0.01n^2)$ (and hence $1000n = O(n^2)$) — the huge constant $1000$ completely loses to the extra factor of $n$!',
           ],
           ahaMoment:
             'Read these five symbols just like ordinary number comparisons for huge $n$ (ignoring positive constants): Big-$O$ means $\\le$, $\\Omega$ means $\\ge$, $\\Theta$ means $=$, little-$o$ means strictly $<$, and little-$\\omega$ means strictly $>$.',
@@ -973,12 +999,12 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
             {
               prompt: 'Compare $f(n) = (\\log_2 n)^{\\log_2 n}$ and $g(n) = n^5$.',
               solution:
-                'Take $\\log_2$: $\\log_2 f(n) = (\\log_2 n) \\log_2\\log_2 n$, while $\\log_2 g(n) = 5 \\log_2 n$. Since $\\log_2 \\log_2 n \\to \\infty > 5$, $f(n) = \\omega(n^5)$ — super-polynomial!',
+                'Take $\\log_2$ of both sides using $\\log_2(A^B) = B \\log_2 A$:\n- $\\log_2 f(n) = (\\log_2 n) \\cdot \\log_2(\\log_2 n)$.\n- $\\log_2 g(n) = 5 \\log_2 n$.\nSubtracting gives $(\\log_2 n) \\cdot (\\log_2\\log_2 n - 5) \\to +\\infty$, so $f(n) = \\omega(n^5)$ — it grows strictly faster than any polynomial!',
             },
             {
               prompt: 'Is $2^{n+1} = O(2^n)$? Is $2^{2n} = O(2^n)$?',
               solution:
-                '$2^{n+1} = 2 \\cdot 2^n \\implies \\Theta(2^n)$ (constant factor $2$, so **YES**). Meanwhile $2^{2n} = 4^n$ has ratio $4^n / 2^n = 2^n \\to \\infty$, so $2^{2n} = \\omega(2^n)$ (**NO**).',
+                '- $2^{n+1} = 2 \\cdot 2^n$: this differs from $2^n$ only by the constant multiplier $2$, so $2^{n+1} = \\Theta(2^n)$ (**YES**, it is $O(2^n)$).\n- $2^{2n} = (2^2)^n = 4^n$: the ratio $4^n / 2^n = 2^n \\to \\infty$, so $2^{2n} = \\omega(2^n)$ (**NO**, it is NOT $O(2^n)$).',
             },
           ],
         },
@@ -1048,7 +1074,7 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         bruteForceTrap:
           'Forcing Master Theorem onto `n - 1` recurrences or `n / log n`, or plugging in a single small test integer like `n = 8`.',
         mentalShift:
-          'For recurrences, draw **3 levels of the recursion tree** and sum across levels; for asymptotic pairs, take **$\ln$ of both sides** and compare the resulting simpler functions.',
+          'For recurrences, draw **3 levels of the recursion tree** and sum across levels; for asymptotic pairs, take **$\\ln$ of both sides** and compare the resulting simpler functions.',
         steps: [
           {
             label: 'Step 1 — Check Master Theorem Applicability',
@@ -1411,15 +1437,23 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         title: 'Stacks (LIFO), Queues (FIFO), Deques & Linked Lists vs. Arrays',
         subtitle: 'Why an array jumps to `A[mid]` in 1 step while a linked list crawls in $O(n)$',
         priority: 'core-pillar',
-        buildsOn: 'Asymptotic complexity ($O(1)$ vs $O(\log n)$ vs $O(n)$) from Ch.2',
+        buildsOn: 'Asymptotic complexity ($O(1)$ vs $O(\\log n)$ vs $O(n)$) from Ch.2',
+        whyStudy:
+          'Picking the wrong linear container can silently turn an instant algorithm into a bottleneck. Every classic CS and AI algorithm relies on a specific physical access pattern: function calls and Depth-First Search rely on last-in-first-out undo (**Stacks**), Breadth-First Search relies on fair first-in-first-out waiting lines (**Queues**), sliding-window queries need both ends (**Deques**), and binary search demands instant middle-element jumps (**Contiguous Arrays**). Seeing how arrays and linked lists physically sit inside RAM immediately explains why binary search collapses on linked lists (**GATE DA 2025 Q.27**) and turns stack/deque traces (**GATE DA 2024 Q.16, Q.32; 2025 Q.64**) into effortless free marks.',
+        groundRules: [
+          '**Contiguous Arrays Compute Any Slot Address in One Arithmetic Step ($O(1)$ Random Access):** An array stores all $n$ elements side-by-side in one unbroken strip of memory, so jumping straight to index `i` is just one multiplication and addition: `address(A[i]) = base_address + i * item_size`. That hardware rule is what makes `A[mid]` $O(1)$!',
+          '**Linked Lists Scatter Nodes Across Memory — Reaching Index $k$ Always Costs $\\Theta(k)$ Pointer Hops:** Each linked-list node stores a value plus a memory pointer (`next`) to the following node. Even when values are sorted and even if you add backward (`prev`) pointers (a doubly linked list), there is no direct address formula for the middle — you must walk node-by-node from `head`.',
+          '**Stacks Enforce Strict LIFO; Queues Enforce Strict FIFO; Deques Unlock Both Ends:** A **Stack** allows `push` and `pop` only at one end (`top`); a **Queue** adds at `rear` and removes at `front` (wrapping around a circular array via `(idx + 1) % N`); a **Deque** supports $O(1)$ insertion and removal at both `First` (left) and `Last` (right).',
+          '**A Single Stack Forever Forbids Any `3-1-2` Pop Subsequence:** If items `1, 2, ..., n` are pushed in ascending order, popping a larger number `3` first proves `1` and `2` are already buried underneath with `2` strictly above `1` — so `2` MUST pop before `1`, making any `3-1-2` output pattern mathematically impossible.',
+        ],
         toyExample: {
           title: 'Tracing a Double-Ended Queue (Deque) & a Scavenger-Hunt List',
           scenario:
-            'Start with an empty deque `D = []` and run 7 commands: `insertFirst(10)`, `insertLast(17)`, `insertFirst(5)`, `insertLast(22)`, `removeFirst()`, `removeLast()`, `a = removeLast()`. Meanwhile, ask: how long does it take to read the 500th item in an array vs a singly linked list?',
+            'Start with an empty deque `D = []` (left = `First`, right = `Last`) and execute these 7 commands in order:\n```python\nD.insertFirst(10)\nD.insertLast(17)\nD.insertFirst(5)\nD.insertLast(22)\nD.removeFirst()\nD.removeLast()\na = D.removeLast()\n```\nMeanwhile, ask yourself: how many steps does it take to read the 500th item in an array versus a singly linked list?',
           walkthroughSteps: [
-            '1. **Deque Trace:** `insertFirst(10)` $\\to$ `[10]` $\\to$ `insertLast(17)` $\\to$ `[10, 17]` $\\to$ `insertFirst(5)` $\\to$ `[5, 10, 17]` $\\to$ `insertLast(22)` $\\to$ `[5, 10, 17, 22]`.',
-            '2. **Removals:** `removeFirst()` drops `5` $\\to$ `[10, 17, 22]`; `removeLast()` drops `22` $\\to$ `[10, 17]`; `a = removeLast()` pops `17` (`a = 17`), mirroring **GATE DA 2024 Q.32**!',
-            '3. **Array vs Linked List Access:** An array computes `base_addr + 499 * item_size` in **$O(1)$** arithmetic. A linked list holds scattered nodes — reaching item 500 requires chasing `499` `next` pointers (**$O(n)$**)!',
+            '1. **Insertions (Always keep `[First ... Last]` orientation fixed!):**\n   - `insertFirst(10)` $\\to$ `[10]`\n   - `insertLast(17)` $\\to$ `[10, 17]`\n   - `insertFirst(5)` $\\to$ `[5, 10, 17]`\n   - `insertLast(22)` $\\to$ `[5, 10, 17, 22]`',
+            '2. **Removals:**\n   - `removeFirst()` drops left end `5` $\\to$ `[10, 17, 22]`\n   - `removeLast()` drops right end `22` $\\to$ `[10, 17]`\n   - `a = removeLast()` pops right end `17`, leaving `[10]` with **`a = 17`** (mirroring **GATE DA 2024 Q.32**!).',
+            '3. **Array vs. Linked List Access:** An array computes `base_addr + 499 * item_size` in **$O(1)$** (1 step!). A linked list holds scattered nodes — reaching item 500 requires chasing `499` `next` pointers (**$O(n)$**)!',
           ],
           ahaMoment:
             'Here is the crystal-clear reason binary search demands an array: it needs **$O(1)$ random access** to jump straight to `mid`. Because walking pointers to the middle of a sorted linked list takes $\\Theta(n)$ hops, binary search collapses to $\\Theta(n)$ — the exact 1-option MSQ trap in **GATE DA 2025 Q.27**!',
@@ -1430,23 +1464,24 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
           formulaLatex:
             'T_{\\text{bsearch}}(\\text{Array}) = \\mathcal{O}(\\log n), \\qquad T_{\\text{bsearch}}(\\text{Linked List}) = T\\!\\left(\\frac{n}{2}\\right) + \\Theta(n) = \\Theta(n)',
           plainEnglishDecoding:
-            'Think of why a sorted linked list cannot rescue binary search: even though the remaining list shrinks by half each round, walking from the head to the midpoint costs $n/2 + n/4 + n/8 + \\dots = \\Theta(n)$ pointer hops!',
+            'Think of why a sorted linked list cannot rescue binary search: even though the remaining list shrinks by half each round, walking from the head to the midpoint costs $n/2 + n/4 + n/8 + \\dots = \\Theta(n)$ pointer hops — strictly slower than $O(\\log n)$!',
           workedMiniExamples: [
             {
-              prompt: 'Push `0, 1, 2, 3, 4` onto stack `S`. Pop `x`; if `x` is odd, perform one extra `Pop(S)` (discarded). Sum all non-discarded `x`.',
+              prompt:
+                'Trace this conditional stack-popping loop (**GATE DA 2025 Q.64** pattern) after pushing `0, 1, 2, 3, 4` in order onto `S` (so `4` is on top). What is `total`?\n```python\ntotal = 0\nwhile S:\n    x = S.pop()\n    total += x\n    if x % 2 == 1 and S:\n        S.pop()   # discarded extra pop!\n```',
               solution:
-                'Stack top-to-bottom: `[4, 3, 2, 1, 0]`. Pop `4` (even, sum=4). Pop `3` (odd, sum=7; extra pop discards `2`). Pop `1` (odd, sum=8; extra pop discards `0`). Total = `8` (same pattern as GATE DA 2025 Q.64!).',
+                'Stack from top to bottom starts as `[4, 3, 2, 1, 0]`:\n1. Pop `4` (even): `total = 4` (no extra pop).\n2. Pop `3` (odd): `total = 4 + 3 = 7`; extra `S.pop()` silently discards `2`.\n3. Pop `1` (odd): `total = 7 + 1 = 8`; extra `S.pop()` silently discards `0`.\n4. Stack is empty $\\implies$ final `total = 8`.',
             },
             {
               prompt: 'How many distinct stack-sortable permutations exist for input `1, 2, 3` pushed in order?',
               solution:
-                'Catalan number $C_3 = \\frac{1}{3+1}\\binom{6}{3} = 5$ (all 6 permutations except `3, 1, 2`, which requires popping `3` then `1` below `2` — impossible!).',
+                'The count is the $3$-rd Catalan number $C_3 = \\frac{1}{3+1}\\binom{6}{3} = 5$ — every permutation of `1, 2, 3` works EXCEPT `3, 1, 2`, because popping `3` first forces `2` to sit above `1` on the stack, so `2` must pop before `1`!',
             },
           ],
         },
         msqTraps: [
           {
-            myth: 'Binary search always runs in $O(\log n)$ worst-case time whenever the input is sorted.',
+            myth: 'Binary search always runs in $O(\\log n)$ worst-case time whenever the input is sorted.',
             reality: 'It requires **both** sorted order AND **$O(1)$ random access** (array). On a sorted singly/doubly linked list, binary search takes $\\Theta(n)$ time (GATE 2025 Q.27)!',
             counterExample: 'Sorted linked list $1 \\to 2 \\to \\dots \\to n$: finding the middle node takes $\\Theta(n/2)$ hops on the very first step.',
           },
@@ -1473,17 +1508,25 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         subtitle: 'A Sleeping Giant for 2027: array tree indexing, $O(\\log n)$ sift-up/down, and $\\Theta(n)$ bottom-up build',
         priority: 'sleeping-giant',
         buildsOn: 'Complete binary tree indexing and geometric series',
+        whyStudy:
+          'Imagine an Emergency Room triage desk — or **Dijkstra’s shortest-path algorithm** and **$A^*$ search** — where new items keep arriving and you must repeatedly pull out the single **most urgent (minimum-cost)** item next. Keeping an unsorted list makes finding the minimum slow ($O(n)$ every time), while keeping the entire list sorted makes every insertion slow ($O(n)$ shifting). A **Binary Min-Heap** hits the sweet spot: it maintains *just enough* partial order inside a plain flat array so peeking at the minimum is instant ($O(1)$), inserting or extracting the minimum takes only $O(\\log n)$, and converting any unsorted array into a valid heap takes linear $\\Theta(n)$ time!',
+        groundRules: [
+          '**A Complete Binary Tree Packs Into a Flat 0-Indexed Array With Zero Pointers:** Because every level except possibly the last is completely filled left-to-right with no gaps, node `i`’s relatives sit at exact arithmetic formulas: `parent(i) = (i - 1) // 2`, `left(i) = 2*i + 1`, and `right(i) = 2*i + 2`. Leaves always occupy the second half `H[n // 2 : n]`.',
+          '**The Min-Heap Invariant Only Orders Parent vs. Child — Never Left vs. Right Siblings:** Every node satisfies `H[parent(i)] <= H[i]`, locking the global minimum at the root `H[0]`. Because left and right siblings have *no* ordering rule between them (unlike a BST!), the maximum key can hide at **any** of the $\\lceil n/2 \\rceil$ leaves.',
+          '**Insert Sifts Up From the End; Extract-Min Plugs the Last Leaf Into the Root and Sifts Down:** To preserve completeness (no gaps!), `insert(x)` appends `x` at the end and swaps upward past larger parents ($O(\\log n)$). `extract_min()` saves `H[0]`, moves the very last element into `H[0]`, and swaps downward with its **smaller** child until the heap property holds again ($O(\\log n)$).',
+          '**Bottom-Up `build_heap` Is $\\Theta(n)$ Because Most Nodes Sit Near the Bottom:** Running `sift_down` backward from the last internal node `n // 2 - 1` down to `0` skips all $\\lceil n/2 \\rceil$ leaves (height $0$, zero swaps!). A quarter of nodes sift down at most $1$ step, an eighth at most $2$ steps, summing to $n \\sum_{h \\ge 1} h / 2^{h+1} = \\Theta(n)$ — strictly faster than $n$ separate insertions ($O(n \\log n)$)!',
+        ],
         toyExample: {
           title: 'Hospital ER Priority Desk as a Flat Array',
           scenario:
-            'Keep patients’ urgency scores in a **Min-Heap** array `H = [2, 5, 4, 9, 8]` (0-indexed). Notice `H[0] = 2` has children `H[1] = 5` and `H[2] = 4`; `H[1] = 5` has children `H[3] = 9` and `H[4] = 8`. Every parent $\\le$ its children!',
+            'Keep patients’ urgency scores in a **Min-Heap** array `H = [2, 5, 4, 9, 8]` (0-indexed: `H[0] = 2` has children `H[1] = 5` and `H[2] = 4`; `H[1] = 5` has children `H[3] = 9` and `H[4] = 8`). Every parent is $\\le$ its children! Trace one `extract_min()` followed by `insert(3)`:\n```python\nH = [2, 5, 4, 9, 8]   # valid Min-Heap (min = H[0] = 2)\n# Step 1: extract_min() -> move last item 8 to root, sift down\n# Step 2: insert(3)     -> append 3 at end, sift up\n```',
           walkthroughSteps: [
-            '1. **`extract_min()`:** Remove root `2`, move the *last* element `8` to `H[0]` $\\to$ `[8, 5, 4, 9]`.',
-            '2. **Sift-Down:** Compare `8` with its smaller child (`min(5, 4) = 4` at index 2). Since `8 > 4`, swap them $\\to$ `[4, 5, 8, 9]`. Now `8` has no children $\\implies$ valid Min-Heap restored!',
-            '3. **`insert(3)`:** Append `3` at end `[4, 5, 8, 9, 3]` (index 4). Compare with parent at `(4-1)//2 = 1` (`5`): `3 < 5`, swap $\\to$ `[4, 3, 8, 9, 5]`. Compare with root `4`: `3 < 4`, swap $\\to$ `[3, 4, 8, 9, 5]`!',
+            '1. **`extract_min()` — Replace Root With Last Leaf:** Remove root `2` (the minimum) and plug the very last element `8` into `H[0]` so there is no gap $\\to$ `[8, 5, 4, 9]`.',
+            '2. **Sift-Down (`8` Moves Down Past Smaller Child):** Compare `8` at index `0` with its children `H[1] = 5` and `H[2] = 4`. Pick the **smaller** child (`4` at index `2`). Since `8 > 4`, swap them $\\to$ `[4, 5, 8, 9]`. Now `8` at index `2` has no children (`2*2 + 1 = 5 >= 4`) $\\implies$ valid Min-Heap restored!',
+            '3. **`insert(3)` — Append at End and Sift-Up:** Append `3` at index `4` $\\to$ `[4, 5, 8, 9, 3]`. Compare `3` with its parent at `(4 - 1) // 2 = 1` (`5`): since `3 < 5`, swap $\\to$ `[4, 3, 8, 9, 5]`. Compare `3` at index `1` with its parent at `(1 - 1) // 2 = 0` (`4`): since `3 < 4`, swap $\\to$ `[3, 4, 8, 9, 5]`!',
           ],
           ahaMoment:
-            'Look how clean that layout is: you never need a single `left` or `right` pointer object for a binary heap — **an ordinary flat Python list IS the complete binary tree**, with `parent(i) = (i-1)//2`!',
+            'Look how clean that layout is: you never need a single `left` or `right` pointer object for a binary heap — **an ordinary flat Python list IS the complete binary tree**, with `parent(i) = (i - 1) // 2`!',
         },
         theoremAndFormula: {
           statement:
@@ -1491,17 +1534,17 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
           formulaLatex:
             '\\text{parent}(i) = \\left\\lfloor \\frac{i-1}{2} \\right\\rfloor, \\quad \\text{left}(i) = 2i+1, \\quad \\text{right}(i) = 2i+2, \\qquad T_{\\text{build}}(n) = \\sum_{h=0}^{\\lfloor\\log_2 n\\rfloor} \\left\\lceil \\frac{n}{2^{h+1}} \\right\\rceil \\mathcal{O}(h) = \\Theta(n)',
           plainEnglishDecoding:
-            'Here is the intuition everyone remembers once they hear it: why is bottom-up `build_heap` linear $\\Theta(n)$ rather than $O(n \\log n)$? Because half the nodes are leaves (height $0$, zero work), a quarter can sift down at most $1$ step, an eighth at most $2$ steps, and that gentle geometric series $\\sum_{h \\ge 1} h / 2^h$ adds up to just $2$!',
+            'Here is the intuition everyone remembers once they hear it: why is bottom-up `build_heap` linear $\\Theta(n)$ rather than $O(n \\log n)$? Because half the nodes are leaves (height $0$, zero work), a quarter can sift down at most $1$ step, an eighth at most $2$ steps, and that gentle geometric series $\\sum_{h \\ge 1} h / 2^h$ converges to just $2$!',
           workedMiniExamples: [
             {
               prompt: 'Convert array `[10, 7, 15, 3, 2]` into a Min-Heap via bottom-up `build_heap`.',
               solution:
-                'Last internal node is `(5//2) - 1 = 1` (`7`). Sift-down `1` (`7` swaps with min child `2` at idx 4) $\\to$ `[10, 2, 15, 3, 7]`. Next, sift-down `0` (`10` swaps with min child `2` at idx 1, then swaps with `3` at idx 3) $\\to$ `[2, 3, 15, 10, 7]`.',
+                'For $n = 5$, the last internal node is `(5 // 2) - 1 = 1` (value `7`; indices `2, 3, 4` are leaves):\n1. **Sift-down index `1` (`7`):** Children are `H[3] = 3` and `H[4] = 2`. Smaller child is `2` (`idx 4`). Swap `7` and `2` $\\to$ `[10, 2, 15, 3, 7]`.\n2. **Sift-down index `0` (`10`):** Children are `H[1] = 2` and `H[2] = 15`. Swap `10` with smaller child `2` $\\to$ `[2, 10, 15, 3, 7]`. Now `10` at `idx 1` has children `H[3] = 3` and `H[4] = 7`; swap `10` with smaller child `3` $\\to$ **`[2, 3, 15, 10, 7]`**.',
             },
             {
               prompt: 'Where can the **maximum** element sit in an $n$-element Min-Heap, and how fast can you find it?',
               solution:
-                'Any parent is smaller than its children, so the maximum cannot have any children — it must sit at one of the $\\lceil n/2 \\rceil$ **leaves** (`H[n//2 : n]`). Scanning those leaves takes $\\Theta(n)$ time!',
+                'Any parent is smaller than its children, so the maximum cannot have any children — it must sit at one of the $\\lceil n / 2 \\rceil$ **leaves** (`H[n // 2 : n]`). Because leaves have no left-to-right ordering, scanning all leaves takes $\\Theta(n)$ worst-case time!',
             },
           ],
         },
@@ -1534,14 +1577,22 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
         subtitle: 'Parking keys into a fixed array, tombstones on delete, and the $\\frac{1}{1-\\alpha}$ probe wall',
         priority: 'high-yield',
         buildsOn: 'Modular arithmetic and array indexing',
+        whyStudy:
+          'Binary search finds a key in $O(\\log n)$ time, which is fast — yet Python dictionaries (`dict`), sets (`set`), database equality indexes, and symbol tables achieve something even faster: **$O(1)$ expected lookup** whether you store 100 keys or 100 million keys! They do this by feeding the key into a **hash function** that calculates its home array slot directly. Whenever two distinct keys hash to the same slot (a **collision**), **open addressing** steps along a probe sequence inside the array itself. Knowing the four runtime rules of open addressing makes index-tracing questions (**GATE DA 2025 Q.18**), load-factor bounds (**GATE DA 2024 Q.21**), and deletion tombstones 100% predictable.',
+        groundRules: [
+          '**Open Addressing Parks Every Key Directly Inside the Main Array — So $0 \\le \\alpha = n/m \\le 1$ ALWAYS:** Unlike separate chaining (which hangs linked lists off each bucket and allows $\\alpha > 1$), an open-addressed table of $m$ slots can never hold more than $m$ keys without resizing.',
+          '**Every Collision Walks a Deterministic Probe Sequence With Wrap-Around (`% m`):** When home slot `h1(k)` is already occupied, insertion probes `h(k, i) mod m` for `i = 0, 1, 2, ...` — stepping `+1` (Linear), `+ c1*i + c2*i^2` (Quadratic), or `+ i * h2(k)` (Double Hashing) — until finding an open slot. Lookup walks that **exact same** path.',
+          '**Deleting a Key Must Leave a `DELETED` Tombstone — Never Plain `EMPTY`:** Searching stops the instant it hits an `EMPTY` slot (assuming the key was never inserted). Wiping a deleted key back to `EMPTY` breaks the probe chain and causes false negatives for keys parked further down! A `DELETED` tombstone tells **searches** *"keep probing past me"*, while telling **insertions** *"you may reuse this slot"*.',
+          '**Double Hashing Needs $\\gcd(h_2(k), m) = 1$ So Probes Can Reach Every Slot:** If the secondary step size $h_2(k)$ shares a common divisor $d > 1$ with table size $m$ (or equals $0$), probing cycles endlessly through only $m/d$ slots and can miss open slots in the rest of the table!',
+        ],
         toyExample: {
           title: 'Parking 6 Cars in a 10-Slot Lot (`GATE DA 2025 · Q.18`)',
           scenario:
             'Insert keys `1, 4, 5, 6, 14, 15` in order into a 10-slot hash table (`0..9`) using hash function $h(x) = 3x \\bmod 10$ and **linear probing** (step $+1 \\bmod 10$ on collision). Where do `14` and `15` land?',
           walkthroughSteps: [
-            '1. **First 4 keys (zero collisions):** `1` $\\to 3(1)\\bmod 10 = 3$; `4` $\\to 12\\bmod 10 = 2$; `5` $\\to 15\\bmod 10 = 5$; `6` $\\to 18\\bmod 10 = 8$. Table has `{2:4, 3:1, 5:5, 8:6}`.',
-            '2. **Insert `14`:** $h(14) = 42 \\bmod 10 = 2$ (taken by `4`!) $\\to$ probe `3` (taken by `1`!) $\\to$ probe `4` (**empty!**). `14` parks at index **`4`**.',
-            '3. **Insert `15`:** $h(15) = 45 \\bmod 10 = 5$ (taken by `5`!) $\\to$ probe `6` (**empty!**). `15` parks at index **`6`**.',
+            '1. **Insert First 4 Keys (Zero Collisions):**\n   - `1`: $3(1) \\bmod 10 = 3 \\implies$ slot `3`.\n   - `4`: $3(4) \\bmod 10 = 2 \\implies$ slot `2`.\n   - `5`: $3(5) \\bmod 10 = 5 \\implies$ slot `5`.\n   - `6`: $3(6) \\bmod 10 = 8 \\implies$ slot `8`.\n   Occupied slots so far: `{2: 4, 3: 1, 5: 5, 8: 6}`.',
+            '2. **Insert `14`:** Compute home slot $h(14) = 42 \\bmod 10 = 2$. Slot `2` is taken by `4` $\\to$ probe `(2 + 1) % 10 = 3` (taken by `1`!) $\\to$ probe `(2 + 2) % 10 = 4` (**empty!**). So `14` parks at index **`4`**.',
+            '3. **Insert `15`:** Compute home slot $h(15) = 45 \\bmod 10 = 5$. Slot `5` is taken by `5` $\\to$ probe `(5 + 1) % 10 = 6` (**empty!**). So `15` parks at index **`6`**.',
           ],
           ahaMoment:
             'Picture a crowded parking lot as $\\alpha = n/m \\to 1$: cars clump into long contiguous blocks (**primary clustering**), making every new driver cruise past more taken spots and pushing expected probes up like $\\frac{1}{1-\\alpha}$!',
@@ -1557,12 +1608,12 @@ export const MODULE_8_CHAPTERS: ChapterData[] = [
             {
               prompt: 'At $\\alpha = 0.75$ vs $\\alpha = 0.90$, what is the uniform-hashing upper bound on expected insert probes?',
               solution:
-                'At $\\alpha = 0.75$: $\\frac{1}{1 - 0.75} = 4$ probes. At $\\alpha = 0.90$: $\\frac{1}{1 - 0.90} = 10$ probes!',
+                'Plug directly into $\\frac{1}{1 - \\alpha}$:\n- At $\\alpha = 0.75$: $\\frac{1}{1 - 0.75} = \\frac{1}{0.25} = 4$ probes.\n- At $\\alpha = 0.90$: $\\frac{1}{1 - 0.90} = \\frac{1}{0.10} = 10$ probes! Notice how probes spike sharply once a table gets > 80% full — which is why Python’s `dict` automatically resizes well before $\\alpha = 1$.',
             },
             {
               prompt: 'Why must deletion in linear probing leave a `DELETED` tombstone instead of marking the slot `EMPTY`?',
               solution:
-                'If slot 3 held `1` when `14` probed `2 -> 3 -> 4`, deleting `1` and setting slot 3 to `EMPTY` would make a search for `14` stop early at slot 3 and falsely report `14` absent! Marking slot 3 `DELETED` lets searches continue past it while allowing new insertions to reuse slot 3.',
+                'Suppose slot `3` held `1` when `14` probed `2 -> 3 -> 4`. If we delete `1` and reset slot `3` to `EMPTY`, a later search for `14` checks slot `2` (`4`), moves to slot `3` (`EMPTY`), and **stops immediately** — falsely claiming `14` is not in the table! Marking slot `3` as `DELETED` tells searches to keep probing past slot `3` to find `14` at slot `4`, while allowing future insertions to overwrite slot `3`.',
             },
           ],
         },

@@ -121,37 +121,45 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Why a plane through $(0,0,0)$ is a subspace while a shifted plane or first quadrant fails',
         priority: 'core-pillar',
         buildsOn: '2D/3D coordinates and scaling arrows',
+        whyStudy:
+          'In Data Science and Machine Learning, every dataset of $d$ numerical features (say age, income, and credit score) represents each person as a point or arrow inside $\\mathbb{R}^d$ (read "R-d", the space of all lists of $d$ real numbers). When we run dimensionality reduction like **PCA**, compress images, or solve a linear system $Ax = 0$, we need a smaller flat world living inside $\\mathbb{R}^d$ where adding two data directions or rescaling a feature vector never kicks us out of the model. That self-contained flat world is a **subspace**. Mastering the 3-second subspace test also prevents you from falling for classic GATE DA MSQ traps (like **GATE DA 2024 Q.47**) where shifted planes or positive quadrants masquerade as subspaces.',
+        groundRules: [
+          '**The Origin-Anchor Rule ($\\mathbf{0} \\in W$):** Every subspace $W$ MUST contain the zero vector $\\mathbf{0}$ (where $\\in$ means "belongs to"). Why? Because scaling ANY vector $u$ in $W$ by the real number $0$ produces $0 \\cdot u = \\mathbf{0}$ — so if a flat plane is shifted away from the origin (like $x + y - z = 2$), it immediately fails to be a subspace.',
+          '**Closed Under Vector Addition ($u + v \\in W$):** Whenever you pick two arrows $u$ and $v$ lying inside $W$ and place them tip-to-tail, their sum $u + v$ must still land inside $W$. This is why gluing two separate lines together (their union $U \\cup W$) breaks closure: adding a vector from the $x$-axis and one from the $y$-axis shoots diagonally off both axes!',
+          '**Closed Under ALL Real Scaling ($c u \\in W$ for every $c \\in \\mathbb{R}$):** You must be able to stretch, shrink, AND flip any vector $u \\in W$ backward by negative numbers like $c = -1$ without leaving $W$. Any restriction like $x \\ge 0$ or squared weights $\\alpha^2 u$ traps you on one side and breaks immediately when multiplied by $-1$.',
+          '**Homogeneous Equations & Spans Are Always Safe Subspaces:** Any set defined by homogeneous linear equations $Ax = \\mathbf{0}$ (zeros on the right-hand side, no constant shift) or by taking all real linear combinations $\\alpha u + \\beta v$ automatically obeys all three rules — zero extra checking needed!',
+        ],
         toyExample: {
           title: 'Two Tilted Planes in $\\mathbb{R}^3$: One Anchored at Origin, One Floating',
           scenario:
-            'Compare two flat planes in $\\mathbb{R}^3$: $P_1 = \\{(x,y,z) : x + y - z = 0\\}$ and $P_2 = \\{(x,y,z) : x + y - z = 2\\}$. Suppose a drone must stay inside the allowed set whenever two moves are added or a move is scaled by $c \\in \\mathbb{R}$.',
+            'Compare two flat planes in $\\mathbb{R}^3$ (ordinary 3D space of triples $(x, y, z)$): $P_1 = \\{(x,y,z) : x + y - z = 0\\}$ and $P_2 = \\{(x,y,z) : x + y - z = 2\\}$. Suppose a drone must stay inside the allowed set whenever two moves are added together or any move is scaled by a real number $c \\in \\mathbb{R}$.',
           walkthroughSteps: [
-            '1. **Check the Origin $(0,0,0)$:** In $P_1$, $0+0-0=0$ (inside!). In $P_2$, $0+0-0=0 \\neq 2$ (origin is missing!).',
-            '2. **Add Two Vectors in $P_1$ vs $P_2$:** In $P_1$, take $u=(1,1,2)$ and $v=(2,0,2)$. Their sum $u+v=(3,1,4)$ gives $3+1-4=0 \\in P_1$. In $P_2$, take $u=(1,1,0)$ and $v=(2,0,0)$; their sum $(3,1,0)$ gives $3+1-0=4 \\neq 2$, kicking the drone off $P_2$!',
-            '3. **Scale by $-1$:** In $P_1$, $-u = (-1,-1,-2)$ still satisfies $-1-1-(-2)=0$. What if we restricted $P_1$ to $x \\ge 0$? Then $u=(1,1,2)$ is in the set, but $(-1)u=(-1,-1,-2)$ escapes!',
+            '1. **Check the Origin $(0,0,0)$:** Plug $(0,0,0)$ into $P_1$: $0+0-0=0$ (inside!). Plug $(0,0,0)$ into $P_2$: $0+0-0=0 \\neq 2$ (the origin is missing — $P_2$ fails on step 1!).',
+            '2. **Add Two Vectors in $P_1$ vs $P_2$:** In $P_1$, take $u=(1,1,2)$ and $v=(2,0,2)$. Their sum $u+v=(3,1,4)$ satisfies $3+1-4=0$, staying right inside $P_1$. In $P_2$, take $u=(1,1,0)$ and $v=(2,0,0)$; their sum $(3,1,0)$ gives $3+1-0=4 \\neq 2$, kicking the drone off $P_2$!',
+            '3. **Scale by $-1$ (Flip Direction):** In $P_1$, $-u = (-1,-1,-2)$ still satisfies $(-1)+(-1)-(-2)=0$. What if we restricted $P_1$ to only $x \\ge 0$? Then $u=(1,1,2)$ is allowed, but $(-1)u=(-1,-1,-2)$ has $x = -1 < 0$ and escapes!',
           ],
           ahaMoment:
-            'Picture a **subspace** simply as a flat sheet (a line, plane, hyperplane, or just $\\{0\\}$) that is **pinned directly to the origin** and stretches infinitely in both the $+$ and $-$ directions.',
+            'Picture a **subspace** simply as a flat sheet (a line, plane, hyperplane, or just the single point $\\{\\mathbf{0}\\}$) that is **pinned directly to the origin** and stretches infinitely in both the $+$ and $-$ directions.',
         },
         theoremAndFormula: {
           statement:
-            'A non-empty subset $W \\subseteq V$ of a vector space $V$ (over $\\mathbb{R}$) is a **subspace** if and only if it is closed under linear combinations: for all $u, v \\in W$ and all scalars $\\alpha, \\beta \\in \\mathbb{R}$, $\\alpha u + \\beta v \\in W$ (equivalently: $0 \\in W$, $u+v \\in W$, and $cu \\in W$ for all $c \\in \\mathbb{R}$).',
+            'A non-empty subset $W \\subseteq V$ (where $\\subseteq$ means "contained inside") of a vector space $V$ over the real numbers $\\mathbb{R}$ is a **subspace** if and only if ($\\iff$) it is closed under linear combinations: for all $u, v \\in W$ and all real scalars $\\alpha, \\beta \\in \\mathbb{R}$, $\\alpha u + \\beta v \\in W$ (equivalently: $\\mathbf{0} \\in W$, $u+v \\in W$, and $cu \\in W$ for all $c \\in \\mathbb{R}$).',
           formulaLatex:
             'W \\le V \\iff W \\neq \\emptyset \\;\\text{ and }\\; \\alpha u + \\beta v \\in W \\quad \\forall\\, u,v \\in W,\\; \\forall\\, \\alpha,\\beta \\in \\mathbb{R}',
           plainEnglishDecoding:
-            'Do not waste exam time checking all 8 abstract axioms! Just walk through our friendly **3-bullet checklist**: (1) Does $0$ live inside $W$? (2) If you add two members $u, v \\in W$, do you stay inside $W$? (3) If you stretch or flip a member by any real $c$ (always test $c = -1$ and $c = \\frac{1}{2}$!), do you still stay inside $W$?',
+            'Read the symbols left to right: $W \\le V$ means "$W$ is a subspace of $V$", $\\neq \\emptyset$ means "not empty", and $\\forall$ means "for every". Do not waste exam time checking all 8 abstract axioms! Just walk through our friendly **3-bullet checklist**: (1) Does $\\mathbf{0}$ live inside $W$? (2) If you add two members $u, v \\in W$, do you stay inside $W$? (3) If you stretch or flip a member by any real $c$ (always test $c = -1$ and $c = \\frac{1}{2}$!), do you still stay inside $W$?',
           workedMiniExamples: [
             {
               prompt:
-                'Is $S = \\{(x_1, x_2, x_3)^T \\in \\mathbb{R}^3 : 2x_1 - x_2 + 5x_3 = 0\\}$ a subspace of $\\mathbb{R}^3$?',
+                'Is $S = \\{(x_1, x_2, x_3)^T \\in \\mathbb{R}^3 : 2x_1 - x_2 + 5x_3 = 0\\}$ a subspace of $\\mathbb{R}^3$? (Here the superscript $T$ means transpose, turning a row list into a vertical column vector.)',
               solution:
-                'Yes! It is the homogeneous solution set $Ax = 0$ for $A = [2,\\;-1,\\;5]$: $(0,0,0)^T \\in S$, and $A(\\alpha u + \\beta v) = \\alpha Au + \\beta Av = 0 + 0 = 0$.',
+                'Yes! Rewrite the rule as a homogeneous matrix equation $Ax = 0$ with $A = [2,\\;-1,\\;5]$. Check our 3 rules: $(0,0,0)^T$ gives $0 = 0$, and for any two solutions $u, v$ and scalars $\\alpha, \\beta$, $A(\\alpha u + \\beta v) = \\alpha(Au) + \\beta(Av) = 0 + 0 = 0$.',
             },
             {
               prompt:
                 'Let $u = (1,0,0)^T, v = (0,1,0)^T$. Is $S = \\{\\alpha^2 u + \\beta^2 v : \\alpha, \\beta \\in \\mathbb{R}\\}$ a subspace of $\\mathbb{R}^3$?',
               solution:
-                'No! Because $\\alpha^2, \\beta^2 \\ge 0$, $S$ is only the first quadrant $\\{(x,y,0) : x \\ge 0, y \\ge 0\\}$. Multiplying $(1,0,0)^T \\in S$ by scalar $c = -1$ gives $(-1,0,0)^T \\notin S$.',
+                'No! Because squares of real numbers are always non-negative ($\\alpha^2 \\ge 0, \\beta^2 \\ge 0$), $S$ only covers the first quadrant $\\{(x,y,0) : x \\ge 0, y \\ge 0\\}$. Taking $u = (1,0,0)^T \\in S$ and multiplying by $c = -1$ gives $(-1,0,0)^T \\notin S$ (where $\\notin$ means "does not belong to").',
             },
           ],
         },
@@ -196,35 +204,43 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Measuring vector lengths, angles, and ML regularization penalties',
         priority: 'high-yield',
         buildsOn: 'Pythagorean length and absolute values',
+        whyStudy:
+          'How does a Machine Learning algorithm know whether two customers are "similar", whether a model’s prediction error is "small", or how heavily to penalize overly large weights? It needs a consistent ruler for **vector length (norm)** and **directional alignment (inner product)**. Choosing between the $L_1$ norm (city-block distance) and $L_2$ norm (straight-line distance) literally decides whether your regression model becomes **LASSO** (driving useless weights to exact zero) or **Ridge** (shrinking all weights smoothly) — directly tested in **GATE DA 2025 Q.53** (SVM margin $\\frac{2}{\\|w\\|_2}$) and **GATE DA 2026 Q.36 & Q.55**.',
+        groundRules: [
+          '**The Three Axioms of a Valid Ruler (Norm):** A function $\\|x\\|$ is a true mathematical norm ONLY if it satisfies: (1) **Positivity** ($\\|x\\| \\ge 0$, and $= 0$ only for $x = \\mathbf{0}$), (2) **Linear Scaling / Homogeneity** ($\\|c x\\| = |c| \\|x\\|$ — doubling a vector MUST double its length, which is why squared length $\\|x\\|_2^2$ is NOT a norm!), and (3) **Triangle Inequality** ($\\|x + y\\| \\le \\|x\\| + \\|y\\|$ — walking direct is never longer than taking a detour).',
+          '**Dot Product Encodes Both Length and Angle ($u^T v$):** Writing $u^T v = \\sum_{i=1}^n u_i v_i$ (transpose of column $u$ times column $v$) gives two superpowers at once: taking a vector’s dot product with itself gives squared straight-line length ($x^T x = \\|x\\|_2^2$), and comparing two different vectors gives $u^T v = \\|u\\|_2 \\|v\\|_2 \\cos\\theta$, which vanishes ($= 0$) exactly when they meet at $90^\\circ$.',
+          '**Cauchy-Schwarz Is the Universal Speed Limit on Alignment:** Because $|\\cos\\theta| \\le 1$ always, the magnitude of a dot product $|u^T v|$ can NEVER beat $\\|u\\|_2 \\|v\\|_2$. Equality happens ONLY when the two vectors point along the exact same line ($u = cv$).',
+          '**The Fixed Norm Ladder ($\\|x\\|_\\infty \\le \\|x\\|_2 \\le \\|x\\|_1 \\le \\sqrt{n}\\|x\\|_2$):** For every vector $x \\in \\mathbb{R}^n$, the max coordinate ($L_\\infty$) is always the smallest ruler, straight-line Euclidean length ($L_2$) sits in the middle, and the city-block sum ($L_1$) is the largest.',
+        ],
         toyExample: {
           title: 'Three Ways to Measure Distance to $[3, -4]^T$',
           scenario:
-            'Suppose a delivery robot moves from $(0,0)$ to $(3,-4)$. How far is it? A street-grid taxi, a flying drone, and a dual-axis gantry crane each give a different number.',
+            'Suppose a delivery robot moves from the origin $(0,0)$ to $(3,-4)$, written as column vector $v = [3, -4]^T$ (the $T$ stands for transpose, flipping a horizontal row into a vertical column). How far did it travel? A street-grid taxi, a flying drone, and a dual-axis gantry crane each give a different number.',
           walkthroughSteps: [
-            '1. **Taxi ($L_1$ Manhattan norm):** Must walk east $3$ blocks and south $4$ blocks: $\\|v\\|_1 = |3| + |-4| = 7$.',
-            '2. **Drone ($L_2$ Euclidean norm):** Flies straight across the hypotenuse: $\\|v\\|_2 = \\sqrt{3^2 + (-4)^2} = \\sqrt{25} = 5$.',
-            '3. **Gantry Crane ($L_\\infty$ Max norm):** Moves $x$ and $y$ motors simultaneously, so time depends only on the slower axis: $\\|v\\|_\\infty = \\max(|3|, |-4|) = 4$.',
+            '1. **Taxi ($L_1$ Manhattan norm, $\\|v\\|_1$):** Must walk east $3$ blocks and south $4$ blocks: $\\|v\\|_1 = |3| + |-4| = 7$.',
+            '2. **Drone ($L_2$ Euclidean norm, $\\|v\\|_2$):** Flies straight across the hypotenuse: $\\|v\\|_2 = \\sqrt{3^2 + (-4)^2} = \\sqrt{25} = 5$.',
+            '3. **Gantry Crane ($L_\\infty$ Max norm, $\\|v\\|_\\infty$):** Moves $x$ and $y$ motors simultaneously, so time depends only on the slower axis: $\\|v\\|_\\infty = \\max(|3|, |-4|) = 4$.',
           ],
           ahaMoment:
-            'Notice how neatly the three rulers always line up for any vector $x \\in \\mathbb{R}^n$: $\\|x\\|_\\infty \\le \\|x\\|_2 \\le \\|x\\|_1$. Geometrically, the $L_1$ diamond touches the axes cleanly at sharp corners (which is why LASSO produces sparse zeros!), while $L_2$ is a smooth round circle.',
+            'Notice how neatly the three rulers always line up for any vector $x \\in \\mathbb{R}^n$: $\\|x\\|_\\infty \\le \\|x\\|_2 \\le \\|x\\|_1$ ($4 \\le 5 \\le 7$ here!). Geometrically, the $L_1$ unit "circle" is a diamond with sharp corners sitting right on the axes (which is why LASSO produces sparse zeros!), while $L_2$ is a smooth round circle.',
         },
         theoremAndFormula: {
           statement:
-            'For $x, y \\in \\mathbb{R}^n$, the $p$-norm ($p \\ge 1$) is $\\|x\\|_p = (\\sum_{i=1}^n |x_i|^p)^{1/p}$. A valid norm satisfies positivity ($\\|x\\| \\ge 0$, $=0 \\iff x=0$), absolute homogeneity ($\\|cx\\| = |c|\\|x\\|$), and the triangle inequality ($\\|x+y\\| \\le \\|x\\| + \\|y\\|$). The Euclidean inner product $u^T v = \\sum u_i v_i = \\|u\\|_2 \\|v\\|_2 \\cos\\theta$ obeys **Cauchy-Schwarz**.',
+            'For $x, y \\in \\mathbb{R}^n$, the $p$-norm ($p \\ge 1$) is $\\|x\\|_p = (\\sum_{i=1}^n |x_i|^p)^{1/p}$. A valid norm satisfies positivity ($\\|x\\| \\ge 0$, $=0 \\iff x=\\mathbf{0}$), absolute homogeneity ($\\|cx\\| = |c|\\|x\\|$), and the triangle inequality ($\\|x+y\\| \\le \\|x\\| + \\|y\\|$). The Euclidean inner product $u^T v = \\sum_{i=1}^n u_i v_i = \\|u\\|_2 \\|v\\|_2 \\cos\\theta$ obeys the **Cauchy-Schwarz inequality**.',
           formulaLatex:
             '|u^T v| \\le \\|u\\|_2 \\|v\\|_2 \\qquad \\text{and} \\qquad \\|x\\|_\\infty \\le \\|x\\|_2 \\le \\|x\\|_1 \\le \\sqrt{n}\\|x\\|_2',
           plainEnglishDecoding:
-            'Think of Cauchy-Schwarz as a simple speed limit on dot products: $|u^T v|$ can never beat the product of the two lengths, and it reaches that ceiling **only when $u$ and $v$ lie on the same line** ($u = cv$). Also keep in your pocket that $\\|x\\|_2^2 = x^T x$.',
+            'Think of Cauchy-Schwarz as a simple speed limit on dot products: $|u^T v|$ can never exceed the product of the two lengths $\\|u\\|_2$ and $\\|v\\|_2$, and it hits that ceiling **only when $u$ and $v$ lie on the exact same line** ($u = cv$). Also keep in your pocket that squared Euclidean length is just the dot product with itself: $\\|x\\|_2^2 = x^T x$.',
           workedMiniExamples: [
             {
               prompt: 'For $w = [-3, 4]^T$ and $x = [1, 2]^T$, compute $w^T x$ and $0.20\\|w\\|_2^2$.',
               solution:
-                '$w^T x = (-3)(1) + (4)(2) = 5$, and $\\|w\\|_2^2 = (-3)^2 + 4^2 = 25$, so $0.20\\|w\\|_2^2 = 5.00$ (this exact norm computation drives Ridge regularized loss in GATE DA 2026 Q.55!).',
+                'Multiply matching entries for the dot product: $w^T x = (-3)(1) + (4)(2) = -3 + 8 = 5$. For squared Euclidean norm, drop the square root: $\\|w\\|_2^2 = (-3)^2 + 4^2 = 9 + 16 = 25$, so $0.20\\|w\\|_2^2 = 5.00$ (this exact norm computation drives Ridge regularized loss in GATE DA 2026 Q.55!).',
             },
             {
               prompt: 'Find the maximum value of $f(x) = 2x_1 - x_2 + 2x_3$ subject to $\\|x\\|_2 \\le 5$.',
               solution:
-                'Write $f(x) = v^T x$ with $v = [2,-1,2]^T$. By Cauchy-Schwarz, $v^T x \\le \\|v\\|_2 \\|x\\|_2 = \\sqrt{4+1+4} \\cdot 5 = 3 \\times 5 = 15$ (attained at $x = \\frac{5}{3}[2,-1,2]^T$).',
+                'Rewrite the linear score as a dot product $f(x) = v^T x$ with $v = [2,-1,2]^T$. Compute $\\|v\\|_2 = \\sqrt{2^2 + (-1)^2 + 2^2} = \\sqrt{9} = 3$. By Cauchy-Schwarz, $v^T x \\le \\|v\\|_2 \\|x\\|_2 = 3 \\times 5 = 15$, attained when $x$ points along $v$ with length $5$: $x = \\frac{5}{3}[2,-1,2]^T$.',
             },
           ],
         },
@@ -266,36 +282,44 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Building spaces from generators and slicing spheres with subspaces',
         priority: 'high-yield',
         buildsOn: 'm6-c1-1 Subspaces and m6-c1-2 Norms',
+        whyStudy:
+          'When you train a linear regression model $\\hat{y} = w_1 x_1 + w_2 x_2 + \\dots + w_k x_k$, you are mixing your feature columns $x_1, \\dots, x_k$ using weights $w_i$. The **span** tells you the exact universe of all target vectors $\\hat{y}$ your model is capable of reaching — if the true target $y$ lies outside that span, no choice of weights can ever fit it with zero error! Geometrically, understanding how a subspace is built and anchored at $\\mathbf{0}$ also lets you solve sphere-slicing questions like **GATE DA 2026 Q.22** in 10 seconds without a single integral.',
+        groundRules: [
+          '**Span Means "All Reachable Recipes":** Given starting vectors $v_1, \\dots, v_k$, their **span** ($\\text{span}(v_1, \\dots, v_k)$) is the set of every weighted sum $c_1 v_1 + \\dots + c_k v_k$ where the weights $c_i$ can be ANY real numbers (positive, negative, or zero).',
+          '**Matrix-Vector Multiplication $Ax$ IS a Linear Combination of Columns:** If you stack $v_1, \\dots, v_k$ side-by-side as the columns of a matrix $A$, then $Ax$ literally equals $x_1 v_1 + x_2 v_2 + \\dots + x_k v_k$. Therefore, asking "$b \\in \\text{span}(v_1, \\dots, v_k)$?" is 100% identical to asking "Does $Ax = b$ have a solution?"',
+          '**Redundant Vectors Never Expand the Span:** If a newly added vector $v_3$ can already be built from $v_1$ and $v_2$, throwing $v_3$ into the list adds zero new reachable destinations — so $3$ vectors in $\\mathbb{R}^3$ do NOT automatically span all of $\\mathbb{R}^3$.',
+          '**Centered Ball + Any Subspace = Full-Radius Cross-Section:** A centered Euclidean ball $B_n(0, R) = \\{x \\in \\mathbb{R}^n : x^T x \\le R^2\\}$ is perfectly symmetric around $\\mathbf{0}$, and EVERY subspace passes straight through $\\mathbf{0}$. Slicing through the exact center of a radius-$R$ sphere with any $k$-dimensional subspace ALWAYS cuts a full radius-$R$ $k$-dimensional ball — its tilt angle never changes the size!',
+        ],
         toyExample: {
           title: 'Slicing an Orange Centered at the Origin',
           scenario:
-            'Imagine a spherical orange $S_1 = \\{x \\in \\mathbb{R}^3 : x^T x \\le 16\\}$ of radius $R = 4$ centered at $(0,0,0)$. Now slice it with ANY flat plane $S_2$ that passes through the center $(0,0,0)$. What is the area of the circular slice?',
+            'Imagine a solid spherical orange $S_1 = \\{x \\in \\mathbb{R}^3 : x^T x \\le 16\\}$ (since $x^T x = x_1^2 + x_2^2 + x_3^2 = \\|x\\|_2^2$, this is a ball of radius $R = \\sqrt{16} = 4$ centered at $(0,0,0)$). Now slice it with ANY flat plane $S_2$ that is a 2-dimensional subspace of $\\mathbb{R}^3$. What is the area of the circular slice?',
           walkthroughSteps: [
-            '1. Because $S_2$ is a **2D subspace** of $\\mathbb{R}^3$, it MUST contain $(0,0,0)$ — the exact center of the sphere!',
-            '2. Any plane cutting straight through the center of a radius-$4$ sphere produces a **great circle** of the full radius $4$ (no offset $d$!).',
-            '3. Therefore $S_1 \\cap S_2$ is a 2D disk of radius $4$, with area $\\pi (4)^2 = 16\\pi$ — regardless of how $S_2$ is tilted!',
+            '1. Because $S_2$ is a **2D subspace** of $\\mathbb{R}^3$, Ground Rule 1 guarantees it MUST contain $(0,0,0)$ — the exact center of the sphere!',
+            '2. Any flat plane cutting straight through the center of a radius-$4$ sphere produces a **great circle** of the full radius $R = 4$ (zero offset distance $d$ from the center!).',
+            '3. Therefore $S_1 \\cap S_2$ (where $\\cap$ means intersection / overlap) is a flat 2D disk of radius $4$, with area $\\pi (4)^2 = 16\\pi$ — completely independent of how $S_2$ is tilted!',
           ],
           ahaMoment:
-            'Look at how little information you actually needed: you never even saw the equation of $S_2$! Simply hearing that $S_2$ is a 2D **subspace** automatically guarantees $0 \\in S_2$, which forces the slice right through the center of the ball (GATE DA 2026 Q.22).',
+            'Look at how little information you actually needed: you never even saw the equation of $S_2$! Simply hearing that $S_2$ is a 2D **subspace** automatically guarantees $\\mathbf{0} \\in S_2$, which forces the slice right through the center of the ball (GATE DA 2026 Q.22).',
         },
         theoremAndFormula: {
           statement:
-            'The **span** of vectors $\\{v_1, \\dots, v_k\\} \\subseteq V$ is the set of all linear combinations $\\text{span}(v_1, \\dots, v_k) = \\{\\sum_{i=1}^k c_i v_i : c_i \\in \\mathbb{R}\\}$. It is always a subspace of $V$ (the smallest subspace containing all $v_i$). Intersecting a centered $n$-ball $\\{x \\in \\mathbb{R}^n : x^T x \\le R^2\\}$ with any $k$-dimensional subspace yields a $k$-dimensional ball of radius $R$.',
+            'The **span** of vectors $\\{v_1, \\dots, v_k\\} \\subseteq V$ is the set of all linear combinations $\\text{span}(v_1, \\dots, v_k) = \\{\\sum_{i=1}^k c_i v_i : c_i \\in \\mathbb{R}\\}$. It is always a subspace of $V$ (the smallest subspace containing every $v_i$). Intersecting a centered $n$-ball $\\{x \\in \\mathbb{R}^n : x^T x \\le R^2\\}$ with any $k$-dimensional subspace yields a $k$-dimensional ball of full radius $R$.',
           formulaLatex:
             '\\text{span}(v_1, \\dots, v_k) = \\left\\{ \\sum_{i=1}^k c_i v_i \\;:\\; c_i \\in \\mathbb{R} \\right\\}, \\qquad \\text{Area}(B_3(0,R) \\cap S_2) = \\pi R^2',
           plainEnglishDecoding:
-            'Think of $\\text{span}(v_1, \\dots, v_k)$ as every single point on the map you can drive to using combinations of the directions $v_1, \\dots, v_k$. Notice something wonderful: asking whether $b \\in \\text{span}(v_1,\\dots,v_k)$ is the exact same question as asking whether $Ax = b$ has a solution when we stack those vectors as the columns of $A = [v_1 \\dots v_k]$.',
+            'Think of $\\text{span}(v_1, \\dots, v_k)$ as every single point on the map you can drive to using weighted combinations of the directions $v_1, \\dots, v_k$. Notice something wonderful: asking whether target $b$ belongs to $\\text{span}(v_1,\\dots,v_k)$ is the exact same question as asking whether $Ax = b$ has a solution when we stack those vectors side-by-side as the columns of $A = [v_1 \\dots v_k]$.',
           workedMiniExamples: [
             {
               prompt: 'Does $b = [2, 3, 6]^T$ lie in $\\text{span}([1,0,1]^T, [0,1,1]^T)$?',
               solution:
-                'Any combination $c_1[1,0,1]^T + c_2[0,1,1]^T = [c_1, c_2, c_1+c_2]^T$ satisfies $z = x+y$. For $b=[2,3,6]^T$, $2+3 = 5 \\neq 6$, so $b \\notin \\text{span}$.',
+                'Build a general combination: $c_1[1,0,1]^T + c_2[0,1,1]^T = [c_1,\\; c_2,\\; c_1+c_2]^T$. Notice every reachable vector obeys $z = x + y$. For $b = [2,3,6]^T$, $x + y = 2 + 3 = 5 \\neq 6$, so $b \\notin \\text{span}$.',
             },
             {
               prompt:
                 'If $S_1 = \\{x \\in \\mathbb{R}^3 : x^T x \\le 25\\}$ and $S_2$ is a 1D subspace of $\\mathbb{R}^3$, what is the length of segment $S_1 \\cap S_2$?',
               solution:
-                'A 1D subspace is a line through $(0,0,0)$, cutting the radius-$5$ ball from $-5u$ to $+5u$ (for unit vector $u$), giving a segment of total length $2R = 10$.',
+                'Here $R = \\sqrt{25} = 5$. A 1D subspace is a straight line passing through $(0,0,0)$, cutting the radius-$5$ ball from $-5u$ to $+5u$ (where $u$ is a unit direction vector along the line), giving a diameter segment of total length $2R = 10$.',
             },
           ],
         },
@@ -742,36 +766,44 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Spotting redundant vectors and proving $X^T X$ is invertible',
         priority: 'core-pillar',
         buildsOn: 'Ch.1 Span and inner products',
+        whyStudy:
+          'Imagine building a house-price predictor using three columns: `area_in_sqft`, `area_in_sqm`, and `rooms`. Because square meters is just a constant multiple of square feet, one column is a total free-rider (**multicollinearity**)! When feature columns are linearly dependent, the Ordinary Least Squares matrix $X^T X$ collapses to zero determinant and cannot be inverted, blowing up your regression weights. Knowing **linear independence**, **basis**, **dimension**, and the **Gram matrix** $G = X^T X$ tells you the true non-redundant information dimension of a dataset — and directly cracks **GATE DA 2025 Q.38** in one line.',
+        groundRules: [
+          '**Zero Free-Riders Rule (Linear Independence):** A list of vectors $\\{x_1, \\dots, x_k\\}$ is linearly independent if and only if no vector can be built from the others — algebraically, stacking them as columns of $X$ means the homogeneous equation $Xc = \\mathbf{0}$ has ONLY the trivial all-zero recipe $c = \\mathbf{0}$ (so the null space / kernel $\\ker(X) = N(X) = \\{\\mathbf{0}\\}$).',
+          '**Pigeonhole Cap on Independence:** Inside $\\mathbb{R}^n$ (which only has $n$ coordinate slots), you can NEVER pack more than $n$ linearly independent vectors — any list of $k > n$ vectors in $\\mathbb{R}^n$ is automatically linearly dependent!',
+          '**Dimension Is an Unbreakable Invariant:** A **basis** is a set that both spans a subspace $W$ AND is linearly independent (zero missing directions, zero free-riders). Although a subspace has infinitely many different bases (you can rotate or shear them), EVERY valid basis of $W$ has the exact same vector count — called $\\dim(W)$.',
+          '**Gram Matrix Null-Space Identity ($N(X^T X) = N(X)$):** Forming the square dot-product table $G = X^T X$ (entry $G_{ij} = x_i^T x_j$) NEVER loses or creates null-space vectors! Why? Because $X^T X c = \\mathbf{0} \\implies c^T X^T X c = \\|Xc\\|_2^2 = 0 \\iff Xc = \\mathbf{0}$. Therefore $X^T X$ is invertible $\\iff$ the columns of $X$ are linearly independent!',
+        ],
         toyExample: {
           title: 'Three Vectors Where One Is a Free-Rider',
           scenario:
-            'Consider three vectors in $\\mathbb{R}^3$: $v_1 = [1, 2, 0]^T$, $v_2 = [0, 1, 1]^T$, and $v_3 = [2, 5, 1]^T$. Do we actually need all three to span the same space?',
+            'Consider three column vectors in $\\mathbb{R}^3$: $v_1 = [1, 2, 0]^T$, $v_2 = [0, 1, 1]^T$, and $v_3 = [2, 5, 1]^T$. Do we actually need all three to span the same space?',
           walkthroughSteps: [
-            '1. Check if $v_3$ can be built from $v_1$ and $v_2$: $2v_1 + v_2 = [2,4,0]^T + [0,1,1]^T = [2,5,1]^T = v_3$!',
-            '2. Move $v_3$ to the left: $2v_1 + 1v_2 - 1v_3 = 0$, a **non-trivial** combination hitting zero (coefficients $(2, 1, -1) \\neq (0,0,0)$).',
-            '3. Remove the redundant vector $v_3$: $\{v_1, v_2\}$ are not multiples of each other, so $\{v_1, v_2\}$ is **linearly independent** and forms a **basis** of size (dimension) $2$!',
+            '1. **Test for a Hidden Recipe:** Check if $v_3$ can be built from $v_1$ and $v_2$: $2v_1 + v_2 = [2,4,0]^T + [0,1,1]^T = [2,5,1]^T = v_3$!',
+            '2. **Move Everything to One Side:** $2v_1 + 1v_2 - 1v_3 = \\mathbf{0}$. Because we found non-zero weights $c = [2, 1, -1]^T \\neq \\mathbf{0}$ that cancel to zero, $\\{v_1, v_2, v_3\\}$ is **linearly dependent**.',
+            '3. **Evict the Free-Rider $v_3$:** Check the remaining pair $\\{v_1, v_2\\}$: neither is a scalar multiple of the other, so $\\{v_1, v_2\\}$ is **linearly independent** and forms a **basis** of size (dimension) $2$!',
           ],
           ahaMoment:
             'Think of a **basis** as a minimal spanning set — zero redundant free-riders and zero missing directions. No matter which basis you pick for a subspace, it will always contain the exact same number of vectors, and we call that count its **dimension**.',
         },
         theoremAndFormula: {
           statement:
-            'Vectors $\\{x_1, \\dots, x_k\\} \\subset \\mathbb{R}^n$ are **linearly independent** iff $Xc = 0 \\implies c = 0$ (where $X = [x_1 \\; \\dots \\; x_k]$). Crucially, $N(X^T X) = N(X)$ always! Thus, $k$ columns are linearly independent iff the $k \\times k$ **Gram matrix** $G = X^T X$ ($G_{ij} = x_i^T x_j$) is invertible. Any $k > n$ vectors in $\\mathbb{R}^n$ are automatically dependent. Mutually orthogonal non-zero vectors are automatically linearly independent.',
+            'Vectors $\\{x_1, \\dots, x_k\\} \\subset \\mathbb{R}^n$ are **linearly independent** iff $Xc = \\mathbf{0} \\implies c = \\mathbf{0}$ (where $X = [x_1 \\; \\dots \\; x_k]$). Crucially, $N(X^T X) = N(X)$ always! Thus, $k$ columns are linearly independent iff the $k \\times k$ **Gram matrix** $G = X^T X$ ($G_{ij} = x_i^T x_j$) is invertible. Any $k > n$ vectors in $\\mathbb{R}^n$ are automatically dependent. Mutually orthogonal non-zero vectors ($x_i^T x_j = 0$ for $i \\neq j$) are automatically linearly independent.',
           formulaLatex:
             '\\{x_1,\\dots,x_k\\} \\text{ linearly independent} \\iff N(X) = \\{0\\} \\iff G = X^T X \\text{ is invertible}',
           plainEnglishDecoding:
-            'Here is a one-line gem you will love: why does $X^T X c = 0$ force $Xc = 0$? Simply multiply both sides on the left by $c^T$ to get $c^T X^T X c = \\|Xc\\|_2^2 = 0$. Because the only vector with zero length is the zero vector itself, $Xc = 0$ follows immediately — and that single line proves GATE DA 2025 Q.38!',
+            'Here is a one-line gem you will love: why does $X^T X c = \\mathbf{0}$ force $Xc = \\mathbf{0}$? Simply multiply both sides on the left by $c^T$ to get $c^T X^T X c = (Xc)^T(Xc) = \\|Xc\\|_2^2 = 0$. Because the only vector whose straight-line length is $0$ is the zero vector itself, $Xc = \\mathbf{0}$ follows immediately — and that single line proves **GATE DA 2025 Q.38**!',
           workedMiniExamples: [
             {
               prompt:
                 'If $\\{x_1, \\dots, x_n\\} \\subset \\mathbb{R}^n$ are linearly independent and $A_{ij} = x_i^T x_j$, must $A$ be invertible?',
               solution:
-                'Yes! Here $A = X^T X$ where $X = [x_1 \\dots x_n]$ is $n \\times n$ with independent columns, so $X$ is invertible and $\\det(A) = (\\det X)^2 > 0$ (GATE DA 2025 Q.38).',
+                'Yes! Stack $x_1, \\dots, x_n$ as columns of $X \\in \\mathbb{R}^{n\\times n}$. Then entry $(i,j)$ of $X^T X$ is $x_i^T x_j = A_{ij}$, so $A = X^T X$. Because the $n$ columns of $X$ are independent in $\\mathbb{R}^n$, $X$ is invertible ($\\det X \\neq 0$), and $\\det(A) = \\det(X^T)\\det(X) = (\\det X)^2 > 0$ (GATE DA 2025 Q.38).',
             },
             {
               prompt: 'Are $[1, 0, 1]^T$, $[0, 1, 1]^T$, $[1, 1, 0]^T$ a basis of $\\mathbb{R}^3$?',
               solution:
-                'Form $X = \\begin{bmatrix} 1 & 0 & 1 \\\\ 0 & 1 & 1 \\\\ 1 & 1 & 0 \\end{bmatrix}$. $\\det(X) = 1(-1) + 1(-1) = -2 \\neq 0$, so the 3 vectors are independent and span all of $\\mathbb{R}^3$.',
+                'Stack them into $X = \\begin{bmatrix} 1 & 0 & 1 \\\\ 0 & 1 & 1 \\\\ 1 & 1 & 0 \\end{bmatrix}$. Expanding along row 1: $\\det(X) = 1(0 - 1) - 0 + 1(0 - 1) = -2 \\neq 0$. Since $3$ independent vectors live in $3$-dimensional $\\mathbb{R}^3$, they automatically span all of $\\mathbb{R}^3$ and form a basis.',
             },
           ],
         },
@@ -807,15 +839,23 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Mapping $\\mathbb{R}^n \\to \\mathbb{R}^m$ via two orthogonal pairs',
         priority: 'core-pillar',
         buildsOn: 'm6-c2-1 Basis and dimension',
+        whyStudy:
+          'Every matrix $A \\in \\mathbb{R}^{m \\times n}$ (a table with $m$ rows and $n$ columns) acts as a machine that takes an $n$-dimensional input $x \\in \\mathbb{R}^n$ and outputs an $m$-dimensional vector $Ax \\in \\mathbb{R}^m$. To truly understand any linear layer in a neural network, a regression design matrix $X$, or a system of equations, you need to know two things: **how many dimensions of information survive** (the **rank**) and **how many dimensions get crushed to zero** (the **nullity**). Gilbert Strang’s Four Fundamental Subspaces show the entire anatomy of $A$ in one glance — explaining why OLS residuals are perpendicular to every feature column and making 2-mark GATE dimension puzzles effortless.',
+        groundRules: [
+          '**Conservation of Input Dimensions (Rank-Nullity: $\\text{rank}(A) + \\text{nullity}(A) = n$):** Every input column of an $m \\times n$ matrix either carries an independent pivot (counted in $\\text{rank}(A)$) or becomes a free variable that can cancel out to zero (counted in $\\text{nullity}(A) = \\dim \\ker(A) = \\dim N(A)$). They ALWAYS add up to the number of **columns** $n$ — never rows $m$!',
+          '**Row Rank ALWAYS Equals Column Rank ($r$):** Even for a wildly rectangular $100 \\times 3$ matrix, the number of linearly independent rows ALWAYS equals the number of linearly independent columns — both equal the pivot count $r = \\text{rank}(A)$, which can never exceed $\\min(m, n)$.',
+          '**Two Clean $90^\\circ$ Orthogonal Splits:** In the input world $\\mathbb{R}^n$, the row space $C(A^T)$ (dimension $r$) and the null space $N(A)$ (dimension $n-r$) meet at $90^\\circ$ ($C(A^T) \\perp N(A)$). In the output world $\\mathbb{R}^m$, the column space $C(A)$ (dimension $r$) and the left null space $N(A^T)$ (dimension $m-r$) meet at $90^\\circ$ ($C(A) \\perp N(A^T)$).',
+          '**What Row Operations Preserve (and What They Destroy):** Applying Gaussian elimination row operations to $A$ mixes rows with rows, so it NEVER changes the **row space** $C(A^T)$ or the **null space** $N(A)$ (same solutions to $Ax = \\mathbf{0}$!). However, row operations DO change the **column space** $C(A)$ — so always grab pivot columns from the *original* matrix $A$, never from its reduced form $R$!',
+        ],
         toyExample: {
           title: 'Seeing All Four Subspaces Inside a $2 \\times 3$ Matrix',
           scenario:
-            'Take $A = \\begin{bmatrix} 1 & 2 & 3 \\\\ 2 & 4 & 6 \\end{bmatrix}$ ($m=2$ rows, $n=3$ columns). Notice Row 2 is just $2 \\times$ Row 1, so $A$ has **rank $r = 1$**.',
+            'Take $A = \\begin{bmatrix} 1 & 2 & 3 \\\\ 2 & 4 & 6 \\end{bmatrix}$ ($m=2$ rows, $n=3$ columns). Notice Row 2 is just $2 \\times$ Row 1, so only $1$ row is independent: $A$ has **rank $r = 1$**.',
           walkthroughSteps: [
-            '1. **Row space $C(A^T) \\subseteq \\mathbb{R}^3$:** Spanned by $[1,2,3]^T$ (a 1D line in $\\mathbb{R}^3$, $\\dim = 1$).',
-            '2. **Null space $N(A) \\subseteq \\mathbb{R}^3$:** All $x$ with $x_1 + 2x_2 + 3x_3 = 0$ — a **2D plane** perpendicular to $[1,2,3]^T$! Notice $\\dim C(A^T) + \\dim N(A) = 1 + 2 = 3 = n$.',
-            '3. **Column space $C(A) \\subseteq \\mathbb{R}^2$:** All columns are multiples of $[1,2]^T$ (a 1D line in $\\mathbb{R}^2$, $\\dim = 1$).',
-            '4. **Left null space $N(A^T) \\subseteq \\mathbb{R}^2$:** All $y$ with $y^T A = 0$, i.e. $y_1 + 2y_2 = 0$ (spanned by $[-2, 1]^T$, $\\dim = 2 - 1 = 1$), perpendicular to $[1,2]^T$!',
+            '1. **Row space $C(A^T) \\subseteq \\mathbb{R}^3$** (span of rows of $A$, written as columns of the transpose $A^T$): Spanned by $[1,2,3]^T$ — a 1D line in $\\mathbb{R}^3$, so $\\dim C(A^T) = 1$.',
+            '2. **Null space / Kernel $N(A) = \\ker(A) \\subseteq \\mathbb{R}^3$:** All inputs $x$ with $Ax = \\mathbf{0}$, i.e., $x_1 + 2x_2 + 3x_3 = 0$ — a **2D plane** perpendicular ($\\perp$) to $[1,2,3]^T$! Notice $\\dim C(A^T) + \\dim N(A) = 1 + 2 = 3 = n$.',
+            '3. **Column space $C(A) \\subseteq \\mathbb{R}^2$:** Every column ($[1,2]^T, [2,4]^T, [3,6]^T$) is a multiple of $[1,2]^T$ — a 1D line in $\\mathbb{R}^2$, so $\\dim C(A) = 1$.',
+            '4. **Left null space $N(A^T) \\subseteq \\mathbb{R}^2$:** All outputs $y$ with $A^T y = \\mathbf{0}$ (equivalently $y^T A = \\mathbf{0}^T$), i.e. $y_1 + 2y_2 = 0$, spanned by $[-2, 1]^T$ ($\\dim = m - r = 2 - 1 = 1$), meeting $[1,2]^T$ at $90^\\circ$!',
           ],
           ahaMoment:
             'Take a step back and admire that symmetry: every $m \\times n$ matrix cleanly splits the input world $\\mathbb{R}^n$ into two perpendicular pieces ($C(A^T) \\perp N(A)$) and the output world $\\mathbb{R}^m$ into two perpendicular pieces ($C(A) \\perp N(A^T)$), carrying $C(A^T)$ one-to-one onto $C(A)$!',
@@ -826,19 +866,19 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
           formulaLatex:
             '\\text{rank}(A) + \\text{nullity}(A) = n, \\qquad C(A^T) \\perp N(A) \\text{ in } \\mathbb{R}^n, \\qquad C(A) \\perp N(A^T) \\text{ in } \\mathbb{R}^m',
           plainEnglishDecoding:
-            'Here is the easiest way to remember Rank-Nullity forever: **rank** counts your **independent pivots** (the shared dimension of both row space and column space), while **nullity** counts your **free variables** (solutions to $Ax = 0$). Since every column is either pivot or free, they always add up to the number of **columns** $n$.',
+            'Here is the easiest way to remember Rank-Nullity forever: **rank** counts your **independent pivots** (the shared dimension of both row space and column space), while **nullity** ($\\dim N(A) = \\dim \\ker(A)$) counts your **free variables** (independent directions crushed to $\\mathbf{0}$ by $Ax = \\mathbf{0}$). Since every column is either pivot or free, they always add up to the number of **columns** $n$.',
           workedMiniExamples: [
             {
               prompt:
                 'If $M$ is a $3 \\times 3$ matrix with Row 3 = Row 1 + Row 2, find $\\det(M^2 + 12M)$.',
               solution:
-                'Since Row 3 depends on Rows 1 and 2, $\\text{rank}(M) \\le 2 < 3$, so $\\det(M) = 0$. Therefore $\\det(M^2 + 12M) = \\det(M)\\det(M + 12I) = 0$ (GATE DA 2024 Q.35).',
+                'Because Row 3 is built from Rows 1 and 2, the rows are linearly dependent, so $\\text{rank}(M) \\le 2 < 3$ and $\\det(M) = 0$. Factor $M^2 + 12M = M(M + 12I)$ and use $\\det(AB) = \\det(A)\\det(B)$: $\\det(M^2 + 12M) = \\det(M)\\det(M + 12I) = 0$ (GATE DA 2024 Q.35).',
             },
             {
               prompt:
-                'Every row of $A \\in \\mathbb{R}^{n \\times n}$ sums to $1$ ($A\\mathbf{1} = \\mathbf{1}$), and $B = A^3 - 2A^2 + A$. How many solutions does $Bx = 0$ have?',
+                'Every row of $A \\in \\mathbb{R}^{n \\times n}$ sums to $1$ ($A\\mathbf{1} = \\mathbf{1}$, where $\\mathbf{1} = [1,\\dots,1]^T$), and $B = A^3 - 2A^2 + A$. How many solutions does $Bx = \\mathbf{0}$ have?',
               solution:
-                'Compute $B\\mathbf{1} = A^3\\mathbf{1} - 2A^2\\mathbf{1} + A\\mathbf{1} = \\mathbf{1} - 2\\mathbf{1} + \\mathbf{1} = \\mathbf{0}$. Because $\\mathbf{1} \\neq \\mathbf{0}$ lies in $N(B)$, $\\text{nullity}(B) \\ge 1$, so $Bx = 0$ has **infinitely many** solutions (GATE DA 2025 Q.13).',
+                'Apply $B$ to $\\mathbf{1}$: since $A\\mathbf{1} = \\mathbf{1}$, we get $A^2\\mathbf{1} = \\mathbf{1}$ and $A^3\\mathbf{1} = \\mathbf{1}$, so $B\\mathbf{1} = \\mathbf{1} - 2\\mathbf{1} + \\mathbf{1} = \\mathbf{0}$. Because the non-zero vector $\\mathbf{1}$ sits inside $N(B)$, $\\text{nullity}(B) \\ge 1$, so every multiple $c\\mathbf{1}$ solves $Bx = \\mathbf{0}$ — **infinitely many** solutions (GATE DA 2025 Q.13).',
             },
           ],
         },
@@ -874,37 +914,45 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Projecting onto subspaces and mastering $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$',
         priority: 'high-yield',
         buildsOn: 'm6-c2-2 Four Fundamental Subspaces & orthogonal complements',
+        whyStudy:
+          'Two of the most frequent operations in all of Data Science are **subtracting the mean from a dataset before PCA** and **finding the best linear regression prediction $\\hat{y} = X\\hat{\\beta}$**. Remarkably, BOTH of these operations are **orthogonal projections** — dropping a vector straight down at $90^\\circ$ onto a flat subspace! Once you recognize a matrix as an orthogonal projection (including the centering matrix $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$), you instantly know its rank, trace, nullity, and powers $P^2 = P^3 = P$ — answering **GATE DA 2024 Q.49** and **GATE DA 2026 Q.52** without multiplying out a single matrix.',
+        groundRules: [
+          '**The Two Signatures of an Orthogonal Projection ($P^2 = P$ and $P^T = P$):** Dropping a shadow onto a subspace $U$ and then dropping that shadow a second time moves nothing ($P^2 = P$, called **idempotent**). Requiring the shadow to fall straight down at $90^\\circ$ (rather than at a slanted oblique angle) adds symmetry ($P^T = P$).',
+          '**Exact Split of Space ($C(P) = U$ and $N(P) = U^\\perp$):** An orthogonal projection $P \\in \\mathbb{R}^{n \\times n}$ leaves every vector inside $U$ untouched ($Pu = u$, eigenvalue $1$) and flattens every vector perpendicular to $U$ to zero ($Pw = \\mathbf{0}$, eigenvalue $0$). By Rank-Nullity, $\\text{rank}(P) = \\dim U$ and $\\dim N(P) = n - \\dim U$.',
+          '**Trace Equals Rank Shortcut ($\\text{tr}(P) = \\text{rank}(P)$):** Because every eigenvalue of an orthogonal projection is strictly $1$ (counted $\\dim U$ times) or $0$ (counted $n - \\dim U$ times), summing the diagonal entries ($\\text{tr}(P)$) instantly tells you the dimension of the subspace $U$!',
+          '**Projection vs. Reflection Coefficient Trap:** For the centering matrix $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ (where $\\mathbf{1} = [1, \\dots, 1]^T$), subtracting $1\\times$ the mean-component gives a **projection** ($H^2 = H$, singular, rank $n-1$). Only subtracting $2\\times$ ($I_n - \\frac{2}{n}\\mathbf{1}\\mathbf{1}^T$) flips across the hyperplane into a **reflection** ($R^2 = I_n$)!',
+        ],
         toyExample: {
           title: 'Projecting Twice Does Nothing New ($P^2 = P$)',
           scenario:
-            'Let $P = \\begin{bmatrix} 1 & 0 \\\\ 0 & 0 \\end{bmatrix}$ project vectors in $\\mathbb{R}^2$ onto the $x$-axis. Take $x = [3, 4]^T$.',
+            'Let $P = \\begin{bmatrix} 1 & 0 \\\\ 0 & 0 \\end{bmatrix}$ project vectors in $\\mathbb{R}^2$ straight down onto the $x$-axis. Take $x = [3, 4]^T$.',
           walkthroughSteps: [
-            '1. First projection: $Px = [3, 0]^T$ (drops the vertical component).',
-            '2. Second projection: $P(Px) = P[3, 0]^T = [3, 0]^T$ — once you are already on the $x$-axis, projecting again leaves you fixed: **$P^2 = P$**!',
-            '3. Check null space and rank: $N(P)$ is the $y$-axis ($\\dim = 1$), $C(P)$ is the $x$-axis ($\\dim = 1$), and $\\text{tr}(P) = 1 + 0 = 1 = \\text{rank}(P)$.',
+            '1. **First projection:** $Px = \\begin{bmatrix} 1 & 0 \\\\ 0 & 0 \\end{bmatrix}\\begin{bmatrix} 3 \\\\ 4 \\end{bmatrix} = [3, 0]^T$ (drops the vertical height $4$ to $0$).',
+            '2. **Second projection:** $P(Px) = P[3, 0]^T = [3, 0]^T$ — once a point is already sitting on the $x$-axis, projecting it again leaves it completely fixed: **$P^2 = P$**!',
+            '3. **Check subspaces & trace:** $N(P)$ is the $y$-axis ($\\dim = 1$), $C(P)$ is the $x$-axis ($\\dim = 1$), and $\\text{tr}(P) = 1 + 0 = 1 = \\text{rank}(P)$.',
           ],
           ahaMoment:
             'Whenever you drop vectors straight down onto a subspace $U \\subseteq \\mathbb{R}^n$, the resulting **orthogonal projection** matrix is always both **symmetric** ($P^T = P$) and **idempotent** ($P^2 = P$), giving you $\\text{rank}(P) = \\text{tr}(P) = \\dim U$ and $\\text{nullity}(P) = n - \\dim U$ for free!',
         },
         theoremAndFormula: {
           statement:
-            'If $Q \\in \\mathbb{R}^{n \\times k}$ has orthonormal columns spanning $U$, the orthogonal projection onto $U$ is $P = QQ^T$ (or $X(X^T X)^{-1}X^T$ for any independent basis $X$). It satisfies $P^2 = P$ and $P^T = P$, with eigenvalues $\\in \\{0, 1\\}$ and $\\dim N(P) = n - \\dim U$. The **centering matrix** $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ is the orthogonal projection onto $\\mathbf{1}^\\perp$ of rank $n - 1$.',
+            'If $Q \\in \\mathbb{R}^{n \\times k}$ has orthonormal columns ($Q^T Q = I_k$) spanning subspace $U$, the orthogonal projection onto $U$ is $P = QQ^T$ (or $X(X^T X)^{-1}X^T$ for any independent basis $X$). It satisfies $P^2 = P$ and $P^T = P$, with eigenvalues $\\in \\{0, 1\\}$ and $\\dim N(P) = n - \\dim U$. The **centering matrix** $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ is the orthogonal projection onto $\\mathbf{1}^\\perp$ (all vectors whose entries sum to $0$) of rank $n - 1$.',
           formulaLatex:
             'P^2 = P, \\quad P^T = P, \\quad \\dim N(P) = n - \\dim U, \\qquad H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T \\implies H^2 = H,\\; \\text{tr}(H) = n-1',
           plainEnglishDecoding:
-            'See what $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ actually does to a vector $x$: it simply subtracts the sample mean $\\bar{x}$ from every coordinate ($Hx = x - \\bar{x}\\mathbf{1}$). Because subtracting the mean a second time from already-centered data changes nothing, $H^2 = H$! And its rank is $n-1$ because the single all-ones line $\\text{span}(\\mathbf{1})$ gets wiped out to zero ($H\\mathbf{1} = 0$).',
+            'Unpack what $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$ actually does to a data vector $x \\in \\mathbb{R}^n$: since $\\frac{1}{n}\\mathbf{1}^T x = \\bar{x}$ (the sample average), $Hx = x - \\bar{x}\\mathbf{1}$ simply subtracts the mean from every coordinate! Because subtracting the mean a second time from already-centered data changes nothing, $H^2 = H$. And its rank is $n-1$ because the single all-ones line $\\text{span}(\\mathbf{1})$ gets flattened to zero ($H\\mathbf{1} = \\mathbf{0}$).',
           workedMiniExamples: [
             {
               prompt:
                 'Let $M \\in \\mathbb{R}^{3 \\times 3}$ be the orthogonal projection onto a subspace $U \\subseteq \\mathbb{R}^3$. Find $\\dim N(M)$ and simplify $M^3$.',
               solution:
-                'By rank-nullity, $\\dim N(M) = 3 - \\text{rank}(M) = 3 - \\dim U$. Since $M^2 = M$, $M^3 = M^2 M = M^2 = M$ (GATE DA 2024 Q.49).',
+                'Since $C(M) = U$, $\\text{rank}(M) = \\dim U$. By Rank-Nullity, $\\dim N(M) = 3 - \\text{rank}(M) = 3 - \\dim U$. Since $M^2 = M$, multiplying by $M$ once more gives $M^3 = M^2 M = M \\cdot M = M^2 = M$ (GATE DA 2024 Q.49).',
             },
             {
               prompt:
                 'Verify $H^2 = H$ and find $\\text{tr}(H)$ for $H = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T$.',
               solution:
-                '$H^2 = I_n - \\frac{2}{n}\\mathbf{1}\\mathbf{1}^T + \\frac{1}{n^2}\\mathbf{1}(\\mathbf{1}^T\\mathbf{1})\\mathbf{1}^T = I_n - \\frac{2}{n}\\mathbf{1}\\mathbf{1}^T + \\frac{n}{n^2}\\mathbf{1}\\mathbf{1}^T = H$ (since $\\mathbf{1}^T\\mathbf{1} = n$). Trace $= \\text{tr}(I_n) - \\frac{1}{n}\\text{tr}(\\mathbf{1}\\mathbf{1}^T) = n - \\frac{n}{n} = n - 1$ (GATE DA 2026 Q.52).',
+                'Use $\\mathbf{1}^T\\mathbf{1} = 1^2 + \\dots + 1^2 = n$: $H^2 = I_n - \\frac{2}{n}\\mathbf{1}\\mathbf{1}^T + \\frac{1}{n^2}\\mathbf{1}(\\mathbf{1}^T\\mathbf{1})\\mathbf{1}^T = I_n - \\frac{2}{n}\\mathbf{1}\\mathbf{1}^T + \\frac{n}{n^2}\\mathbf{1}\\mathbf{1}^T = I_n - \\frac{1}{n}\\mathbf{1}\\mathbf{1}^T = H$. Every diagonal entry of $\\mathbf{1}\\mathbf{1}^T$ is $1$, so $\\text{tr}(H) = \\text{tr}(I_n) - \\frac{1}{n}\\text{tr}(\\mathbf{1}\\mathbf{1}^T) = n - \\frac{n}{n} = n - 1$ (GATE DA 2026 Q.52).',
             },
           ],
         },
@@ -1369,21 +1417,29 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Why the same matrix $M$ can give $(0, \\infty)$ but NEVER $(1, \\infty)$',
         priority: 'core-pillar',
         buildsOn: 'Ch.2 Column space $C(A)$ and Null space $N(A)$',
+        whyStudy:
+          'Every time you fit linear regression weights $Xw = y$, balance an engineering circuit, or solve an equilibrium system $Mx = p$, one urgent question comes first: **does an exact solution even exist — and if it does, is it unique or are there infinitely many?** In real ML datasets with $N = 10{,}000$ samples and $d = 20$ features ($N \\gg d$, tall matrix), exact solutions almost never exist ($0$ solutions), which is why Least Squares was invented. Conversely, when features outnumber samples ($d > N$, wide matrix), infinitely many weight vectors fit the training data perfectly! Mastering the exact rules of $0 / 1 / \\infty$ solutions also lets you solve tricky multi-RHS GATE MSQs like **GATE DA 2024 Q.48** in 20 seconds.',
+        groundRules: [
+          '**Existence = Column-Space Membership (Rouché–Capelli):** Because $Mx$ is a linear combination of the columns of $M$, an exact solution to $Mx = p$ exists if and only if $p$ sits inside the column space $C(M)$ — equivalently, gluing $p$ onto $M$ adds zero new independent directions: $\\text{rank}(M) = \\text{rank}([M \\mid p])$.',
+          '**All Solutions Equal One Anchor Plus the Null Space ($x = x_p + N(M)$):** If $x_p$ solves $Mx_p = p$ and $x_h$ is ANY vector in the null space ($Mx_h = \\mathbf{0}$), then $M(x_p + x_h) = p + \\mathbf{0} = p$ is ALSO a solution! Therefore, once consistent, there is **$1$ unique solution** iff $\\text{nullity}(M) = 0$ ($\\text{rank}(M) = n$), and **$\\infty$ solutions** iff $\\text{nullity}(M) \\ge 1$ ($\\text{rank}(M) < n$).',
+          '**The Fixed-Matrix Mutual-Exclusion Law ($(1, \\infty)$ Is Impossible):** Because $\\text{nullity}(M)$ depends ONLY on $M$ (never on the right-hand side $p$ or $q$), a single matrix $M$ lives in EITHER the $\\{0, 1\\}$ universe (when $\\text{rank}(M) = n$) OR the $\\{0, \\infty\\}$ universe (when $\\text{rank}(M) < n$) — it can NEVER give $1$ solution for $Mx = p$ and $\\infty$ solutions for $Mx = q$!',
+          '**Matrix Shape Locks:** A **wide** matrix ($m < n$) ALWAYS has $\\text{rank}(M) \\le m < n$, so $\\text{nullity}(M) \\ge 1$ and it can NEVER have a unique ($1$) solution. A **square** matrix ($m = n$) with $1$ solution for ANY $q$ must have $\\text{rank}(M) = n = m$, making $C(M) = \\mathbb{R}^m$ so EVERY $p$ gets $1$ solution (making $(0, 1)$ impossible for square matrices!).',
+        ],
         toyExample: {
           title: 'Same $2 \\times 2$ Matrix, Two Right-Hand Sides',
           scenario:
-            'Fix $A = \\begin{bmatrix} 1 & 2 \\\\ 2 & 4 \\end{bmatrix}$ ($\\text{rank} = 1 < 2$, so $\\text{nullity}(A) = 1$). Solve $Ax = b$ for $b_1 = [3, 6]^T$ and $b_2 = [3, 5]^T$.',
+            'Fix $A = \\begin{bmatrix} 1 & 2 \\\\ 2 & 4 \\end{bmatrix}$ ($m = 2, n = 2$, $\\text{rank}(A) = 1 < 2$, so $\\text{nullity}(A) = 2 - 1 = 1$). Solve $Ax = b$ for two targets: $b_1 = [3, 6]^T$ and $b_2 = [3, 5]^T$.',
           walkthroughSteps: [
-            '1. **For $b_1 = [3, 6]^T$:** Equation 2 is $2 \\times$ Equation 1! Every point on $x_1 + 2x_2 = 3$ works: $x = [3,0]^T + t[-2,1]^T$ — **infinitely many** solutions!',
-            '2. **For $b_2 = [3, 5]^T$:** Equation 1 wants $x_1 + 2x_2 = 3$, so $2x_1 + 4x_2$ MUST equal $6 \\neq 5$ — **$0$ solutions**!',
-            '3. **Can ANY $b$ give a unique ($1$) solution for this $A$?** No! Because $N(A)$ has dimension $1 > 0$, adding $t[-2,1]^T$ to any single solution immediately generates infinitely many!',
+            '1. **For $b_1 = [3, 6]^T$:** Equation 2 ($2x_1 + 4x_2 = 6$) is just $2 \\times$ Equation 1 ($x_1 + 2x_2 = 3$)! So $b_1$ sits right inside $C(A)$ and every point on the line $x = [3,0]^T + t[-2,1]^T$ ($t \\in \\mathbb{R}$) works — **infinitely many** solutions!',
+            '2. **For $b_2 = [3, 5]^T$:** Equation 1 demands $x_1 + 2x_2 = 3$, which forces $2x_1 + 4x_2 = 6 \\neq 5$. Appending $b_2$ raises the rank from $1$ to $2$, so $b_2 \\notin C(A)$ — **$0$ solutions**!',
+            '3. **Can ANY $b$ give a unique ($1$) solution for this $A$?** Never! Because the non-zero vector $[-2, 1]^T$ lives in $N(A)$, adding $t[-2,1]^T$ to any single solution immediately generates infinitely many!',
           ],
           ahaMoment:
             'Here is the golden realization: whether a consistent system has **$1$** or **$\\infty$** solutions depends ONLY on $\\text{nullity}(M)$, which is baked into $M$ alone — NEVER into $p$ or $q$! That is why having $1$ solution for $Mx=p$ and $\\infty$ solutions for $Mx=q$ is **impossible for every matrix $M$**.',
         },
         theoremAndFormula: {
           statement:
-            '**Rouché–Capelli Theorem:** For $M \\in \\mathbb{R}^{m \\times n}$, $Mx = p$ is consistent ($\\ge 1$ solution) iff $\\text{rank}(M) = \\text{rank}([M \\mid p])$. Whenever consistent, the solution set is $x_p + N(M)$, so the count is **$1$** iff $\\text{rank}(M) = n$ (full column rank) and **$\\infty$** iff $\\text{rank}(M) < n$.',
+            '**Rouché–Capelli Theorem:** For $M \\in \\mathbb{R}^{m \\times n}$, $Mx = p$ is consistent ($\\ge 1$ solution) iff $\\text{rank}(M) = \\text{rank}([M \\mid p])$, where $[M \\mid p]$ is the augmented matrix formed by attaching column $p$ to the right of $M$. Whenever consistent, the solution set is $x_p + N(M)$, so the count is **$1$** iff $\\text{rank}(M) = n$ (full column rank) and **$\\infty$** iff $\\text{rank}(M) < n$.',
           formulaLatex:
             'Mx = p \\text{ consistent} \\iff \\text{rank}(M) = \\text{rank}([M\\mid p]), \\qquad \\text{solutions} \\in \\begin{cases} \\{0, 1\\} & \\text{if } \\text{rank}(M) = n \\\\ \\{0, \\infty\\} & \\text{if } \\text{rank}(M) < n \\end{cases}',
           plainEnglishDecoding:
@@ -1393,13 +1449,13 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
               prompt:
                 'For $M \\in \\mathbb{R}^{3 \\times 3}$, can $Mx = p$ have $0$ solutions while $Mx = q$ has $1$ solution?',
               solution:
-                'No! If $Mx = q$ has $1$ solution, then $\\text{rank}(M) = n = 3 = m$, meaning $C(M) = \\mathbb{R}^3$. Hence EVERY $p \\in \\mathbb{R}^3$ lies in $C(M)$ and also has $1$ solution!',
+                'No! If $Mx = q$ has $1$ solution, then $\\text{rank}(M) = n = 3 = m$, meaning $C(M)$ fills all of $\\mathbb{R}^3$ ($M$ is invertible). Hence EVERY $p \\in \\mathbb{R}^3$ lies in $C(M)$ and also has $1$ unique solution $x = M^{-1}p$!',
             },
             {
               prompt:
                 'For $M \\in \\mathbb{R}^{2 \\times 3}$, what solution counts are possible for $Mx = p$?',
               solution:
-                'Since $\\text{rank}(M) \\le m = 2 < 3 = n$, $\\text{nullity}(M) \\ge 1$ ALWAYS. Thus $Mx = p$ can have $0$ or $\\infty$ solutions (e.g. $0$ for one $p$ and $\\infty$ for another), NEVER a unique solution.',
+                'Since $\\text{rank}(M) \\le \\min(2, 3) = 2 < 3 = n$, Rank-Nullity forces $\\text{nullity}(M) = 3 - \\text{rank}(M) \\ge 1$ ALWAYS. Thus $Mx = p$ can have $0$ or $\\infty$ solutions (e.g., $0$ for one $p$ and $\\infty$ for another), NEVER a unique solution.',
             },
           ],
         },
@@ -1435,14 +1491,22 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Why factoring $A = LU$ costs $O(n^3)$ once while triangular solves cost $O(n^2)$',
         priority: 'high-yield',
         buildsOn: 'm6-c3-1 Solving $Ax = b$ via row reduction',
+        whyStudy:
+          'When numerical libraries like `NumPy` or `SciPy` solve a $1000 \\times 1000$ linear system $Ax = b$, they almost NEVER compute $A^{-1}$ explicitly (it is slow and numerically fragile) — instead, they factor $A$ into two triangular matrices **$A = LU$** (or $PA = LU$). Why? Because once you pay the $O(n^3)$ cost to build $L$ and $U$ once, solving $Ax = b$ for 500 different target vectors $b$ (for example, in multi-output regression or iterative physics simulations) costs only **$O(n^2)$** per target via fast triangular substitution! Understanding that exact $O(n^3)$ vs. $O(n^2)$ distinction directly earns you easy marks like **GATE DA 2025 Q.12**.',
+        groundRules: [
+          '**Elimination Turns a Tangled System Into a Triangular Staircase ($O(n^3)$):** Clearing entries below the diagonal column-by-column requires roughly $\\frac{2}{3}n^3$ floating-point operations ($\\Theta(n^3)$) because for each of the $n$ pivots, you update an $(n-k) \\times (n-k)$ submatrix.',
+          '**Triangular Solves Cost Only $O(n^2)$ (Half a Grid):** Once a system $Ux = y$ is already upper triangular (all entries below the diagonal are $0$), you read off $x_n$ immediately and walk upward; row $i$ only touches $(n-i)$ already-known variables, summing to $\\sum_{k=0}^{n-1} k = \\frac{n(n-1)}{2}$ multiplications and subtractions — strictly **$O(n^2)$**!',
+          '**$LU$ Is Simply Gaussian Elimination Saved in a Bottle:** Recording every row-elimination multiplier $\\ell_{ij}$ inside unit lower-triangular $L$ (with $1$s on the main diagonal) while keeping the final upper-triangular staircase as $U$ gives $A = LU$, with $\\det(A) = \\det(L)\\det(U) = 1 \\cdot \\prod_{i=1}^n U_{ii}$ for free!',
+          '**Zero Pivot Rule ($A = LU$ vs. $PA = LU$):** Without swapping rows, elimination crashes if a $0$ lands in a pivot slot! For an invertible matrix $A$, pure $A = LU$ exists iff every top-left $k \\times k$ **leading principal minor** $\\Delta_k = \\det(A_{1:k, 1:k})$ is non-zero; allowing row swaps via permutation matrix $P$ makes $PA = LU$ work for **every** square matrix.',
+        ],
         toyExample: {
           title: 'Factoring $A = LU$ in One Elimination Step',
           scenario:
-            'Factor $A = \\begin{bmatrix} 2 & 4 \\\\ 6 & 15 \\end{bmatrix}$ into a unit lower-triangular $L$ (1s on diagonal) and upper-triangular $U$.',
+            'Factor $A = \\begin{bmatrix} 2 & 4 \\\\ 6 & 15 \\end{bmatrix}$ into a unit lower-triangular $L$ ($1$s down the diagonal, $0$s above) and an upper-triangular $U$ ($0$s below the diagonal).',
           walkthroughSteps: [
-            '1. To eliminate $6$ below the pivot $2$, compute multiplier $\\ell_{21} = \\frac{6}{2} = 3$.',
-            '2. Subtract $3 \\times \\text{Row } 1$ from $\\text{Row } 2$: $U = \\begin{bmatrix} 2 & 4 \\\\ 0 & 15 - 3(4) \\end{bmatrix} = \\begin{bmatrix} 2 & 4 \\\\ 0 & 3 \\end{bmatrix}$.',
-            '3. Store the multiplier $\\ell_{21} = 3$ right in position $(2,1)$ of $L = \\begin{bmatrix} 1 & 0 \\\\ 3 & 1 \\end{bmatrix}$. Check: $LU = \\begin{bmatrix} 2 & 4 \\\\ 6 & 12+3 \\end{bmatrix} = A$!',
+            '1. **Find the Multiplier:** Pivot $(1,1)$ is $2$, and the entry directly beneath it is $6$. Compute multiplier $\\ell_{21} = \\frac{6}{2} = 3$.',
+            '2. **Eliminate to Build $U$:** Subtract $3 \\times \\text{Row } 1$ from $\\text{Row } 2$: $U = \\begin{bmatrix} 2 & 4 \\\\ 6 - 3(2) & 15 - 3(4) \\end{bmatrix} = \\begin{bmatrix} 2 & 4 \\\\ 0 & 3 \\end{bmatrix}$.',
+            '3. **Save the Multiplier in $L$:** Place $\\ell_{21} = 3$ right into position $(2,1)$ of $L = \\begin{bmatrix} 1 & 0 \\\\ 3 & 1 \\end{bmatrix}$. Verify: $LU = \\begin{bmatrix} 1 & 0 \\\\ 3 & 1 \\end{bmatrix}\\begin{bmatrix} 2 & 4 \\\\ 0 & 3 \\end{bmatrix} = \\begin{bmatrix} 2 & 4 \\\\ 6 & 15 \\end{bmatrix} = A$!',
           ],
           ahaMoment:
             'Once you pay the $O(n^3)$ cost to build $A = LU$ once, solving $Ax = b$ for any new target $b$ splits into two quick triangular sweeps — $Ly = b$ forward and $Ux = y$ backward — each needing only $\\approx \\frac{n^2}{2}$ multiplications and subtractions (**$O(n^2)$**)!',
@@ -1453,19 +1517,19 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
           formulaLatex:
             'A = LU \\;\\text{(no swaps)} \\iff \\Delta_1, \\dots, \\Delta_{n-1} \\neq 0, \\qquad \\text{Elimination: } O(n^3), \\quad \\text{Back-substitution } Ux=y: \\; O(n^2)',
           plainEnglishDecoding:
-            'Let us count the exact work in back-substitution on an $n \\times n$ upper-triangular matrix $U$: the bottom row $n$ needs $0$ multiplications (just $1$ division), row $n-1$ needs $1$ multiply-subtract, all the way up to row $1$ needing $n-1$ multiply-subtracts. Summing $0 + 1 + \\dots + (n-1) = \\frac{n(n-1)}{2}$ gives clean $O(n^2)$ — tested directly in GATE DA 2025 Q.12!',
+            'Let us count the exact work in back-substitution on an $n \\times n$ upper-triangular matrix $U$: the bottom row $n$ needs $0$ multiplications (just $1$ division: $x_n = y_n / U_{nn}$), row $n-1$ needs $1$ multiply-subtract, all the way up to row $1$ needing $n-1$ multiply-subtracts. Summing $0 + 1 + \\dots + (n-1) = \\frac{n(n-1)}{2}$ gives clean $O(n^2)$ — tested directly in **GATE DA 2025 Q.12**!',
           workedMiniExamples: [
             {
               prompt:
                 'Does $A = \\begin{bmatrix} 0 & 3 \\\\ 2 & 5 \\end{bmatrix}$ have an $LU$ decomposition without row permutations?',
               solution:
-                'No! Even though $\\det(A) = -6 \\neq 0$, the first leading principal minor is $\\Delta_1 = A_{11} = 0$, so pivot $(1,1)$ vanishes and a row swap $P$ is mandatory ($PA = LU$).',
+                'No! Even though $\\det(A) = 0(5) - 3(2) = -6 \\neq 0$ (so $A$ is invertible), the first leading principal minor is $\\Delta_1 = A_{11} = 0$, so pivot $(1,1)$ vanishes and a row swap $P$ is mandatory ($PA = LU$).',
             },
             {
               prompt:
                 'Given $A = LU$ with $U = \\begin{bmatrix} 2 & -1 & 3 \\\\ 0 & 4 & 5 \\\\ 0 & 0 & -3 \\end{bmatrix}$, compute $\\det(A)$.',
               solution:
-                'Since $\\det(L) = 1$ (product of diagonal 1s), $\\det(A) = \\det(L)\\det(U) = 1 \\cdot (2 \\times 4 \\times (-3)) = -24$.',
+                'The determinant of any triangular matrix is the product of its main diagonal entries. Since $L$ has all $1$s on its diagonal, $\\det(L) = 1$, so $\\det(A) = \\det(L)\\det(U) = 1 \\cdot (2 \\times 4 \\times (-3)) = -24$.',
             },
           ],
         },
@@ -1499,35 +1563,43 @@ export const MODULE_6_CHAPTERS: ChapterData[] = [
         subtitle: 'Bounding ranks of $AB$, $A+B$, and squeezing $A^3 = A$ without entries',
         priority: 'high-yield',
         buildsOn: 'Ch.2 Four Fundamental Subspaces & Rank-Nullity',
+        whyStudy:
+          'In Deep Learning and Recommender Systems, you constantly stack linear layers $W_2 W_1 x$ or compress huge user-item tables into low-rank products $U V^T$. If a hidden bottleneck layer has only $k = 16$ neurons, can the next layer magically recover $100$ independent dimensions of information? Never — matrix rank inequalities act as the **information bottleneck law** of Linear Algebra! In GATE DA, these inequalities also give you zero-entry superpowers to prove exact rank identities for abstract equations like $A^3 = A$ (**GATE DA 2025 Q.37**) or nilpotent caps $A^2 = 0$ without ever seeing a single number inside $A$.',
+        groundRules: [
+          '**The Information Bottleneck Law ($\\text{rank}(AB) \\le \\min(\\text{rank } A, \\text{rank } B)$):** Every column of $AB$ is a combination of columns of $A$ (so $C(AB) \\subseteq C(A)$), and every row of $AB$ is a combination of rows of $B$ (so $C((AB)^T) \\subseteq C(B^T)$). Therefore multiplying two matrices can ONLY shrink or maintain rank — it can NEVER create new independent dimensions!',
+          '**Sylvester’s Floor ($\\text{rank}(A) + \\text{rank}(B) - n \\le \\text{rank}(AB)$):** While multiplying can drop rank, it cannot drop arbitrarily far if both matrices are large-rank! When $A \\in \\mathbb{R}^{m\\times n}$ and $B \\in \\mathbb{R}^{n\\times p}$ share inner dimension $n$, the output of $B$ has $\\text{rank}(B)$ dimensions and $A$ can kill at most $\\text{nullity}(A) = n - \\text{rank}(A)$ of them, leaving at least $\\text{rank}(B) - (n - \\text{rank}(A))$ dimensions alive!',
+          '**Monotonic Power Chain ($\\text{rank}(A) \\ge \\text{rank}(A^2) \\ge \\text{rank}(A^3) \\ge \\dots$):** Applying the bottleneck law repeatedly to $A \\cdot A$ and $A^2 \\cdot A$ guarantees that raising a matrix to higher powers forms a one-way downhill staircase. Whenever an identity like $A^3 = A$ ties the bottom step back up to the top step, every step in between gets squeezed to equality!',
+          '**Never Cancel a Potentially Singular Matrix:** Seeing $A^3 = A$ does NOT let you divide by $A$ to claim $A^2 = I_n$ (for example, $A = 0$ or a projection $A^2 = A$ satisfies $A^3 = A$ yet is singular!). Also remember $\\text{rank}(AB)$ does NOT always equal $\\text{rank}(BA)$, even though $\\text{rank}(A^T A) = \\text{rank}(A)$ always holds.',
+        ],
         toyExample: {
           title: 'Multiplying Two Rank-1 Matrices Can Collapse to Zero',
           scenario:
             'Take $A = \\begin{bmatrix} 1 & 0 \\\\ 0 & 0 \\end{bmatrix}$ (rank $1$) and $B = \\begin{bmatrix} 0 & 0 \\\\ 0 & 1 \\end{bmatrix}$ (rank $1$). What happens to $\\text{rank}(AB)$?',
           walkthroughSteps: [
-            '1. Compute $AB = \\begin{bmatrix} 0 & 0 \\\\ 0 & 0 \\end{bmatrix}$, which has **rank $0$**!',
-            '2. Why can rank drop? Because $C(AB) \\subseteq C(A)$ (every column of $AB$ is a mix of columns of $A$) and $C((AB)^T) \\subseteq C(B^T)$!',
-            '3. So multiplying can **never increase** rank: $\\text{rank}(AB) \\le \\min(\\text{rank}(A), \\text{rank}(B))$, and by Sylvester’s lower bound $\\text{rank}(A) + \\text{rank}(B) - n = 1 + 1 - 2 = 0 \\le \\text{rank}(AB)$.',
+            '1. **Multiply Directly:** $AB = \\begin{bmatrix} 1 & 0 \\\\ 0 & 0 \\end{bmatrix}\\begin{bmatrix} 0 & 0 \\\\ 0 & 1 \\end{bmatrix} = \\begin{bmatrix} 0 & 0 \\\\ 0 & 0 \\end{bmatrix}$, which has **rank $0$**!',
+            '2. **Why Did Rank Drop?** $B$ sends every vector onto the $y$-axis ($C(B) = \\text{span}([0,1]^T)$), and $A$ crushes the entire $y$-axis straight to $\\mathbf{0}$ ($C(B) \\subseteq N(A)$)!',
+            '3. **Verify Both Bounds:** Upper bound gives $\\text{rank}(AB) \\le \\min(1, 1) = 1$, and Sylvester’s lower bound gives $\\text{rank}(A) + \\text{rank}(B) - n = 1 + 1 - 2 = 0 \\le \\text{rank}(AB)$. Both bounds hold tightly at $0$!',
           ],
           ahaMoment:
             'Think of matrix multiplication as a one-way ratchet on rank: multiplying by another matrix can only **shrink or keep** the rank, never raise it! That guarantees the chain $\\text{rank}(A) \\ge \\text{rank}(A^2) \\ge \\text{rank}(A^3) \\ge \\dots$ always slopes gently downward.',
         },
         theoremAndFormula: {
           statement:
-            'For conformable matrices $A, B, C$ (with $A \\in \\mathbb{R}^{m\\times n}, B \\in \\mathbb{R}^{n\\times p}$):\n1. **Product Bound:** $\\text{rank}(AB) \\le \\min(\\text{rank}(A), \\text{rank}(B))$.\n2. **Sylvester’s Inequality:** $\\text{rank}(A) + \\text{rank}(B) - n \\le \\text{rank}(AB)$.\n3. **Frobenius Inequality:** $\\text{rank}(AB) + \\text{rank}(BC) \\le \\text{rank}(B) + \\text{rank}(ABC)$.\n4. **Sum Inequality:** $|\\text{rank}(A) - \\text{rank}(B)| \\le \\text{rank}(A+B) \\le \\text{rank}(A) + \\text{rank}(B)$.\n5. **Gram Invariance:** $\\text{rank}(A^T A) = \\text{rank}(A A^T) = \\text{rank}(A)$.',
+            'For conformable matrices $A, B, C$ (with $A \\in \\mathbb{R}^{m\\times n}, B \\in \\mathbb{R}^{n\\times p}$, meaning inner dimensions match so $AB$ is valid):\n1. **Product Bound:** $\\text{rank}(AB) \\le \\min(\\text{rank}(A), \\text{rank}(B))$.\n2. **Sylvester’s Inequality:** $\\text{rank}(A) + \\text{rank}(B) - n \\le \\text{rank}(AB)$.\n3. **Frobenius Inequality:** $\\text{rank}(AB) + \\text{rank}(BC) \\le \\text{rank}(B) + \\text{rank}(ABC)$.\n4. **Sum Inequality:** $|\\text{rank}(A) - \\text{rank}(B)| \\le \\text{rank}(A+B) \\le \\text{rank}(A) + \\text{rank}(B)$.\n5. **Gram Invariance:** $\\text{rank}(A^T A) = \\text{rank}(A A^T) = \\text{rank}(A)$.',
           formulaLatex:
             '\\text{rank}(A) + \\text{rank}(B) - n \\le \\text{rank}(AB) \\le \\min(\\text{rank}(A), \\text{rank}(B))',
           plainEnglishDecoding:
-            'Whenever an exam question hands you a matrix power identity like $A^3 = A$ (GATE DA 2025 Q.37), resist the temptation to cancel $A$! Simply write the gentle downhill chain $\\text{rank}(A^3) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$. Since $A^3 = A$ ties both endpoints together, the middle term gets pinched cleanly to $\\text{rank}(A^2) = \\text{rank}(A)$!',
+            'Whenever an exam question hands you a matrix power identity like $A^3 = A$ (**GATE DA 2025 Q.37**), resist the temptation to cancel $A$! Simply write the gentle downhill chain $\\text{rank}(A^3) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$. Since $A^3 = A$ ties both endpoints together, the middle term gets pinched cleanly to $\\text{rank}(A^2) = \\text{rank}(A)$!',
           workedMiniExamples: [
             {
               prompt: 'If $A \\in \\mathbb{R}^{n \\times n}$ satisfies $A^3 = A$, prove $\\text{rank}(A) = \\text{rank}(A^2)$.',
               solution:
-                'By the product bound, $\\text{rank}(A^3) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$. Since $A^3 = A$, $\\text{rank}(A) = \\text{rank}(A^3) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$, forcing equality $\\text{rank}(A) = \\text{rank}(A^2)$ (GATE DA 2025 Q.37).',
+                'By the product bound, $\\text{rank}(A^3) = \\text{rank}(A^2 \\cdot A) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$. Substituting $A^3 = A$ on the far left gives $\\text{rank}(A) \\le \\text{rank}(A^2) \\le \\text{rank}(A)$, pinching the middle to exact equality $\\text{rank}(A) = \\text{rank}(A^2)$ (GATE DA 2025 Q.37).',
             },
             {
               prompt: 'If $A \\in \\mathbb{R}^{7 \\times 7}$ satisfies $A^2 = 0$, what is the maximum possible $\\text{rank}(A)$?',
               solution:
-                'Apply Sylvester with $B = A$: $\\text{rank}(A) + \\text{rank}(A) - 7 \\le \\text{rank}(A^2) = 0 \\implies 2\\text{rank}(A) \\le 7 \\implies \\text{rank}(A) \\le 3$. (Achievable with three $2 \\times 2$ Jordan nilpotent blocks!)',
+                'Apply Sylvester with $B = A$ and $n = 7$: $\\text{rank}(A) + \\text{rank}(A) - 7 \\le \\text{rank}(A^2) = 0 \\implies 2\\,\\text{rank}(A) \\le 7 \\implies \\text{rank}(A) \\le 3.5$. Since rank must be a whole number, $\\text{rank}(A) \\le 3$ (achievable with three $2 \\times 2$ blocks $\\begin{bmatrix}0&1\\\\0&0\\end{bmatrix}$ and one $[0]$ block on the diagonal!).',
             },
           ],
         },

@@ -119,10 +119,18 @@ const chapter1: ChapterData = {
       subtitle: 'Catching the subtle underestimation bias of sample spread from a 2-draw population',
       priority: 'core-pillar',
       buildsOn: 'Expectation, Variance, and iid Random Variables (Modules 3–4)',
+      whyStudy:
+        'In real life, you almost NEVER see the whole population (all $1.4$ billion citizens, or every future user of your ML model) — you only see a finite random sample $X_1, \\dots, X_n$! So you have to *estimate* the unknown true mean $\\mu$ using the sample average $\\bar{X}$, and *estimate* the unknown true variance $\\sigma^2$ using the sample spread. Yet when students first divide $\\sum (X_i - \\bar{X})^2$ by $n$, they get a mysterious surprise: on average, it **systematically underestimates** the true variance $\\sigma^2$! Understanding **Bessel’s correction ($n - 1$)** and why averaging cuts standard error by $1/\\sqrt{n}$ is the gateway to all statistical inference and GATE DA staples (**2024 Q.34**, **2025 Q.54**, **2026 Q.62**).',
+      groundRules: [
+        '**Statistics Are Random Variables Because Samples Vary:** True population parameters ($\\mu, \\sigma^2$) are fixed unknown constants. By contrast, $\\bar{X}$ and $S^2$ change every time you draw a fresh sample — so they have their own distributions, means, and variances!',
+        '**Why Dividing by $n$ Underestimates $\\sigma^2$:** The sample mean $\\bar{X}$ is mathematically the single number $c$ that minimizes $\\sum (X_i - c)^2$. Therefore $\\sum(X_i - \\bar{X})^2$ is ALWAYS smaller than $\\sum(X_i - \\mu)^2$ by exactly $n(\\bar{X} - \\mu)^2$ — whose average equals $\\sigma^2$! Leaving $n - 1$ worth of $\\sigma^2$ in the numerator is why dividing by $n - 1$ makes $E[S^2] = \\sigma^2$ exact!',
+        '**Standard Error Shrinks by $1/\\sqrt{n}$ (Square-Root Law):** Because $\\text{Var}(\\bar{X}) = \\frac{\\sigma^2}{n}$, its standard deviation (the **Standard Error**, $\\text{SE} = \\frac{\\sigma}{\\sqrt{n}}$) shrinks slowly with $\\sqrt{n}$ — doubling $n$ cuts variance in half, yet you MUST **quadruple ($4\\times$)** $n$ to cut the Standard Error in half!',
+        '**Unbiasedness Does NOT Survive Nonlinear Functions:** Even though $E[S^2] = \\sigma^2$ is unbiased, taking the square root is strictly concave, so by Jensen’s inequality $E[S] = E[\\sqrt{S^2}] < \\sigma$ — the sample standard deviation $S$ is slightly biased downward!',
+      ],
       toyExample: {
         title: 'Drawing 2 Numbers With Replacement From {2, 6}',
         scenario:
-          'Suppose a tiny population has just two equally likely numbers $\\{2, 6\\}$, so true mean $\\mu = 4$ and true variance $\\sigma^2 = \\frac{(2-4)^2+(6-4)^2}{2} = 4$. Now draw an iid sample $(X_1, X_2)$ of size $n=2$ and compare naive variance $\\hat{\\sigma}^2 = \\frac{1}{2}\\sum(X_i-\\bar{X})^2$ against Bessel-corrected $S^2 = \\frac{1}{2-1}\\sum(X_i-\\bar{X})^2$.',
+          'Suppose a tiny population has just two equally likely numbers $\\{2, 6\\}$, so true mean $\\mu = 4$ and true variance $\\sigma^2 = \\frac{(2-4)^2+(6-4)^2}{2} = 4$. Now draw an i.i.d. (independent, identically distributed) sample $(X_1, X_2)$ of size $n=2$ and compare naive variance $\\hat{\\sigma}^2 = \\frac{1}{2}\\sum(X_i-\\bar{X})^2$ against Bessel-corrected $S^2 = \\frac{1}{2-1}\\sum(X_i-\\bar{X})^2$.',
         walkthroughSteps: [
           '1. List all $4$ equally likely samples: $(2,2)$, $(2,6)$, $(6,2)$, $(6,6)$.',
           '2. Sample means $\\bar{x}$ are $2, 4, 4, 6$. Their average is $\\frac{2+4+4+6}{4} = 4 = \\mu$ (unbiased!).',
@@ -135,11 +143,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'For iid random variables $X_1, \\dots, X_n$ with finite mean $\\mu$ and variance $\\sigma^2$: the sample mean $\\bar{X} = \\frac{1}{n}\\sum_{i=1}^n X_i$ is unbiased for $\\mu$, and the Bessel-corrected sample variance $S^2 = \\frac{1}{n-1}\\sum_{i=1}^n (X_i - \\bar{X})^2$ ($n \\ge 2$) is unbiased for $\\sigma^2$. Moreover, $\\sum_{i=1}^n (X_i - \\bar{X})^2$ equals $\\frac{1}{2n}\\sum_{i=1}^n\\sum_{j=1}^n (X_i - X_j)^2$.',
+          'For i.i.d. random variables $X_1, \\dots, X_n$ with finite mean $\\mu$ and variance $\\sigma^2$: the sample mean $\\bar{X} = \\frac{1}{n}\\sum_{i=1}^n X_i$ is unbiased for $\\mu$ (meaning $E[\\bar{X}] = \\mu$), and the Bessel-corrected sample variance $S^2 = \\frac{1}{n-1}\\sum_{i=1}^n (X_i - \\bar{X})^2$ ($n \\ge 2$) is unbiased for $\\sigma^2$. Moreover, $\\sum_{i=1}^n (X_i - \\bar{X})^2$ equals $\\frac{1}{2n}\\sum_{i=1}^n\\sum_{j=1}^n (X_i - X_j)^2$.',
         formulaLatex:
           'E[\\bar{X}] = \\mu, \\quad \\text{Var}(\\bar{X}) = \\frac{\\sigma^2}{n}, \\quad E[S^2] = \\sigma^2, \\quad \\sum_{i=1}^n\\sum_{j=1}^n (x_i - x_j)^2 = 2n\\sum_{i=1}^n (x_i - \\bar{x})^2',
         plainEnglishDecoding:
-          'Think of averaging $n$ independent draws as keeping the balance point fixed at $\\mu$ while tightening the wobble of the average by $1/\\sqrt{n}$. Whenever $\\mu$ is unknown, dividing the squared deviations around $\\bar{X}$ by $n-1$ (degrees of freedom) keeps your variance estimate honest—and notice how it links straight to pairwise distances via $\\frac{1}{2n(n-1)}\\sum_i\\sum_j(x_i-x_j)^2$.',
+          'Think of averaging $n$ independent draws as keeping the balance point fixed at $\\mu$ while tightening the wobble (standard deviation) of the average by $1/\\sqrt{n}$. Whenever $\\mu$ is unknown, dividing the squared deviations around $\\bar{X}$ by $n-1$ (the number of independent free deviations, called **degrees of freedom**) keeps your variance estimate honest—and notice how it links straight to pairwise distances via $\\frac{1}{2n(n-1)}\\sum_i\\sum_j(x_i-x_j)^2$.',
         workedMiniExamples: [
           {
             prompt:
@@ -186,6 +194,14 @@ const chapter1: ChapterData = {
       subtitle: 'Summing squared standard normals and tracking lost degrees of freedom',
       priority: 'high-yield',
       buildsOn: 'Standard Normal Distribution & Sample Variance $S^2$',
+      whyStudy:
+        'Knowing $E[S^2] = \\sigma^2$ tells you the average of the sample variance, yet how wildly does $S^2$ itself fluctuate from sample to sample? And when you build a $t$-statistic, run a Goodness-of-Fit test, or test whether a manufacturing variance jumped, you need the **exact probability distribution of sums of squared errors**! That is the exact problem the **Chi-Square ($\\chi^2_k$, Greek letter "kai-squared") distribution** solves — directly tested in **GATE DA 2025 Q.36** ($\\text{Var}(Z^2) = 2$) and the foundation of Student-$t$ and Pearson’s $\\chi^2$ tests!',
+      groundRules: [
+        '**Definition of $\\chi^2_k$ Is Purely a Sum of $k$ Independent Squared Normals:** Take $k$ independent $Z_1, \\dots, Z_k \\sim \\mathcal{N}(0, 1)$, square each one, and add them: $Q = Z_1^2 + \\dots + Z_k^2 \\sim \\chi^2_k$ ($k$ is the **degrees of freedom**). Because squares are $\\ge 0$, $\\chi^2_k$ lives strictly on $[0, \\infty)$ and is right-skewed.',
+        '**Mean $= k$, Variance $= 2k$ (Instant Additivity):** Since $E[Z^2] = 1$ and $\\text{Var}(Z^2) = E[Z^4] - 1^2 = 3 - 1 = 2$, summing $k$ independent copies immediately gives $E[\\chi^2_k] = k$, $\\text{Var}(\\chi^2_k) = 2k$, and adding two independent $\\chi^2_{k_1} + \\chi^2_{k_2}$ gives $\\chi^2_{k_1 + k_2}$!',
+        '**It Is $(n-1)S^2 / \\sigma^2$ (NOT $S^2$ Alone!) That Follows $\\chi^2_{n-1}$:** Standardizing each residual gives $\\sum_{i=1}^n \\left(\\frac{X_i - \\bar{X}}{\\sigma}\\right)^2 = \\frac{(n-1)S^2}{\\sigma^2} \\sim \\chi^2_{n-1}$. Never drop the $(n-1)$ multiplier or $\\sigma^2$ denominator!',
+        '**Independence of $\\bar{X}$ and $S^2$ Is Uniquely Gaussian:** For a Normal population, Cochran’s Theorem guarantees $\\bar{X}$ and $S^2$ are **completely independent** — which is why dividing $\\bar{X} - \\mu$ by $S/\\sqrt{n}$ cleanly creates the Student-$t_{n-1}$ distribution! For non-Normal populations (like Bernoulli), $\\bar{X}$ and $S^2$ are dependent!',
+      ],
       toyExample: {
         title: 'Squaring One Standard Normal Bell Curve',
         scenario:
@@ -201,11 +217,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'If $Z_1, \\dots, Z_k \\stackrel{\\text{iid}}{\\sim} \\mathcal{N}(0,1)$, then $Q = \\sum_{i=1}^k Z_i^2 \\sim \\chi^2_k$ ($k$ degrees of freedom). If $Q_1 \\sim \\chi^2_{k_1}$ and $Q_2 \\sim \\chi^2_{k_2}$ are independent, $Q_1 + Q_2 \\sim \\chi^2_{k_1+k_2}$. For iid $X_1,\\dots,X_n \\sim \\mathcal{N}(\\mu,\\sigma^2)$, Cochran’s theorem splits total normalized sum of squares into two independent $\\chi^2$ pieces: $\\bar{X}$ and $S^2$ are independent, with:',
+          'If $Z_1, \\dots, Z_k \\stackrel{\\text{iid}}{\\sim} \\mathcal{N}(0,1)$, then $Q = \\sum_{i=1}^k Z_i^2 \\sim \\chi^2_k$ (chi-square with $k$ degrees of freedom). If $Q_1 \\sim \\chi^2_{k_1}$ and $Q_2 \\sim \\chi^2_{k_2}$ are independent, $Q_1 + Q_2 \\sim \\chi^2_{k_1+k_2}$. For i.i.d. $X_1,\\dots,X_n \\sim \\mathcal{N}(\\mu,\\sigma^2)$, Cochran’s theorem guarantees $\\bar{X}$ and $S^2$ are independent, with:',
         formulaLatex:
           'E[\\chi^2_k] = k, \\quad \\text{Var}(\\chi^2_k) = 2k, \\qquad \\frac{(n-1)S^2}{\\sigma^2} = \\sum_{i=1}^n \\left(\\frac{X_i - \\bar{X}}{\\sigma}\\right)^2 \\sim \\chi^2_{n-1}',
         plainEnglishDecoding:
-          'Watch where that $1$ missing degree of freedom goes in a Normal sample: centering around true $\\mu$ gives $\\chi^2_n$, while centering around $\\bar{X}$ splits that budget cleanly into two independent pieces—$\\left(\\frac{\\sqrt{n}(\\bar{X}-\\mu)}{\\sigma}\\right)^2 \\sim \\chi^2_1$ for the mean, and $\\frac{(n-1)S^2}{\\sigma^2} \\sim \\chi^2_{n-1}$ for the residuals!',
+          'Read $\\chi^2_k$ as "the sum of $k$ independent squared standard-normal fluctuations." Watch where that $1$ missing degree of freedom goes in a Normal sample: centering around true $\\mu$ gives $\\chi^2_n$, while centering around $\\bar{X}$ splits that budget cleanly into two independent pieces—$\\left(\\frac{\\sqrt{n}(\\bar{X}-\\mu)}{\\sigma}\\right)^2 \\sim \\chi^2_1$ for the mean, and $\\frac{(n-1)S^2}{\\sigma^2} \\sim \\chi^2_{n-1}$ for the residuals!',
         workedMiniExamples: [
           {
             prompt:
@@ -252,6 +268,14 @@ const chapter1: ChapterData = {
       subtitle: 'Why replacing true σ with noisy S stretches the tails and flattens the peak',
       priority: 'high-yield',
       buildsOn: 'Normal & $\\chi^2$ Sampling Distributions',
+      whyStudy:
+        'Standardizing a sample mean into $Z = \\frac{\\bar{X} - \\mu}{\\sigma/\\sqrt{n}}$ has one glaring practical flaw: if you don’t know the true population mean $\\mu$, how could you possibly know the true population standard deviation $\\sigma$?! In almost every real experiment and $k$-fold ML benchmark, you have to plug in the noisy **sample standard deviation $S$** instead! That extra randomness in the denominator breaks the Standard Normal bell curve and stretches its tails — which is why William Gosset ("Student") invented the **Student-$t$ distribution** (tested directly in **GATE DA 2026 Q.28** comparing $t_1$ vs. $\\mathcal{N}(0, 1)$!).',
+      groundRules: [
+        '**$t_\\nu$ Is the Exact Ratio of Independent Normal and Scaled $\\chi^2$:** Whenever $Z \\sim \\mathcal{N}(0, 1)$ and $V \\sim \\chi^2_\\nu$ are independent, $T = \\frac{Z}{\\sqrt{V/\\nu}} \\sim t_\\nu$ (where Greek $\\nu$, "nu", is the degrees of freedom). Because $\\bar{X}$ and $S^2$ are independent for a Normal sample, $\\frac{\\bar{X} - \\mu}{S/\\sqrt{n}}$ follows exact $t_{n-1}$!',
+        '**Extra Denominator Noise = Lower Center Peak + Heavier Tails:** Because noisy $S$ occasionally lands much smaller than true $\\sigma$, $|T|$ occasionally spikes huge! To keep total area $= 1$, $t_\\nu$ takes probability away from the center peak ($f_{t_\\nu}(0) < \\phi(0)$) and pushes it out into **fatter tails**.',
+        '**Heavier Right Tail Means SMALLER CDF $H(c) < G(c)$ for $c > 0$:** Watch this reverse inequality! Having MORE probability beyond $c > 0$ means $P(Y > c) > P(Z > c) \\implies 1 - H(c) > 1 - G(c) \\implies H(c) < G(c)$ (the exact trap in GATE DA 2026 Q.28)!',
+        '**Tiny Degrees of Freedom Break Moments ($\\nu = 1$ Is Cauchy!):** Every $t_\\nu$ is mirror-symmetric around $0$ ($F(0) = 0.5$), YET at $\\nu = 1$ ($t_1 =$ Cauchy), tails are so heavy that **neither $E[T]$ nor $\\text{Var}(T)$ exists**! You need $\\nu > 1$ for $E[T] = 0$, and $\\nu > 2$ for finite $\\text{Var}(T) = \\frac{\\nu}{\\nu - 2} > 1$.',
+      ],
       toyExample: {
         title: 'Why Dividing by Sample SD S Creates Occasional Huge Ratios',
         scenario:
@@ -266,11 +290,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'If $Z \\sim \\mathcal{N}(0,1)$ and $V \\sim \\chi^2_\\nu$ are independent, then $T = \\frac{Z}{\\sqrt{V/\\nu}}$ follows Student’s $t$-distribution with $\\nu$ degrees of freedom ($t_\\nu$). Consequently, for iid $X_1,\\dots,X_n \\sim \\mathcal{N}(\\mu, \\sigma^2)$, the pivotal statistic $\\frac{\\bar{X}-\\mu}{S/\\sqrt{n}}$ follows $t_{n-1}$.',
+          'If $Z \\sim \\mathcal{N}(0,1)$ and $V \\sim \\chi^2_\\nu$ are independent, then $T = \\frac{Z}{\\sqrt{V/\\nu}}$ follows Student’s $t$-distribution with $\\nu$ degrees of freedom ($t_\\nu$). Consequently, for i.i.d. $X_1,\\dots,X_n \\sim \\mathcal{N}(\\mu, \\sigma^2)$, the pivotal statistic $\\frac{\\bar{X}-\\mu}{S/\\sqrt{n}}$ follows exact $t_{n-1}$.',
         formulaLatex:
           'T = \\frac{Z}{\\sqrt{V/\\nu}} \\sim t_\\nu, \\qquad \\frac{\\bar{X}-\\mu}{S/\\sqrt{n}} \\sim t_{n-1}, \\qquad \\text{Var}(T) = \\frac{\\nu}{\\nu - 2} \\; (\\nu > 2)',
         plainEnglishDecoding:
-          'Every $t_\\nu$ curve is mirror-symmetric around $0$ ($f(-x)=f(x)$ and $F(0)=0.5$). Watch the tiny-df edge cases carefully: at $\\nu=1$, $t_1$ is the **Cauchy distribution** ($h(x) = \\frac{1}{\\pi(1+x^2)}$), whose tails are so heavy that neither its mean nor its variance exists! You need $\\nu > 1$ for $E[T]=0$ and $\\nu > 2$ for finite variance $\\text{Var}(T) = \\frac{\\nu}{\\nu-2} > 1$.',
+          'Read $\\nu$ (nu) as the sample’s "freedom budget" ($n - 1$ for a 1-sample test): small $\\nu$ means $S$ is very noisy and tails are very fat, while as $\\nu \\to \\infty$, $\\frac{\\nu}{\\nu - 2} \\to 1$ and $t_\\nu$ becomes indistinguishable from $\\mathcal{N}(0, 1)$. Every $t_\\nu$ curve is mirror-symmetric around $0$ ($f(-x)=f(x)$ and $F(0)=0.5$). Watch the tiny-df edge cases carefully: at $\\nu=1$, $t_1$ is the **Cauchy distribution** ($h(x) = \\frac{1}{\\pi(1+x^2)}$), whose tails are so heavy that neither its mean nor its variance exists! You need $\\nu > 1$ for $E[T]=0$ and $\\nu > 2$ for finite variance $\\text{Var}(T) = \\frac{\\nu}{\\nu-2} > 1$.',
         workedMiniExamples: [
           {
             prompt:
@@ -315,6 +339,14 @@ const chapter1: ChapterData = {
       subtitle: 'Why averages and sums of any finite-variance iid variables converge to a Gaussian',
       priority: 'core-pillar',
       buildsOn: 'Sample Mean $\\bar{X}$, Standard Normal CDF $\\Phi(z)$, and Binomial/Poisson Sums',
+      whyStudy:
+        'Real-world data is almost NEVER Normal — coin flips are binary ($0/1$), dice are flat rectangles, and waiting times are skewed Exponentials! Computing exact probabilities for a sum of $300$ coin flips (**GATE DA 2025 Q.40**) or an infinite Poisson limit (**GATE DA 2026 Q.45**) by hand is completely impossible. The **Central Limit Theorem (CLT)** is the crown jewel of Probability: it explains why adding up *almost any* independent random effects (regardless of their original shape!) automatically cancels out extreme quirks and sculpts a universal **Normal bell curve** — letting you answer huge-sample questions in 15 seconds using $\\Phi(z)$!',
+      groundRules: [
+        '**Why Almost Any Sum Turns Into a Bell Curve:** Extreme high or low sums require *nearly every* term to swing the same way at once (astronomically rare), whereas moderate sums happen in vastly more ways as positive and negative fluctuations cancel — forcing the sum’s histogram into a universal symmetric Gaussian!',
+        '**Finite Variance ($0 < \\sigma^2 < \\infty$) Is Non-Negotiable:** The individual $X_i$ can be discrete, uniform, or wildly skewed — they do **NOT** need to be Normal! They ONLY need to be i.i.d. with a **finite** variance $\\sigma^2 < \\infty$ (which is why infinite-variance Cauchy $t_1$ defies the CLT completely!).',
+        '**Watch Sum $S_n$ vs. Mean $\\bar{X}_n$ Scaling Carefully:** For the **sum** $S_n = \\sum_{i=1}^n X_i$, mean is $n\\mu$ and SD is $\\sigma\\sqrt{n}$, so $Z = \\frac{S_n - n\\mu}{\\sigma\\sqrt{n}}$. For the **average** $\\bar{X}_n = S_n / n$, mean is $\\mu$ and SD is $\\sigma/\\sqrt{n}$, so $Z = \\frac{\\bar{X}_n - \\mu}{\\sigma/\\sqrt{n}}$. (They are the exact same ratio once you divide top and bottom by $n$!)',
+        '**Spot Disguised i.i.d. Sums Instantly:** Whenever you see $\\text{Binomial}(n, p)$ (sum of $n$ i.i.d. $\\text{Bernoulli}(p)$) or $\\text{Poisson}(n\\lambda)$ (sum of $n$ i.i.d. $\\text{Poisson}(\\lambda)$) with large $n$, CLT applies immediately — even inside disguised Calculus limits like $\\lim_{n \\to \\infty} \\sum_{k=0}^n \\frac{e^{-n} n^k}{k!} = \\Phi(0) = 0.5$!',
+      ],
       sandboxId: 'distribution-clt-lab',
       toyExample: {
         title: 'Rolling 1 Die vs Averaging 30 Dice',
@@ -331,11 +363,11 @@ const chapter1: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          '**Lindeberg–Lévy Central Limit Theorem:** Let $X_1, X_2, \\dots, X_n$ be iid random variables with finite mean $\\mu = E[X_1]$ and finite variance $0 < \\sigma^2 = \\text{Var}(X_1) < \\infty$. Let $S_n = \\sum_{i=1}^n X_i$ and $\\bar{X}_n = S_n/n$. Then as $n \\to \\infty$, the standardized variable converges in distribution to $\\mathcal{N}(0,1)$:',
+          '**Lindeberg–Lévy Central Limit Theorem:** Let $X_1, X_2, \\dots, X_n$ be i.i.d. random variables with finite mean $\\mu = E[X_1]$ and finite positive variance $0 < \\sigma^2 = \\text{Var}(X_1) < \\infty$. Let $S_n = \\sum_{i=1}^n X_i$ and $\\bar{X}_n = S_n/n$. Then as $n \\to \\infty$, the standardized score converges in distribution (written $\\xrightarrow{d}$) to the Standard Normal $\\mathcal{N}(0,1)$:',
         formulaLatex:
           'Z_n = \\frac{\\bar{X}_n - \\mu}{\\sigma / \\sqrt{n}} = \\frac{S_n - n\\mu}{\\sigma \\sqrt{n}} \\xrightarrow{d} \\mathcal{N}(0, 1) \\quad \\implies \\quad P(S_n \\le a) \\approx \\Phi\\!\\left(\\frac{a - n\\mu}{\\sigma\\sqrt{n}}\\right)',
         plainEnglishDecoding:
-          'For large $n$, any sum $S_n$ acts like $\\mathcal{N}(n\\mu, n\\sigma^2)$ and any average $\\bar{X}_n$ acts like $\\mathcal{N}(\\mu, \\sigma^2/n)$. Train your eye to spot disguised sums: $\\text{Binomial}(n, p)$ is just $n$ iid $\\text{Bernoulli}(p)$ terms ($n\\mu = np$, $\\sigma\\sqrt{n} = \\sqrt{np(1-p)}$), and $\\text{Poisson}(n\\lambda)$ is just $n$ iid $\\text{Poisson}(\\lambda)$ terms!',
+          'Read $\\Phi(z) = P(Z \\le z)$ as the Standard Normal CDF (area to the left of $z$). For large $n$, any sum $S_n$ acts like $\\mathcal{N}(n\\mu, n\\sigma^2)$ and any average $\\bar{X}_n$ acts like $\\mathcal{N}(\\mu, \\sigma^2/n)$. Train your eye to spot disguised sums: $\\text{Binomial}(n, p)$ is just $n$ i.i.d. $\\text{Bernoulli}(p)$ terms ($n\\mu = np$, $\\sigma\\sqrt{n} = \\sqrt{np(1-p)}$), and $\\text{Poisson}(n\\lambda)$ is just $n$ i.i.d. $\\text{Poisson}(\\lambda)$ terms!',
         workedMiniExamples: [
           {
             prompt:
@@ -742,6 +774,14 @@ const chapter2: ChapterData = {
       subtitle: 'Building an interval that traps the fixed unknown parameter and knowing what 95% really means',
       priority: 'sleeping-giant',
       buildsOn: 'Ch. 1 Pivotal Quantities $\\frac{\\bar{X}-\\mu}{\\sigma/\\sqrt{n}}$ and $\\frac{\\bar{X}-\\mu}{S/\\sqrt{n}}$',
+      whyStudy:
+        'Reporting a single point estimate like *"Our model achieved $84\\%$ accuracy"* hides a critical question: was that measured on $10$ test samples (wildly noisy!) or $10{,}000$ test samples (rock solid!)? A **Confidence Interval (CI)** attaches an exact uncertainty bracket around your sample estimate ($\\bar{x} \\pm \\text{Margin of Error}$), tells you how many samples $n$ an A/B test needs to achieve a desired precision, and sits in exact one-to-one duality with two-sided hypothesis tests!',
+      groundRules: [
+        '**The Interval Is Random, NOT the True Parameter $\\mu$:** In frequentist statistics, $\\mu$ is a fixed unknown constant (never hopping around!). Before sampling, the random net $[\\bar{X} - \\text{ME}, \\bar{X} + \\text{ME}]$ has probability $1 - \\alpha$ of landing over $\\mu$. Once numbers are plugged in (e.g., $[49.02, 50.98]$), $\\mu$ is either inside ($1$) or outside ($0$) — the $95\\%$ is the **long-run success rate of the procedure**!',
+        '**Higher Confidence Means a WIDER Net (Precision vs. Certainty Tradeoff):** Increasing confidence from $95\\%$ ($z_{0.025} = 1.96$) to $99\\%$ ($z_{0.005} = 2.576$) shrinks $\\alpha$ (significance tail area) and *increases* the critical multiplier, making the interval **wider**, never narrower!',
+        '**Width Shrinks With $1/\\sqrt{n}$ (The $4\\times$ Rule):** Because $\\text{Width} = 2 \\cdot z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}$, cutting the interval width by a factor of $k$ ALWAYS requires **$k^2$ times as many samples** (halving width requires $4\\times n$; quartering width requires $16\\times n$)!',
+        '**Know When to Pick $z$ vs. $t$:** Use $z_{\\alpha/2}$ when true $\\sigma$ is known (or $n$ is large via CLT); switch to the wider $t_{\\alpha/2, n-1}$ whenever $\\sigma$ is unknown and replaced by $S$ on a small Normal sample.',
+      ],
       toyExample: {
         title: 'Measuring Bolt Lengths With 16 Samples',
         scenario:
@@ -757,11 +797,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'A $(1-\\alpha)$ Confidence Interval for population mean $\\mu$ uses the Standard Normal critical value $z_{\\alpha/2}$ when $\\sigma$ is known (Normal population or large $n$ via CLT), and Student’s $t_{\\alpha/2, n-1}$ when $\\sigma$ is unknown in a Normal sample. For a Bernoulli proportion $p$ with large $n$, replace $\\sigma$ by $\\sqrt{\\hat{p}(1-\\hat{p})}$ (or worst-case $0.5$ when planning $n$).',
+          'A $(1-\\alpha)$ Confidence Interval (where $\\alpha$, Greek "alpha", is the total two-tail error rate, e.g., $\\alpha = 0.05$ for $95\\%$ confidence) uses Standard Normal $z_{\\alpha/2}$ (the cutoff leaving area $\\alpha/2$ in the upper tail) when $\\sigma$ is known (Normal population or large $n$ via CLT), and Student’s $t_{\\alpha/2, n-1}$ when $\\sigma$ is unknown in a Normal sample. For a Bernoulli proportion $p$ with large $n$, replace $\\sigma$ by $\\sqrt{\\hat{p}(1-\\hat{p})}$ (or worst-case $0.5$ when planning minimum sample size $n$).',
         formulaLatex:
           '\\bar{X} \\pm z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}} \\quad (\\sigma\\text{ known}), \\qquad \\bar{X} \\pm t_{\\alpha/2,\\,n-1}\\frac{S}{\\sqrt{n}} \\quad (\\sigma\\text{ unknown}), \\qquad n \\ge \\left(\\frac{z_{\\alpha/2}}{2E}\\right)^2',
         plainEnglishDecoding:
-          'Keep three two-sided Normal critical numbers right at your fingertips: $90\\% \\to 1.645$, $95\\% \\to 1.96$, and $99\\% \\to 2.576$. Demanding higher confidence forces you to cast a **wider** net (larger $z$). And because margin of error shrinks as $1/\\sqrt{n}$, halving your CI width always costs **$4\\times$ as many samples**!',
+          'Unpack $z_{\\alpha/2}$ cleanly: a $95\\%$ CI leaves $\\alpha = 5\\%$ total outside, split symmetrically into $\\alpha/2 = 2.5\\% = 0.025$ in EACH tail — so $z_{0.025} = 1.96$. Keep three two-sided Normal critical numbers right at your fingertips: $90\\% \\to 1.645$, $95\\% \\to 1.96$, and $99\\% \\to 2.576$. Demanding higher confidence forces you to cast a **wider** net (larger $z$). And because margin of error shrinks as $1/\\sqrt{n}$, halving your CI width always costs **$4\\times$ as many samples**!',
         workedMiniExamples: [
           {
             prompt:
@@ -807,6 +847,14 @@ const chapter2: ChapterData = {
       subtitle: 'Separating P(data | H₀) from P(H₀ | data) and balancing false alarms vs misses',
       priority: 'sleeping-giant',
       buildsOn: 'Conditional Probability, Bayes’ Theorem & Sampling Distributions',
+      whyStudy:
+        'Suppose your new ML recommendation model beats the baseline by $+1.5\\%$ in a live A/B test, or a coin lands Heads $9$ times out of $10$. Did you discover a **real effect**, or did you just get lucky with random noise? **Hypothesis Testing** turns that judgment call into a disciplined courtroom trial: assume the default claim $H_0$ ("no real effect / coin is fair") is innocent until proven guilty, measure how surprising the observed data would be under $H_0$ (the **p-value**), and explicitly control your false-alarm rate ($\\alpha$) vs. missed-discovery rate ($\\beta$). Crucially, understanding why **p-value is NEVER $P(H_0 \\text{ is true})$** immunizes you against the single most famous Statistics trap in GATE DA!',
+      groundRules: [
+        '**p-value Conditions on $H_0$, NEVER on the Data ($\\text{p-value} \\neq P(H_0 \\mid \\text{data})$):** A p-value is computed *assuming $H_0$ is $100\\%$ true*: it equals $P(\\text{data at least this extreme} \\mid H_0)$. Flipping that arrow to get $P(H_0 \\mid \\text{data})$ would require Bayes’ Theorem and a prior $P(H_0)$, which frequentist tests never use!',
+        '**$\\alpha$ and $\\beta$ Live in Two Different Worlds (So $\\alpha + \\beta \\neq 1$!):** Type I error $\\alpha = P(\\text{Reject } H_0 \\mid H_0 \\text{ true})$ is a false alarm calculated in the $H_0$ world. Type II error $\\beta = P(\\text{Fail to reject } H_0 \\mid H_1 \\text{ true})$ is a missed detection calculated in the $H_1$ world. Because they condition on different hypotheses, $\\alpha + \\beta$ does NOT have to equal $1$!',
+        '**Reject Rule Is Always "$p\\text{-value} \\le \\alpha$" (Smaller $p$ = Stronger Evidence Against $H_0$):** The significance level $\\alpha$ is your pre-chosen false-alarm budget (e.g., $0.05$). If your observed data is rarer than $\\alpha$ under $H_0$ ($p \\le \\alpha$), you **reject $H_0$**; otherwise you **fail to reject $H_0$** (which NEVER proves $H_0$ is true — only that evidence was insufficient!).',
+        '**Tightening $\\alpha$ Raises $\\beta$ Unless You Increase Sample Size $n$:** Making it harder to sound a false alarm (shrinking $\\alpha$ from $0.05$ to $0.01$) simultaneously makes it easier to miss a real signal (raising $\\beta$ and lowering Power $= 1 - \\beta$). The ONLY way to shrink *both* $\\alpha$ and $\\beta$ at once is collecting more data ($n \\uparrow$)!',
+      ],
       sandboxId: 'hypothesis-test-lab',
       toyExample: {
         title: 'Testing a Suspicious Coin in 10 Tosses',
@@ -823,7 +871,7 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'In hypothesis testing between null $H_0$ and alternative $H_1$: **Type I error** ($\\alpha$) rejects a true $H_0$; **Type II error** ($\\beta$) fails to reject a false $H_0$; **Power** $= 1 - \\beta$ correctly rejects a false $H_0$. The **p-value** is the smallest significance level $\\alpha$ at which the observed data would lead to rejecting $H_0$.',
+          'In hypothesis testing between null $H_0$ (default status quo) and alternative $H_1$ (the claim you want to detect): **Type I error** ($\\alpha$, Greek "alpha") rejects a true $H_0$; **Type II error** ($\\beta$, Greek "beta") fails to reject a false $H_0$; **Power** $= 1 - \\beta$ correctly rejects a false $H_0$. The **p-value** is the smallest significance level $\\alpha$ at which the observed data would lead to rejecting $H_0$.',
         formulaLatex:
           '\\alpha = P(\\text{Reject } H_0 \\mid H_0), \\quad \\beta = P(\\text{Fail to reject } H_0 \\mid H_1), \\quad \\text{Power} = 1 - \\beta, \\quad \\text{Reject } H_0 \\iff p\\text{-value} \\le \\alpha',
         plainEnglishDecoding:
@@ -873,6 +921,14 @@ const chapter2: ChapterData = {
       subtitle: 'Picking the exact test statistic when σ is known vs unknown and paired vs independent',
       priority: 'sleeping-giant',
       buildsOn: 'Ch. 1 $\\mathcal{N}(0,1)$ and Student-$t_{n-1}$ distributions',
+      whyStudy:
+        'Suppose you want to test whether your new neural network truly beats an $80\\%$ baseline across $9$ cross-validation folds, or whether Drug A outperforms Drug B on the *same* patients before and after treatment. Choosing the wrong test statistic — using $z$ instead of $t$ when $\\sigma$ is unknown, or running an independent 2-sample test on **paired** CV folds — completely distorts your p-value and leads to false conclusions! Mastering the unified **Signal-over-Noise** template for $z$-tests, $t$-tests, paired $t$-tests, and **CI Duality** lets you pick the exact right test in 5 seconds every time.',
+      groundRules: [
+        '**Every $z$-Test and $t$-Test Is Simply $\\frac{\\text{Observed} - \\text{Null Value}}{\\text{Standard Error}}$:** The numerator measures how far your sample landed from $H_0$ (the signal), and the denominator scales that gap by the standard error of your estimator (the noise) — telling you how many standard errors away from $H_0$ you landed!',
+        '**Known $\\sigma$ (or Large $n$) $\\to z$-Test; Unknown $\\sigma$ (Small Normal Sample) $\\to t_{n-1}$-Test:** Whenever you replace true $\\sigma$ by sample $S$ on a small Normal sample, the extra randomness in $S$ forces you to use Student-$t_{n-1}$ critical values instead of $\\mathcal{N}(0, 1)$.',
+        '**Same Subjects / Same CV Folds $\\implies$ ALWAYS Pair First ($D_i = X_i - Y_i$):** Two models evaluated on the exact same folds are positively correlated! Taking fold-wise differences $D_i = X_i - Y_i$ cancels out shared fold difficulty and turns the problem into a cleaner 1-sample $t$-test on $\\bar{D}$ with $\\text{df} = n - 1$ (NEVER $2n - 2$)!',
+        '**Two-Sided Test $\\iff$ Confidence Interval Duality:** At significance level $\\alpha$, a two-sided test rejects $H_0: \\mu = \\mu_0$ if and only if $\\mu_0$ falls **outside** the $(1 - \\alpha)$ Confidence Interval! Knowing the CI hands you the hypothesis test verdict immediately with zero extra algebra.',
+      ],
       toyExample: {
         title: 'Testing Whether a New Model Beats an 80% Baseline',
         scenario:
@@ -888,11 +944,11 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'Use the **$z$-test** when $\\sigma$ is known (or $n$ is large via CLT) and the **$t$-test** when $\\sigma$ is unknown in a Normal sample. For before/after or same-fold comparisons $(X_i, Y_i)$, always take differences $D_i = X_i - Y_i$ and run a **paired $t$-test**. Furthermore, a two-sided level-$\\alpha$ test rejects $H_0: \\mu = \\mu_0$ if and only if $\\mu_0$ falls outside the $(1-\\alpha)$ CI.',
+          'Use the **$z$-test** when $\\sigma$ is known (or $n$ is large via CLT) and the **$t$-test** when $\\sigma$ is unknown in a Normal sample (with null value $\\mu_0$ and degrees of freedom $\\text{df} = n - 1$). For before/after or same-fold comparisons $(X_i, Y_i)$, always take differences $D_i = X_i - Y_i$ (with sample mean $\\bar{D}$ and SD $S_D$) and run a **paired $t$-test**. Furthermore, a two-sided level-$\\alpha$ test rejects $H_0: \\mu = \\mu_0$ if and only if $\\mu_0$ falls outside the $(1-\\alpha)$ CI.',
         formulaLatex:
           'Z = \\frac{\\bar{X}-\\mu_0}{\\sigma/\\sqrt{n}} \\sim \\mathcal{N}(0,1), \\qquad T = \\frac{\\bar{X}-\\mu_0}{S/\\sqrt{n}} \\sim t_{n-1}, \\qquad T_{\\text{paired}} = \\frac{\\bar{D}-0}{S_D/\\sqrt{n}} \\sim t_{n-1}',
         plainEnglishDecoding:
-          'When comparing two **independent** large samples, remember that variances still **add** even when you subtract the means: $Z = \\frac{\\bar{X}_1 - \\bar{X}_2}{\\sqrt{\\sigma_1^2/n_1 + \\sigma_2^2/n_2}}$. On the other hand, if both scores come from the same subjects or the same CV folds, pair them up as $D_i = X_i - Y_i$ first!',
+          'When comparing two **independent** large samples, remember that variances still **add** even when you subtract the means: $Z = \\frac{\\bar{X}_1 - \\bar{X}_2}{\\sqrt{\\sigma_1^2/n_1 + \\sigma_2^2/n_2}}$. On the other hand, if both scores come from the same subjects or the same CV folds, pair them up as $D_i = X_i - Y_i$ first so shared fold noise cancels right out!',
         workedMiniExamples: [
           {
             prompt:
@@ -938,6 +994,14 @@ const chapter2: ChapterData = {
       subtitle: 'Checking whether observed category counts match a null distribution or are independent',
       priority: 'sleeping-giant',
       buildsOn: 'Ch. 1 $\\chi^2$ Distribution & Degrees of Freedom',
+      whyStudy:
+        '$z$-tests and $t$-tests only test *numerical averages* ($\\mu$). What if your data is **categorical counts** — checking whether a $6$-sided die is fair across $60$ rolls, whether live website user counts drifted away from training proportions, or whether a categorical feature like `City` is independent of `Churn` in an $r \\times c$ table (the exact score inside scikit-learn’s `SelectKBest(chi2)`)? **Pearson’s $\\chi^2$ Test** collapses all $k$ category mismatches $(O_i - E_i)$ into a single $\\chi^2$ discrepancy score so you can test an entire categorical distribution at once!',
+      groundRules: [
+        '**Always Divide by Expected Count $E_i$ (Never Observed $O_i$!):** Each cell contributes $\\frac{(O_i - E_i)^2}{E_i}$ — why? Under $H_0$, counts behave like Poisson/Binomial variables whose variance scales with $E_i$, so dividing by $E_i$ turns $\\frac{O_i - E_i}{\\sqrt{E_i}}$ into a unitless Standard Normal whose square contributes cleanly to $\\chi^2$!',
+        '**Pearson’s $\\chi^2$ Test Is Strictly Right-Tailed:** Because every term $(O_i - E_i)^2 / E_i \\ge 0$ is squared, $\\chi^2_{\\text{stat}} = 0$ means a *perfect match* to $H_0$, while **large** positive values mean huge mismatch — so you ONLY reject $H_0$ in the upper (right) tail ($\\chi^2_{\\text{stat}} > \\chi^2_{\\alpha, \\text{df}}$)!',
+        '**Track Every Constraint in Degrees of Freedom ($\\text{df} = k - 1 - m$):** Out of $k$ bins, the total count $\\sum O_i = N$ uses up $1$ degree of freedom ($k - 1$). Every extra parameter ($m$) estimated from the sample (like $\\hat{\\lambda}$ for Poisson or $\\hat{\\mu}, \\hat{\\sigma}$ for Normal) costs $1$ more degree of freedom!',
+        '**$r \\times c$ Independence Table Formula:** Under row-column independence, expected cell count is $E_{ij} = \\frac{(\\text{Row } i \\text{ total})(\\text{Col } j \\text{ total})}{N}$, and fixing all row and column margins leaves exactly $\\text{df} = (r - 1)(c - 1)$ free cells!',
+      ],
       toyExample: {
         title: 'Testing If a 6-Sided Die Is Fair in 60 Rolls',
         scenario:
@@ -953,7 +1017,7 @@ const chapter2: ChapterData = {
       },
       theoremAndFormula: {
         statement:
-          'For $N$ multinomial trials across $k$ categories with expected counts $E_i = N p_i$ (rule of thumb: $E_i \\ge 5$), Pearson’s goodness-of-fit statistic is approximately $\\chi^2_{k - 1 - m}$ under $H_0$, where $m$ is the number of free parameters estimated from the sample. For an $r \\times c$ contingency table testing row/column independence, $E_{ij} = \\frac{R_i C_j}{N}$ and $\\text{df} = (r-1)(c-1)$.',
+          'For $N$ multinomial trials across $k$ categories with observed counts $O_i$ and expected counts $E_i = N p_i$ (large-sample rule of thumb: every $E_i \\ge 5$), Pearson’s goodness-of-fit statistic converges in distribution ($\\xrightarrow{d}$) to $\\chi^2_{k - 1 - m}$ under $H_0$, where $m$ is the number of free parameters estimated from the sample. For an $r \\times c$ contingency table testing row/column independence, $E_{ij} = \\frac{R_i C_j}{N}$ (row total $\\times$ col total $\\div N$) and $\\text{df} = (r-1)(c-1)$.',
         formulaLatex:
           '\\chi^2_{\\text{stat}} = \\sum_{i=1}^k \\frac{(O_i - E_i)^2}{E_i} \\xrightarrow{d} \\chi^2_{k - 1 - m}, \\qquad \\text{Independence table: } \\text{df} = (r-1)(c-1)',
         plainEnglishDecoding:
